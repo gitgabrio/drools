@@ -65,7 +65,8 @@ public class PMMLAssemblerService implements KieAssemblerService {
     }
 
     /**
-     * Returns an array where the first item is the <b>factory class</b> name and the second item is the <b>package</b> name,
+     * Returns an array where the first item is the <b>factory class</b> name and the second item is the
+     * <b>package</b> name,
      * built starting from the given <code>Resource</code>
      * @param resource
      * @return
@@ -81,7 +82,8 @@ public class PMMLAssemblerService implements KieAssemblerService {
 
     @Override
     public ResourceType getResourceType() {
-        return NEW.equals(toEnable(Thread.currentThread().getContextClassLoader())) ? ResourceType.PMML : ResourceType.NOOP;
+        return NEW.equals(toEnable(Thread.currentThread().getContextClassLoader())) ? ResourceType.PMML :
+                ResourceType.NOOP;
     }
 
     @Override
@@ -91,7 +93,8 @@ public class PMMLAssemblerService implements KieAssemblerService {
             return;
         }
         if (isBuildFromMaven()) {
-            addModels(kbuilderImpl, getKiePMMLModelsFromResourcesWithConfigurationsWithSources(kbuilderImpl, resources));
+            addModels(kbuilderImpl, getKiePMMLModelsFromResourcesWithConfigurationsWithSources(kbuilderImpl,
+                                                                                               resources));
         } else {
             List<KiePMMLModel> toAdd = getKiePMMLModelsLoadedFromResourcesWithConfigurations(kbuilderImpl, resources);
             if (toAdd.isEmpty()) {
@@ -102,8 +105,10 @@ public class PMMLAssemblerService implements KieAssemblerService {
     }
 
     @Override
-    public void addResource(Object kbuilder, Resource resource, ResourceType type, ResourceConfiguration configuration) {
-        logger.warn("invoked legacy addResource (no control on the order of the assembler compilation): {}", resource.getSourcePath());
+    public void addResource(Object kbuilder, Resource resource, ResourceType type,
+                            ResourceConfiguration configuration) {
+        logger.warn("invoked legacy addResource (no control on the order of the assembler compilation): {}",
+                    resource.getSourcePath());
         KnowledgeBuilderImpl kbuilderImpl = (KnowledgeBuilderImpl) kbuilder;
         if (isjPMMLAvailableToClassLoader(kbuilderImpl.getRootClassLoader())) {
             return;
@@ -139,7 +144,8 @@ public class PMMLAssemblerService implements KieAssemblerService {
         }
     }
 
-    protected PMMLPackage createPMMLPackageForAddedModel(final KnowledgeBuilderImpl kbuilderImpl, final KiePMMLModel kiePMMLModel) {
+    protected PMMLPackage createPMMLPackageForAddedModel(final KnowledgeBuilderImpl kbuilderImpl,
+                                                         final KiePMMLModel kiePMMLModel) {
         PackageDescr pkgDescr = new PackageDescr(kiePMMLModel.getKModulePackageName());
         PackageRegistry pkgReg = kbuilderImpl.getOrCreatePackageRegistry(pkgDescr);
         InternalKnowledgePackage kpkgs = pkgReg.getPackage();
@@ -149,18 +155,32 @@ public class PMMLAssemblerService implements KieAssemblerService {
         return toReturn;
     }
 
-    protected KieBase createKieBaseForAddedModel(final KnowledgeBuilderImpl parentKnowledgeBuilder, final KiePMMLModel kiePMMLModel) {
+    protected KieBase createKieBaseForAddedModel(final KnowledgeBuilderImpl parentKnowledgeBuilder,
+                                                 final KiePMMLModel kiePMMLModel) {
         // kbuilderImpl.getPackageRegistry().remove("iristree")
         final Map<String, PackageRegistry> parentPackageRegistry = parentKnowledgeBuilder.getPackageRegistry();
 
-        KnowledgeBuilderImpl kbuilderImpl = (KnowledgeBuilderImpl) KnowledgeBuilderFactory.newKnowledgeBuilder(parentKnowledgeBuilder.getBuilderConfiguration());
+        KnowledgeBuilderImpl kbuilderImpl =
+                (KnowledgeBuilderImpl) KnowledgeBuilderFactory.newKnowledgeBuilder(parentKnowledgeBuilder.getBuilderConfiguration());
         kbuilderImpl.setReleaseId(parentKnowledgeBuilder.getReleaseId());
         if (parentPackageRegistry.containsKey(kiePMMLModel.getKModulePackageName())) {
             final List<PackageDescr> packageDescrs =
-                    kbuilderImpl.getPackageDescrs(kiePMMLModel.getKModulePackageName());
-            final PackageRegistry removed = parentPackageRegistry.get(kiePMMLModel.getKModulePackageName());
-            InternalKnowledgePackage toMove = removed.getPackage();
-            kbuilderImpl.addPackage(toMove);
+                    parentKnowledgeBuilder.getPackageDescrs(kiePMMLModel.getKModulePackageName());
+            Optional<PackageDescr> originalPackageDescr;
+            if (!packageDescrs.isEmpty()) {
+                originalPackageDescr = packageDescrs.stream()
+                        .filter(packageDescr -> packageDescr.getName().equals(kiePMMLModel.getKModulePackageName()))
+                        .findFirst();
+            } else {
+                originalPackageDescr = Optional.empty();
+            }
+            if (originalPackageDescr.isPresent()) {
+                kbuilderImpl.buildPackages(Collections.singletonList((CompositePackageDescr) originalPackageDescr.get()));
+            } else {
+                final PackageRegistry removed = parentPackageRegistry.get(kiePMMLModel.getKModulePackageName());
+                InternalKnowledgePackage toMove = removed.getPackage();
+                kbuilderImpl.addPackage(toMove);
+            }
             createPMMLPackageForAddedModel(kbuilderImpl, kiePMMLModel);
 //            kbuilderImpl.buildPackages(Collections.singletonList(toMove));
         }
