@@ -18,17 +18,23 @@ package org.kie.pmml.evaluator.assembler.service;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 import org.drools.compiler.builder.impl.KnowledgeBuilderImpl;
 import org.drools.compiler.compiler.PackageRegistry;
+import org.drools.compiler.lang.descr.CompositePackageDescr;
 import org.drools.compiler.lang.descr.PackageDescr;
 import org.drools.core.definitions.InternalKnowledgePackage;
 import org.drools.core.definitions.ResourceTypePackageRegistry;
+import org.kie.api.KieBase;
+import org.kie.api.builder.ReleaseId;
 import org.kie.api.internal.assembler.KieAssemblerService;
 import org.kie.api.io.Resource;
 import org.kie.api.io.ResourceConfiguration;
 import org.kie.api.io.ResourceType;
 import org.kie.api.io.ResourceWithConfiguration;
+import org.kie.internal.builder.KnowledgeBuilderFactory;
 import org.kie.pmml.commons.model.HasNestedModels;
 import org.kie.pmml.commons.model.KiePMMLModel;
 import org.kie.pmml.evaluator.api.container.PMMLPackage;
@@ -103,7 +109,7 @@ public class PMMLAssemblerService implements KieAssemblerService {
             return;
         }
         if (isBuildFromMaven()) {
-            addModels(kbuilderImpl, getKiePMMLModelsFromResourceWithSources(kbuilderImpl, resource));
+            addSourceModels(kbuilderImpl, getKiePMMLModelsFromResourceWithSources(kbuilderImpl, resource));
         } else {
             List<KiePMMLModel> toAdd = getKiePMMLModelsLoadedFromResource(kbuilderImpl, resource);
             if (toAdd.isEmpty()) {
@@ -113,17 +119,51 @@ public class PMMLAssemblerService implements KieAssemblerService {
         }
     }
 
+    protected void addSourceModels(KnowledgeBuilderImpl kbuilderImpl, List<KiePMMLModel> toAdd) {
+        for (KiePMMLModel kiePMMLModel : toAdd) {
+            createPMMLPackageForAddedModel(kbuilderImpl, kiePMMLModel);
+            if (kiePMMLModel instanceof HasNestedModels) {
+                addSourceModels(kbuilderImpl, ((HasNestedModels) kiePMMLModel).getNestedModels());
+            }
+        }
+    }
+
     protected void addModels(KnowledgeBuilderImpl kbuilderImpl, List<KiePMMLModel> toAdd) {
         for (KiePMMLModel kiePMMLModel : toAdd) {
-            PackageDescr pkgDescr = new PackageDescr(kiePMMLModel.getKModulePackageName());
-            PackageRegistry pkgReg = kbuilderImpl.getOrCreatePackageRegistry(pkgDescr);
-            InternalKnowledgePackage kpkgs = pkgReg.getPackage();
-            ResourceTypePackageRegistry rpkg = kpkgs.getResourceTypePackages();
-            PMMLPackage pmmlPkg = rpkg.computeIfAbsent(ResourceType.PMML, rtp -> new PMMLPackageImpl());
-            pmmlPkg.addAll(Collections.singletonList(kiePMMLModel));
+            PMMLPackage pmmlPkg = createPMMLPackageForAddedModel(kbuilderImpl, kiePMMLModel);
+            KieBase privateKieBase = createKieBaseForAddedModel(kbuilderImpl, kiePMMLModel);
+            pmmlPkg.setPrivateKieBase(privateKieBase);
             if (kiePMMLModel instanceof HasNestedModels) {
                 addModels(kbuilderImpl, ((HasNestedModels) kiePMMLModel).getNestedModels());
             }
         }
+    }
+
+    protected PMMLPackage createPMMLPackageForAddedModel(final KnowledgeBuilderImpl kbuilderImpl, final KiePMMLModel kiePMMLModel) {
+        PackageDescr pkgDescr = new PackageDescr(kiePMMLModel.getKModulePackageName());
+        PackageRegistry pkgReg = kbuilderImpl.getOrCreatePackageRegistry(pkgDescr);
+        InternalKnowledgePackage kpkgs = pkgReg.getPackage();
+        ResourceTypePackageRegistry rpkg = kpkgs.getResourceTypePackages();
+        PMMLPackage toReturn = rpkg.computeIfAbsent(ResourceType.PMML, rtp -> new PMMLPackageImpl());
+        toReturn.addAll(Collections.singletonList(kiePMMLModel));
+        return toReturn;
+    }
+
+    protected KieBase createKieBaseForAddedModel(final KnowledgeBuilderImpl parentKnowledgeBuilder, final KiePMMLModel kiePMMLModel) {
+        // kbuilderImpl.getPackageRegistry().remove("iristree")
+        final Map<String, PackageRegistry> parentPackageRegistry = parentKnowledgeBuilder.getPackageRegistry();
+
+        KnowledgeBuilderImpl kbuilderImpl = (KnowledgeBuilderImpl) KnowledgeBuilderFactory.newKnowledgeBuilder(parentKnowledgeBuilder.getBuilderConfiguration());
+        kbuilderImpl.setReleaseId(parentKnowledgeBuilder.getReleaseId());
+        if (parentPackageRegistry.containsKey(kiePMMLModel.getKModulePackageName())) {
+            final List<PackageDescr> packageDescrs =
+                    kbuilderImpl.getPackageDescrs(kiePMMLModel.getKModulePackageName());
+            final PackageRegistry removed = parentPackageRegistry.get(kiePMMLModel.getKModulePackageName());
+            InternalKnowledgePackage toMove = removed.getPackage();
+            kbuilderImpl.addPackage(toMove);
+            createPMMLPackageForAddedModel(kbuilderImpl, kiePMMLModel);
+//            kbuilderImpl.buildPackages(Collections.singletonList(toMove));
+        }
+        return kbuilderImpl.newKieBase();
     }
 }

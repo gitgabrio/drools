@@ -29,13 +29,13 @@ import org.kie.pmml.api.runtime.PMMLRuntime;
 public class PMMLRuntimeFactoryImpl implements PMMLRuntimeFactory {
 
     @Override
-    public PMMLRuntime getPMMLRuntimeFromFile(File pmmlFile) {
-        return PMMLRuntimeFactoryInternal.getPMMLRuntime(pmmlFile);
+    public PMMLRuntime getPMMLRuntimeFromFile(final File pmmlFile, final String pmmlModelName) {
+        return PMMLRuntimeFactoryInternal.getPMMLRuntime(pmmlFile, pmmlModelName);
     }
 
     @Override
-    public PMMLRuntime getPMMLRuntimeFromClasspath(String pmmlFileName) {
-        return PMMLRuntimeFactoryInternal.getPMMLRuntime(pmmlFileName);
+    public PMMLRuntime getPMMLRuntimeFromClasspath(final String pmmlFileName, final String pmmlModelName) {
+        return PMMLRuntimeFactoryInternal.getPMMLRuntime(pmmlFileName, pmmlModelName);
     }
 
     @Override

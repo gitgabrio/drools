@@ -50,7 +50,7 @@ public class SegmentationMaxMiningTest extends AbstractPMMLTest {
 
     @Before
     public void setupClass() {
-        pmmlRuntime = getPMMLRuntime(FILE_NAME);
+        pmmlRuntime = getPMMLRuntime(FILE_NAME, MODEL_NAME);
     }
 
     @Parameterized.Parameters

@@ -134,7 +134,7 @@ public class DMNKiePMMLTrustyInvocationEvaluator extends AbstractDMNKiePMMLInvoc
                                                                                                   runtimeKB.getInternalKnowledgeBase());
         if (!toReturn.getPMMLModel(model).isPresent()) {
             File pmmlFile = getPMMLFile();
-            toReturn = PMML_RUNTIME_FACTORY.getPMMLRuntimeFromFile(pmmlFile);
+            toReturn = PMML_RUNTIME_FACTORY.getPMMLRuntimeFromFile(pmmlFile, model);
         }
         return toReturn;
     }

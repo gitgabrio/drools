@@ -126,7 +126,7 @@ public class PMMLCompilerService {
         }
     }
 
-    static void populateWithPMMLRuleMappers(final  List<KiePMMLModel> toReturn, final Resource resource) {
+    static void populateWithPMMLRuleMappers(final List<KiePMMLModel> toReturn, final Resource resource) {
         for (KiePMMLModel kiePMMLModel : toReturn) {
             final List<String> generatedRuleMappers = new ArrayList<>();
             addPMMLRuleMapper(kiePMMLModel, generatedRuleMappers, resource.getSourcePath());

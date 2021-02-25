@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.kie.api.KieBase;
 import org.kie.api.io.ResourceType;
 import org.kie.pmml.commons.model.KiePMMLModel;
 import org.kie.pmml.evaluator.api.container.PMMLPackage;
@@ -29,6 +30,7 @@ public class PMMLPackageImpl implements PMMLPackage {
 
     private Map<String, KiePMMLModel> kiePMMLModelsMap = new HashMap<>();
     private Map<String, KiePMMLModel> kiePMMLModelsByFullClassNameMap = new HashMap<>();
+    private KieBase privateKieBase;
 
     @Override
     public KiePMMLModel getModelByName(String name) {
@@ -72,5 +74,15 @@ public class PMMLPackageImpl implements PMMLPackage {
     @Override
     public Iterator<KiePMMLModel> iterator() {
         return kiePMMLModelsMap.values().iterator();
+    }
+
+    @Override
+    public KieBase getPrivateKieBase() {
+        return privateKieBase;
+    }
+
+    @Override
+    public void setPrivateKieBase(KieBase privateKieBase) {
+        this.privateKieBase = privateKieBase;
     }
 }

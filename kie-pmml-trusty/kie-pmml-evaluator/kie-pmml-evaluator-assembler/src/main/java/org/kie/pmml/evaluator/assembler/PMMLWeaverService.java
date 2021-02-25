@@ -21,6 +21,7 @@ public class PMMLWeaverService implements KieWeaverService<PMMLPackage> {
         ResourceTypePackageRegistry registry = ((InternalKnowledgePackage) kiePkg).getResourceTypePackages();
         PMMLPackageImpl existing = registry.computeIfAbsent(ResourceType.PMML, rt -> new PMMLPackageImpl());
         existing.addAll(dmnpkg.getAllModels().values());
+        existing.setPrivateKieBase(dmnpkg.getPrivateKieBase());
     }
 
     @Override

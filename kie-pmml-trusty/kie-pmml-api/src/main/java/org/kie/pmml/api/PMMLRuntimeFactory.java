@@ -26,9 +26,10 @@ public interface PMMLRuntimeFactory {
      * Retrieve a <code>PMMLRuntime</code> bound to the <code>org.dmg.pmml.PMMLModel</code>
      * that should be present in the given <code><File</code>
      * @param pmmlFile
+     * @param pmmlModelName
      * @return
      */
-    PMMLRuntime getPMMLRuntimeFromFile(File pmmlFile);
+    PMMLRuntime getPMMLRuntimeFromFile(final File pmmlFile, final String pmmlModelName);
 
     /**
      * Retrieve a <code>PMMLRuntime</code> bound to the <code>org.dmg.pmml.PMMLModel</code>
@@ -37,9 +38,10 @@ public interface PMMLRuntimeFactory {
      * (e.g. provided by <b>Maven</b> dependency)
      *
      * @param pmmlFileName
+     * @param pmmlModelName
      * @return
      */
-    PMMLRuntime getPMMLRuntimeFromClasspath(String pmmlFileName);
+    PMMLRuntime getPMMLRuntimeFromClasspath(final String pmmlFileName, final String pmmlModelName);
 
     /**
      * Retrieve a <code>PMMLRuntime</code> bound to the <code>org.dmg.pmml.PMMLModel</code>

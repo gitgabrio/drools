@@ -80,7 +80,8 @@ public abstract class DroolsModelProvider<T extends Model, E extends KiePMMLDroo
         PackageDescr packageDescr = getPackageDescr(kiePMMLDroolsAST, toReturn.getKModulePackageName());
         // Needed to compile Rules from PackageDescr
         CompositePackageDescr compositePackageDescr = new CompositePackageDescr(null, packageDescr);
-        knowledgeBuilder.buildPackages(Collections.singletonList(compositePackageDescr));
+        knowledgeBuilder.addPackage(compositePackageDescr);
+//        knowledgeBuilder.buildPackages(Collections.singletonList(compositePackageDescr));
         return toReturn;
     }
 

@@ -18,6 +18,7 @@ package org.kie.pmml.evaluator.api.container;
 import java.util.Collection;
 import java.util.Map;
 
+import org.kie.api.KieBase;
 import org.kie.api.internal.io.ResourceTypePackage;
 import org.kie.pmml.commons.model.KiePMMLModel;
 
@@ -35,4 +36,10 @@ public interface PMMLPackage extends ResourceTypePackage<KiePMMLModel> {
     Map<String, KiePMMLModel> getAllModelsByFullClassName();
 
     void addAll(Collection<KiePMMLModel> toAdd);
+
+    KieBase getPrivateKieBase();
+
+    void setPrivateKieBase(KieBase privateKieBase);
+
+
 }

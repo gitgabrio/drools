@@ -56,7 +56,7 @@ public class SimpleScorecardCategoricalTest extends AbstractPMMLTest {
 
   @BeforeClass
     public static void setupClass() {
-        pmmlRuntime = getPMMLRuntime(FILE_NAME);
+        pmmlRuntime = getPMMLRuntime(FILE_NAME, MODEL_NAME);
     }
 
     @Parameterized.Parameters
