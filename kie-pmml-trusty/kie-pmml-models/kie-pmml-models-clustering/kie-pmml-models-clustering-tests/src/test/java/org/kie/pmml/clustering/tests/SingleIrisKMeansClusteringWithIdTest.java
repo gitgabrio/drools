@@ -28,8 +28,10 @@ public class SingleIrisKMeansClusteringWithIdTest extends AbstractSingleIrisKMea
 
     private static final String FILE_NAME = "SingleIrisKMeansClustering_id.pmml";
 
-    public SingleIrisKMeansClusteringWithIdTest(double sepalLength, double sepalWidth, double petalLength, double petalWidth, String irisClass, double outNormcontinuousField) {
-        super(sepalLength, sepalWidth, petalLength, petalWidth, irisClass, outNormcontinuousField);
+    public SingleIrisKMeansClusteringWithIdTest(
+            double sepalLength, double sepalWidth, double petalLength, double petalWidth, String irisClass,
+            double outNormcontinuousField, String predictedDisplayValue, int predictedEntityId, double predictedAffinity) {
+        super(sepalLength, sepalWidth, petalLength, petalWidth, irisClass, outNormcontinuousField, predictedDisplayValue, predictedEntityId, predictedAffinity);
     }
 
     @BeforeClass
@@ -40,12 +42,12 @@ public class SingleIrisKMeansClusteringWithIdTest extends AbstractSingleIrisKMea
     @Parameterized.Parameters
     public static Collection<Object[]> data() {
         return Arrays.asList(new Object[][]{
-                {4.4, 3.0, 1.3, 0.2, "C_THREE", 4.966666666666667},
-                {5.0, 3.3, 1.4, 0.2, "C_THREE", 5.433333333333334},
-                {7.0, 3.2, 4.7, 1.4, "C_TWO", 6.950000000000001},
-                {5.7, 2.8, 4.1, 1.3, "C_FOUR", 5.937500000000001},
-                {6.3, 3.3, 6.0, 2.5, "C_ONE", 6.1625},
-                {6.7, 3.0, 5.2, 2.3, "C_ONE", 6.575}
+                {4.4, 3.0, 1.3, 0.2, "C_THREE", 4.966666666666667, "cluster_3", 3, 0.5707919999999993},
+                {5.0, 3.3, 1.4, 0.2, "C_THREE", 5.433333333333334, "cluster_3", 3, 0.019992000000000173},
+                {7.0, 3.2, 4.7, 1.4, "C_TWO", 6.950000000000001, "cluster_2", 2, 0.7601784651992836},
+                {5.7, 2.8, 4.1, 1.3, "C_FOUR", 5.937500000000001, "cluster_4", 4, 0.09263374485596694},
+                {6.3, 3.3, 6.0, 2.5, "C_ONE", 6.1625, "cluster_1", 1, 0.5745800781250017},
+                {6.7, 3.0, 5.2, 2.3, "C_ONE", 6.575, "cluster_1", 1, 0.5020800781249984}
         });
     }
 

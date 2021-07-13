@@ -14,6 +14,9 @@ public abstract class AbstractSingleIrisKMeansClusteringTest extends AbstractPMM
     private static final String MODEL_NAME = "SingleIrisKMeansClustering";
     private static final String TARGET_FIELD = "class";
     private static final String OUT_NORMCONTINUOUS_FIELD = "out_normcontinuous_field";
+    private static final String PREDICTED_CLUSTER_NAME_FIELD = "predicted_cluster_name";
+    private static final String PREDICTED_CLUSTER_INDEX_FIELD = "predicted_cluster_index";
+    private static final String PREDICTED_CLUSTER_AFFINITY_FIELD = "predicted_cluster_affinity";
 
     protected static PMMLRuntime pmmlRuntime;
 
@@ -23,14 +26,22 @@ public abstract class AbstractSingleIrisKMeansClusteringTest extends AbstractPMM
     private final double petalWidth;
     private final String irisClass;
     private final double outNormcontinuousField;
+    private final String predictedDisplayValue;
+    private final int predictedEntityId;
+    private final double predictedAffinity;
 
-    public AbstractSingleIrisKMeansClusteringTest(double sepalLength, double sepalWidth, double petalLength, double petalWidth, String irisClass, double outNormcontinuousField) {
+    public AbstractSingleIrisKMeansClusteringTest(
+            double sepalLength, double sepalWidth, double petalLength, double petalWidth, String irisClass,
+            double outNormcontinuousField, String predictedDisplayValue, int predictedEntityId, double predictedAffinity) {
         this.sepalLength = sepalLength;
         this.sepalWidth = sepalWidth;
         this.petalLength = petalLength;
         this.petalWidth = petalWidth;
         this.irisClass = irisClass;
         this.outNormcontinuousField = outNormcontinuousField;
+        this.predictedDisplayValue = predictedDisplayValue;
+        this.predictedEntityId = predictedEntityId;
+        this.predictedAffinity = predictedAffinity;
     }
 
     @Test
@@ -45,7 +56,17 @@ public abstract class AbstractSingleIrisKMeansClusteringTest extends AbstractPMM
 
         Assertions.assertThat(pmml4Result.getResultVariables().get(TARGET_FIELD)).isNotNull();
         Assertions.assertThat(pmml4Result.getResultVariables().get(TARGET_FIELD)).isEqualTo(irisClass);
+
         Assertions.assertThat(pmml4Result.getResultVariables().get(OUT_NORMCONTINUOUS_FIELD)).isNotNull();
         Assertions.assertThat(pmml4Result.getResultVariables().get(OUT_NORMCONTINUOUS_FIELD)).isEqualTo(outNormcontinuousField);
+
+        Assertions.assertThat(pmml4Result.getResultVariables().get(PREDICTED_CLUSTER_NAME_FIELD)).isNotNull();
+        Assertions.assertThat(pmml4Result.getResultVariables().get(PREDICTED_CLUSTER_NAME_FIELD)).isEqualTo(predictedDisplayValue);
+
+        Assertions.assertThat(pmml4Result.getResultVariables().get(PREDICTED_CLUSTER_INDEX_FIELD)).isNotNull();
+        Assertions.assertThat(pmml4Result.getResultVariables().get(PREDICTED_CLUSTER_INDEX_FIELD)).isEqualTo(predictedEntityId);
+
+        Assertions.assertThat(pmml4Result.getResultVariables().get(PREDICTED_CLUSTER_AFFINITY_FIELD)).isNotNull();
+        Assertions.assertThat(pmml4Result.getResultVariables().get(PREDICTED_CLUSTER_AFFINITY_FIELD)).isEqualTo(predictedAffinity);
     }
 }
