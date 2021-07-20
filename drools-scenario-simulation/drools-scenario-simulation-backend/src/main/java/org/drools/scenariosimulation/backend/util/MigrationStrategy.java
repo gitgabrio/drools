@@ -16,8 +16,9 @@
 
 package org.drools.scenariosimulation.backend.util;
 
+import com.google.gwt.xml.client.Document;
+import org.drools.scenariosimulation.api.utils.GWTParserUtil;
 import org.drools.scenariosimulation.backend.interfaces.ThrowingConsumer;
-import org.w3c.dom.Document;
 
 /**
  * Interface to define the migration strategy for scesim files
@@ -89,6 +90,6 @@ public interface MigrationStrategy {
     }
 
     default void updateVersion(Document document, String newVersion) {
-        DOMParserUtil.setAttributeValue(document, "ScenarioSimulationModel", "version", newVersion);
+        GWTParserUtil.setAttributeValue(document, "ScenarioSimulationModel", "version", newVersion);
     }
 }

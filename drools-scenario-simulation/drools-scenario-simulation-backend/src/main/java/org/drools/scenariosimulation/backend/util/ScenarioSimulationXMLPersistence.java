@@ -19,6 +19,7 @@ package org.drools.scenariosimulation.backend.util;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.google.gwt.xml.client.Document;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.DomDriver;
 import com.thoughtworks.xstream.security.WildcardTypePermission;
@@ -35,10 +36,10 @@ import org.drools.scenariosimulation.api.model.ScenarioSimulationModel;
 import org.drools.scenariosimulation.api.model.ScesimModelDescriptor;
 import org.drools.scenariosimulation.api.model.Settings;
 import org.drools.scenariosimulation.api.model.Simulation;
+import org.drools.scenariosimulation.api.utils.GWTParserUtil;
 import org.drools.scenariosimulation.backend.interfaces.ThrowingConsumer;
 import org.kie.soup.project.datamodel.imports.Import;
 import org.kie.soup.xstream.XStreamUtils;
-import org.w3c.dom.Document;
 
 import static org.drools.scenariosimulation.api.utils.ConstantsHolder.BACKGROUND_NODE;
 import static org.drools.scenariosimulation.api.utils.ConstantsHolder.SCESIM_MODEL_DESCRIPTOR_NODE;
@@ -97,13 +98,13 @@ public class ScenarioSimulationXMLPersistence {
     }
 
     public static String cleanUpUnusedNodes(String input) throws Exception {
-        String toReturn = DOMParserUtil.cleanupNodes(input, "Scenario", SIMULATION_DESCRIPTOR_NODE);
+        String toReturn = GWTParserUtil.cleanupNodes(input, "Scenario", SIMULATION_DESCRIPTOR_NODE);
         for (String setting : SETTINGS) {
-            toReturn = DOMParserUtil.cleanupNodes(toReturn, SIMULATION_DESCRIPTOR_NODE, setting);
+            toReturn = GWTParserUtil.cleanupNodes(toReturn, SIMULATION_DESCRIPTOR_NODE, setting);
         }
-        toReturn = DOMParserUtil.replaceNodeName(DOMParserUtil.getDocument(toReturn), SIMULATION_NODE, "scenarios", "scesimData");
-        toReturn = DOMParserUtil.replaceNodeName(DOMParserUtil.getDocument(toReturn), SIMULATION_NODE, SIMULATION_DESCRIPTOR_NODE, SCESIM_MODEL_DESCRIPTOR_NODE);
-        toReturn = DOMParserUtil.replaceNodeName(DOMParserUtil.getDocument(toReturn), BACKGROUND_NODE, SIMULATION_DESCRIPTOR_NODE, SCESIM_MODEL_DESCRIPTOR_NODE);
+        toReturn = GWTParserUtil.replaceNodeName(GWTParserUtil.getDocument(toReturn), SIMULATION_NODE, "scenarios", "scesimData");
+        toReturn = GWTParserUtil.replaceNodeName(GWTParserUtil.getDocument(toReturn), SIMULATION_NODE, SIMULATION_DESCRIPTOR_NODE, SCESIM_MODEL_DESCRIPTOR_NODE);
+        toReturn = GWTParserUtil.replaceNodeName(GWTParserUtil.getDocument(toReturn), BACKGROUND_NODE, SIMULATION_DESCRIPTOR_NODE, SCESIM_MODEL_DESCRIPTOR_NODE);
         return toReturn;
     }
 
@@ -175,9 +176,9 @@ public class ScenarioSimulationXMLPersistence {
                                                        .append(CURRENT_VERSION).toString());
         }
         migrator = migrator.andThen(getMigrationStrategy().end());
-        Document document = DOMParserUtil.getDocument(rawXml);
+        Document document = GWTParserUtil.getDocument(rawXml);
         migrator.accept(document);
-        return DOMParserUtil.getString(document);
+        return GWTParserUtil.getString(document);
     }
 
     public String extractVersion(String rawXml) {
