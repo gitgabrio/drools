@@ -116,6 +116,8 @@ public class EfestoCompilationContextImpl<T extends EfestoListener> implements E
                 if (indexFile.exists()) {
                     GeneratedResources existingGeneratedResources = getGeneratedResourcesObject(indexFile);
                     generatedResources.addAll(existingGeneratedResources);
+//                } else {
+//                    indexFile.createNewFile();
                 }
                 writeGeneratedResourcesObject(generatedResources, indexFile);
             } catch (Exception e) {

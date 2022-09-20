@@ -37,11 +37,6 @@ public class KieCompilerServicePMMLInputStream implements KieCompilerService<Efe
 
     @Override
     public List<EfestoCompilationOutput> processResource(EfestoResource toProcess, EfestoCompilationContext context) {
-        if (!canManageResource(toProcess)) {
-            throw new KieCompilerServiceException(String.format("%s can not process %s",
-                                                                this.getClass().getName(),
-                                                                toProcess.getClass().getName()));
-        }
         return getEfestoCompilationOutputPMML((EfestoInputStreamResource) toProcess, context);
     }
 

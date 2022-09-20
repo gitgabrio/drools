@@ -22,8 +22,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.kie.efesto.common.utils.PackageClassNameUtils;
+import org.kie.efesto.compilationmanager.api.model.EfestoCompilationContext;
 import org.kie.efesto.compilationmanager.api.model.EfestoCompilationOutput;
 import org.kie.efesto.compilationmanager.api.model.EfestoFileResource;
+import org.kie.efesto.compilationmanager.api.model.EfestoInputStreamResource;
 import org.kie.pmml.api.compilation.PMMLCompilationContext;
 import org.kie.pmml.api.exceptions.ExternalException;
 import org.kie.pmml.api.exceptions.KiePMMLException;
@@ -36,6 +38,7 @@ import org.slf4j.LoggerFactory;
 import static org.kie.efesto.common.api.utils.FileNameUtils.getFileName;
 import static org.kie.pmml.commons.Constants.PMML_STRING;
 import static org.kie.pmml.compiler.service.PMMLCompilerService.getEfestoFinalOutputPMML;
+import static org.kie.pmml.compiler.service.PMMLCompilerServicePMMLInputStream.getPMMLCompilationContext;
 
 /**
  * Class meant to <b>compile</b> resources
@@ -48,6 +51,13 @@ public class PMMLCompilerServicePMMLFile {
 
     private PMMLCompilerServicePMMLFile() {
         // Avoid instantiation
+    }
+
+
+    public static List<EfestoCompilationOutput> getEfestoCompilationOutputPMML(EfestoFileResource resource,
+                                                                               EfestoCompilationContext efestoCompilationContext) {
+        PMMLCompilationContext pmmlContext = getPMMLCompilationContext(resource.getContent().getName(), efestoCompilationContext);
+        return getEfestoCompilationOutputPMML(resource, pmmlContext);
     }
 
     public static List<EfestoCompilationOutput> getEfestoCompilationOutputPMML(EfestoFileResource resource,

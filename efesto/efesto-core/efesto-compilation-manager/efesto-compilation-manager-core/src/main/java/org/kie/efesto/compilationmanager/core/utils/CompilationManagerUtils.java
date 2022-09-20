@@ -60,11 +60,11 @@ public class CompilationManagerUtils {
     public static void processResourceWithContext(EfestoResource toProcess, EfestoCompilationContext context) {
         Optional<KieCompilerService> retrieved = getKieCompilerService(toProcess, false);
         if (retrieved.isEmpty()) {
-            logger.warn("Cannot find KieCompilerService for {}, trying in context classloader", toProcess.getClass());
+            logger.warn("Cannot find KieCompilerService for {}:{}, trying in context classloader", toProcess.getClass(), toProcess.getContent());
             retrieved = getKieCompilerServiceFromEfestoCompilationContext(toProcess, context);
         }
         if (retrieved.isEmpty()) {
-            logger.warn("Cannot find KieCompilerService for {}", toProcess.getClass());
+            logger.warn("Cannot find KieCompilerService for {}:{}", toProcess.getClass(), toProcess.getContent());
             return;
         }
         processResources(retrieved.get(), toProcess, context);

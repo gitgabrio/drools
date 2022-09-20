@@ -41,7 +41,8 @@ public class DrlRuntimeHelper {
     }
 
     public static boolean canManage(EfestoInput toEvaluate, EfestoRuntimeContext context) {
-        return (toEvaluate instanceof AbstractEfestoInput) && (toEvaluate.getInputData() instanceof EfestoMapInputDTO) &&
+        return (toEvaluate.getModelLocalUriId().model().equals("drl")) &&
+                (toEvaluate instanceof AbstractEfestoInput) && (toEvaluate.getInputData() instanceof EfestoMapInputDTO) &&
                 getGeneratedExecutableResource(toEvaluate.getModelLocalUriId(), context.getGeneratedResourcesMap()).isPresent();
     }
 

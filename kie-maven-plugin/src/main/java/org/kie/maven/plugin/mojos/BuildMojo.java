@@ -43,9 +43,9 @@ public class BuildMojo extends AbstractKieMojo {
 
     public void execute() throws MojoExecutionException, MojoFailureException {
         KieMavenPluginContext kieMavenPluginContext = getKieMavenPluginContext(this);
-        executeGenerateModel(kieMavenPluginContext);
+//        executeGenerateModel(kieMavenPluginContext);
         executeGenerateDMNModel(kieMavenPluginContext);
-        executeGeneratePMMLModel(kieMavenPluginContext);
+//        executeGeneratePMMLModel(kieMavenPluginContext);
         executeGenerateANC(kieMavenPluginContext);
         executeBuildDRL(kieMavenPluginContext);
     }

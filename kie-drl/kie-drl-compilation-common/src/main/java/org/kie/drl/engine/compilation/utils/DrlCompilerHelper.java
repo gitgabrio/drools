@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,6 +47,7 @@ import org.kie.drl.engine.compilation.model.DrlPackageDescrSetResource;
 import org.kie.drl.engine.compilation.model.ExecutableModelClassesContainer;
 import org.kie.efesto.common.api.identifiers.ReflectiveAppRoot;
 import org.kie.efesto.compilationmanager.api.exceptions.KieCompilerServiceException;
+import org.kie.efesto.compilationmanager.api.model.EfestoFileResource;
 import org.kie.efesto.compilationmanager.api.model.EfestoSetResource;
 import org.kie.internal.builder.KnowledgeBuilderResult;
 import org.slf4j.Logger;
@@ -61,6 +63,13 @@ public class DrlCompilerHelper {
     public static ExecutableModelClassesContainer dTableToDrl(DecisionTableFileSetResource resources, DrlCompilationContext context) {
         // TODO {mfusco}
         throw new KieCompilerServiceException("Not implemented, yet");
+    }
+
+    public static DrlPackageDescrSetResource drlToPackageDescrs(EfestoFileResource resources, DrlCompilationContext context) {
+        File drlFile = resources.getContent();
+        String basePath = drlFile.getName().substring(0, drlFile.getName().indexOf('.')-1);
+        DrlFileSetResource drlFileSetResource = new DrlFileSetResource(Collections.singleton(resources.getContent()), basePath);
+        return drlToPackageDescrs(drlFileSetResource, context);
     }
 
     public static DrlPackageDescrSetResource drlToPackageDescrs(DrlFileSetResource resources, DrlCompilationContext context) {

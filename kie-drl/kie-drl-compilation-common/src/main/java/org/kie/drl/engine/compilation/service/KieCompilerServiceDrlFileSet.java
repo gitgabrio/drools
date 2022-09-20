@@ -13,37 +13,40 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.kie.pmml.compiler.service;
+package org.kie.drl.engine.compilation.service;
 
+import java.util.Collections;
 import java.util.List;
 
-import org.kie.efesto.compilationmanager.api.exceptions.KieCompilerServiceException;
+import org.kie.drl.engine.compilation.model.DrlCompilationContext;
+import org.kie.drl.engine.compilation.model.DrlFileSetResource;
 import org.kie.efesto.compilationmanager.api.model.EfestoCompilationContext;
 import org.kie.efesto.compilationmanager.api.model.EfestoCompilationContextImpl;
 import org.kie.efesto.compilationmanager.api.model.EfestoCompilationOutput;
 import org.kie.efesto.compilationmanager.api.model.EfestoFileResource;
 import org.kie.efesto.compilationmanager.api.model.EfestoResource;
 import org.kie.efesto.compilationmanager.api.service.KieCompilerService;
-import org.kie.pmml.api.compilation.PMMLCompilationContext;
-import org.kie.pmml.compiler.PMMLCompilationContextImpl;
 
-import static org.kie.pmml.commons.Constants.PMML_STRING;
-import static org.kie.pmml.compiler.service.PMMLCompilerServicePMMLFile.getEfestoCompilationOutputPMML;
+import static org.kie.drl.engine.compilation.utils.DrlCompilerHelper.drlToPackageDescrs;
 
-public class KieCompilerServicePMMLFile implements KieCompilerService<EfestoCompilationOutput, EfestoCompilationContext> {
+public class KieCompilerServiceDrlFileSet implements KieCompilerService<EfestoCompilationOutput,
+        EfestoCompilationContext> {
 
     @Override
     public boolean canManageResource(EfestoResource toProcess) {
-        return toProcess instanceof EfestoFileResource && ((EfestoFileResource) toProcess).getModelType().equalsIgnoreCase(PMML_STRING);
+        return toProcess instanceof DrlFileSetResource;
     }
 
     @Override
     public List<EfestoCompilationOutput> processResource(EfestoResource toProcess, EfestoCompilationContext context) {
-        return getEfestoCompilationOutputPMML((EfestoFileResource) toProcess, context);
+        if (!(context instanceof DrlCompilationContext)) {
+            context = DrlCompilationContext.buildWithEfestoCompilationContext((EfestoCompilationContextImpl) context);
+        }
+        return Collections.singletonList(drlToPackageDescrs((DrlFileSetResource) toProcess, (DrlCompilationContext) context));
     }
 
     @Override
     public String getModelType() {
-        return "pmml";
+        return "drl";
     }
 }

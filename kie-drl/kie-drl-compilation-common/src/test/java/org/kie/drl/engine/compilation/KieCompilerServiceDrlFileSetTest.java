@@ -28,28 +28,28 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.kie.drl.engine.compilation.model.DrlCompilationContext;
 import org.kie.drl.engine.compilation.model.DrlFileSetResource;
-import org.kie.drl.engine.compilation.service.KieCompilerServiceDrl;
+import org.kie.drl.engine.compilation.service.KieCompilerServiceDrlFileSet;
 import org.kie.efesto.compilationmanager.api.model.EfestoCompilationOutput;
 import org.kie.efesto.compilationmanager.api.model.EfestoResource;
 import org.kie.efesto.compilationmanager.api.service.KieCompilerService;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class KieCompilerServiceDrlTest {
+class KieCompilerServiceDrlFileSetTest {
 
     private static KieCompilerService kieCompilerService;
     private static DrlCompilationContext context;
 
     @BeforeAll
     static void setUp() {
-        kieCompilerService = new KieCompilerServiceDrl();
+        kieCompilerService = new KieCompilerServiceDrlFileSet();
         context = DrlCompilationContext.buildWithParentClassLoader(Thread.currentThread().getContextClassLoader());
     }
 
 
     @Test
     void canManageResource() throws IOException {
-        Set<File> files = Files.list(Paths.get("src/test/resources"))
+        Set<File> files = Files.walk(Paths.get("src/test/resources"))
                 .map(Path::toFile)
                 .filter(File::isFile)
                 .collect(Collectors.toSet());

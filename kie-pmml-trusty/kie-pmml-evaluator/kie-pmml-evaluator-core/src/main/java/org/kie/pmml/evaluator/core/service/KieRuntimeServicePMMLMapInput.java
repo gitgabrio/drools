@@ -1,0 +1,67 @@
+/*
+ * Copyright 2022 Red Hat, Inc. and/or its affiliates.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.kie.pmml.evaluator.core.service;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+
+import org.kie.api.pmml.PMML4Result;
+import org.kie.efesto.runtimemanager.api.exceptions.KieRuntimeServiceException;
+import org.kie.efesto.runtimemanager.api.model.AbstractEfestoInput;
+import org.kie.efesto.runtimemanager.api.model.EfestoInput;
+import org.kie.efesto.runtimemanager.api.model.EfestoMapInputDTO;
+import org.kie.efesto.runtimemanager.api.model.EfestoRuntimeContext;
+import org.kie.efesto.runtimemanager.api.service.KieRuntimeService;
+import org.kie.pmml.api.runtime.PMMLRuntimeContext;
+import org.kie.pmml.evaluator.core.model.EfestoOutputPMML;
+import org.kie.pmml.evaluator.core.model.EfestoOutputPMMLMap;
+
+import static org.kie.pmml.evaluator.core.utils.PMMLRuntimeHelper.canManageEfestoInputPMMLMap;
+import static org.kie.pmml.evaluator.core.utils.PMMLRuntimeHelper.executeEfestoInput;
+
+public class KieRuntimeServicePMMLMapInput implements KieRuntimeService<EfestoMapInputDTO, Map<String, Object>,
+        AbstractEfestoInput<EfestoMapInputDTO>, EfestoOutputPMMLMap, EfestoRuntimeContext> {
+
+    @Override
+    public boolean canManageInput(EfestoInput toEvaluate, EfestoRuntimeContext context) {
+        return canManageEfestoInputPMMLMap(toEvaluate, context);
+    }
+
+    @Override
+    public Optional<EfestoOutputPMMLMap> evaluateInput(AbstractEfestoInput<EfestoMapInputDTO> toEvaluate,
+                                                       EfestoRuntimeContext context) {
+        if (context instanceof PMMLRuntimeContext) {
+            throw new KieRuntimeServiceException("Unexpected PMMLRuntimeContext received");
+        }
+        return executeEfestoInput(toEvaluate, context).map(this::getEfestoOutputPMMLMap);
+    }
+
+    @Override
+    public String getModelType() {
+        return "pmml";
+    }
+
+    private EfestoOutputPMMLMap getEfestoOutputPMMLMap(EfestoOutputPMML efestoOutputPMML) {
+        PMML4Result result = efestoOutputPMML.getOutputData();
+        Map<String, Object> outputData = new HashMap<>();
+        outputData.put("resultObjectName", result.getResultObjectName());
+        outputData.put("resultCode", result.getResultCode());
+        outputData.put("correlationId", result.getCorrelationId());
+        outputData.putAll(result.getResultVariables());
+        return new EfestoOutputPMMLMap(efestoOutputPMML.getModelLocalUriId(), outputData);
+    }
+}

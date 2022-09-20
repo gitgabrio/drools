@@ -1,3 +1,4 @@
 # SPI implementations
-org.kie.drl.engine.compilation.service.KieCompilerServiceDrl
+org.kie.drl.engine.compilation.service.KieCompilerServiceDrlFile
+org.kie.drl.engine.compilation.service.KieCompilerServiceDrlFileSet
 org.kie.drl.engine.compilation.service.KieCompilerServicePackDesc

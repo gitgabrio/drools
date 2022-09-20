@@ -104,7 +104,7 @@ public class TestingHelper {
         return pmmlRequestDataBuilder.build();
     }
 
-    static Map<String, Object> getInputData() {
+    public static Map<String, Object> getInputData() {
         final Map<String, Object> toReturn = new HashMap<>();
         toReturn.put("fld1", 23.2);
         toReturn.put("fld2", 11.34);
