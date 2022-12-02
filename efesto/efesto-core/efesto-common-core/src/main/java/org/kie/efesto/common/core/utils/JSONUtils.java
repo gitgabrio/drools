@@ -21,11 +21,14 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.kie.efesto.common.api.identifiers.ModelLocalUriId;
+import org.kie.efesto.common.api.identifiers.NamedLocalUriId;
 import org.kie.efesto.common.api.io.IndexFile;
 import org.kie.efesto.common.api.model.GeneratedResource;
 import org.kie.efesto.common.api.model.GeneratedResources;
 import org.kie.efesto.common.core.serialization.ModelLocalUriIdDeSerializer;
 import org.kie.efesto.common.core.serialization.ModelLocalUriIdSerializer;
+import org.kie.efesto.common.core.serialization.NamedLocalUriIdDeSerializer;
+import org.kie.efesto.common.core.serialization.NamedLocalUriIdSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,6 +40,8 @@ public class JSONUtils {
         SimpleModule toRegister = new SimpleModule();
         toRegister.addDeserializer(ModelLocalUriId.class, new ModelLocalUriIdDeSerializer());
         toRegister.addSerializer(ModelLocalUriId.class, new ModelLocalUriIdSerializer());
+        toRegister.addDeserializer(NamedLocalUriId.class, new NamedLocalUriIdDeSerializer());
+        toRegister.addSerializer(NamedLocalUriId.class, new NamedLocalUriIdSerializer());
         objectMapper.registerModule(toRegister);
     }
     private static final Logger logger = LoggerFactory.getLogger(JSONUtils.class.getName());

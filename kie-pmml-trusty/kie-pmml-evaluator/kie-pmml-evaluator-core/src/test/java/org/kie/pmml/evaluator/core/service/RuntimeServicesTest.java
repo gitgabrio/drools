@@ -80,7 +80,7 @@ public class RuntimeServicesTest {
     void canManageInputPMMLMapInput() {
         modelLocalUriId = getModelLocalUriIdFromPmmlIdFactory(FILE_NAME, MODEL_NAME);
         BaseEfestoInput<Map<String, Object>> inputPMML = new BaseEfestoInput<>(modelLocalUriId,
-                                                                               getInputData(MODEL_NAME, FILE_NAME));
+                                                                               getInputData());
         Collection<EfestoOutput> retrieved = runtimeManager.evaluateInput(getEfestoContext(memoryCompilerClassLoader)
                 , inputPMML);
         commonEvaluateEfestoOutput(retrieved, modelLocalUriId);

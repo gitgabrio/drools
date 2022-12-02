@@ -19,7 +19,7 @@ import org.junit.jupiter.api.Test;
 import org.kie.efesto.common.api.identifiers.LocalId;
 import org.kie.efesto.common.api.identifiers.LocalUri;
 import org.kie.efesto.common.api.identifiers.LocalUriId;
-import org.kie.efesto.common.api.identifiers.ModelLocalUriId;
+import org.kie.efesto.common.api.identifiers.NamedLocalUriId;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.kie.efesto.common.api.identifiers.LocalUri.SLASH;
@@ -27,41 +27,41 @@ import static org.kie.efesto.common.api.identifiers.LocalUri.SLASH;
 class LocalComponentIdPmmlTest {
 
     private static final String fileName = "fileName";
-    private static final String name = "name";
+    private static final String modelName = "modelName";
 
     @Test
     void equals() {
-        LocalComponentIdPmml original = new LocalComponentIdPmml(fileName, name);
-        LocalUriId compare = new LocalComponentIdPmml(fileName, name);
+        LocalComponentIdPmml original = new LocalComponentIdPmml(fileName, modelName);
+        LocalUriId compare = new LocalComponentIdPmml(fileName, modelName);
         assertThat(original.equals(compare)).isTrue();
         String path = original.fullPath();
         LocalUri parsed = LocalUri.parse(path);
-        compare = new ModelLocalUriId(parsed);
+        compare = new NamedLocalUriId(parsed, fileName, modelName);
         assertThat(original.equals(compare)).isTrue();
     }
 
     @Test
     void prefix() {
-        String retrieved = new LocalComponentIdPmml(fileName, name).asLocalUri().toUri().getPath();
+        String retrieved = new LocalComponentIdPmml(fileName, modelName).asLocalUri().toUri().getPath();
         String expected = SLASH + LocalComponentIdPmml.PREFIX + SLASH;
         assertThat(retrieved).startsWith(expected);
     }
 
     @Test
     void getFileName() {
-        LocalComponentIdPmml retrieved = new LocalComponentIdPmml(fileName, name);
-        assertThat(retrieved.getFileName()).isEqualTo(fileName);
+        LocalComponentIdPmml retrieved = new LocalComponentIdPmml(fileName, modelName);
+        assertThat(retrieved.fileName()).isEqualTo(fileName);
     }
 
     @Test
     void name() {
-        LocalComponentIdPmml retrieved = new LocalComponentIdPmml(fileName, name);
-        assertThat(retrieved.name()).isEqualTo(name);
+        LocalComponentIdPmml retrieved = new LocalComponentIdPmml(fileName, modelName);
+        assertThat(retrieved.modelName()).isEqualTo(modelName);
     }
 
     @Test
     void toLocalId() {
-        LocalComponentIdPmml LocalComponentIdPmml = new LocalComponentIdPmml(fileName, name);
+        LocalComponentIdPmml LocalComponentIdPmml = new LocalComponentIdPmml(fileName, modelName);
         LocalId retrieved = LocalComponentIdPmml.toLocalId();
         assertThat(retrieved).isEqualTo(LocalComponentIdPmml);
     }

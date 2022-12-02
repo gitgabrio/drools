@@ -16,8 +16,9 @@
 package org.kie.pmml.api.identifiers;
 
 import org.kie.efesto.common.api.identifiers.LocalUri;
+import org.kie.efesto.common.api.identifiers.NamedLocalUriId;
 
-public class LocalComponentIdRedirectPmml extends AbstractModelLocalUriIdPmml {
+public class LocalComponentIdRedirectPmml extends NamedLocalUriId {
 
     private static final long serialVersionUID = -4610916178245973385L;
 

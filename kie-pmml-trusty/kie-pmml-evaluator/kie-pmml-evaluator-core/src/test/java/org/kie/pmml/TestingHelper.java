@@ -124,11 +124,4 @@ public class TestingHelper {
         return toReturn;
     }
 
-    public static Map<String, Object> getInputData(String modelName, String fileName) {
-        final Map<String, Object> toReturn = getInputData();
-        toReturn.put(PMML_FILE_NAME, fileName);
-        toReturn.put(PMML_MODEL_NAME, modelName);
-        return toReturn;
-    }
-
 }

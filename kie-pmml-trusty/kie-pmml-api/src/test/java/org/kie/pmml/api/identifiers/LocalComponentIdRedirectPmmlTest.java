@@ -19,7 +19,7 @@ import org.junit.jupiter.api.Test;
 import org.kie.efesto.common.api.identifiers.LocalId;
 import org.kie.efesto.common.api.identifiers.LocalUri;
 import org.kie.efesto.common.api.identifiers.LocalUriId;
-import org.kie.efesto.common.api.identifiers.ModelLocalUriId;
+import org.kie.efesto.common.api.identifiers.NamedLocalUriId;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.kie.efesto.common.api.identifiers.LocalUri.SLASH;
@@ -28,49 +28,49 @@ class LocalComponentIdRedirectPmmlTest {
 
     private static final String redirectModel = "redirectModel";
     private static final String fileName = "fileName";
-    private static final String name = "name";
+    private static final String modelName = "modelName";
 
     @Test
     void equals() {
-        LocalComponentIdRedirectPmml original = new LocalComponentIdRedirectPmml(redirectModel, fileName, name);
-        LocalUriId compare = new LocalComponentIdRedirectPmml(redirectModel, fileName, name);
+        LocalComponentIdRedirectPmml original = new LocalComponentIdRedirectPmml(redirectModel, fileName, modelName);
+        LocalUriId compare = new LocalComponentIdRedirectPmml(redirectModel, fileName, modelName);
         assertThat(original.equals(compare)).isTrue();
         String path = original.fullPath();
         LocalUri parsed = LocalUri.parse(path);
-        compare = new ModelLocalUriId(parsed);
+        compare = new NamedLocalUriId(parsed, fileName, modelName);
         assertThat(original.equals(compare)).isTrue();
     }
 
     @Test
     void prefix() {
         String retrieved =
-                new LocalComponentIdRedirectPmml(redirectModel, fileName, name).asLocalUri().toUri().getPath();
+                new LocalComponentIdRedirectPmml(redirectModel, fileName, modelName).asLocalUri().toUri().getPath();
         String expected = SLASH + redirectModel + SLASH;
         assertThat(retrieved).startsWith(expected);
     }
 
     @Test
     void getRedirectModel() {
-        LocalComponentIdRedirectPmml retrieved = new LocalComponentIdRedirectPmml(redirectModel, fileName, name);
+        LocalComponentIdRedirectPmml retrieved = new LocalComponentIdRedirectPmml(redirectModel, fileName, modelName);
         assertThat(retrieved.getRedirectModel()).isEqualTo(redirectModel);
     }
 
     @Test
     void getFileName() {
-        LocalComponentIdRedirectPmml retrieved = new LocalComponentIdRedirectPmml(redirectModel, fileName, name);
-        assertThat(retrieved.getFileName()).isEqualTo(fileName);
+        LocalComponentIdRedirectPmml retrieved = new LocalComponentIdRedirectPmml(redirectModel, fileName, modelName);
+        assertThat(retrieved.fileName()).isEqualTo(fileName);
     }
 
     @Test
     void name() {
-        LocalComponentIdRedirectPmml retrieved = new LocalComponentIdRedirectPmml(redirectModel, fileName, name);
-        assertThat(retrieved.name()).isEqualTo(name);
+        LocalComponentIdRedirectPmml retrieved = new LocalComponentIdRedirectPmml(redirectModel, fileName, modelName);
+        assertThat(retrieved.modelName()).isEqualTo(modelName);
     }
 
     @Test
     void toLocalId() {
         LocalComponentIdRedirectPmml LocalComponentIdRedirectPmml = new LocalComponentIdRedirectPmml(redirectModel,
-                                                                                                     fileName, name);
+                                                                                                     fileName, modelName);
         LocalId retrieved = LocalComponentIdRedirectPmml.toLocalId();
         assertThat(retrieved).isEqualTo(LocalComponentIdRedirectPmml);
     }

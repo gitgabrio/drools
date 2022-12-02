@@ -20,31 +20,32 @@ import java.io.IOException;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
-import org.kie.efesto.common.api.identifiers.ModelLocalUriId;
+import org.kie.efesto.common.api.identifiers.NamedLocalUriId;
 
 import static org.kie.efesto.common.core.serialization.SerializationUtils.decodedPath;
 
-public class ModelLocalUriIdSerializer extends StdSerializer<ModelLocalUriId> {
+public class NamedLocalUriIdSerializer extends StdSerializer<NamedLocalUriId> {
 
     private static final long serialVersionUID = 5014755163979962781L;
 
-    public ModelLocalUriIdSerializer() {
+    public NamedLocalUriIdSerializer() {
         this(null);
     }
 
-    public ModelLocalUriIdSerializer(Class<ModelLocalUriId> t) {
+    public NamedLocalUriIdSerializer(Class<NamedLocalUriId> t) {
         super(t);
     }
 
     @Override
-    public void serialize(ModelLocalUriId value, JsonGenerator gen, SerializerProvider provider) throws IOException {
+    public void serialize(NamedLocalUriId value, JsonGenerator gen, SerializerProvider provider) throws IOException {
         gen.writeStartObject();
         gen.writeStringField("model", value.model());
         gen.writeStringField("basePath", decodedPath(value.basePath()));
         gen.writeStringField("fullPath", decodedPath(value.fullPath()));
+        gen.writeStringField("fileName", value.fileName());
+        gen.writeStringField("modelName", value.modelName());
         gen.writeEndObject();
     }
-
 
 
 }

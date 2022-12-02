@@ -25,41 +25,46 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import org.junit.jupiter.api.Test;
 import org.kie.efesto.common.api.identifiers.LocalUri;
-import org.kie.efesto.common.api.identifiers.ModelLocalUriId;
+import org.kie.efesto.common.api.identifiers.NamedLocalUriId;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class ModelLocalUriIdSerializerTest {
+class NamedLocalUriIdSerializerTest {
 
     @Test
     void serializeDecodedPath() throws IOException {
         String path = "/example/some-id/instances/some-instance-id";
+        String fileName = "fileName";
+        String modelName = "modelName";
         LocalUri parsed = LocalUri.parse(path);
-        ModelLocalUriId modelLocalUriId = new ModelLocalUriId(parsed);
+        NamedLocalUriId namedLocalUriId = new NamedLocalUriId(parsed, fileName, modelName);
         Writer jsonWriter = new StringWriter();
         JsonGenerator jsonGenerator = new JsonFactory().createGenerator(jsonWriter);
         SerializerProvider serializerProvider = new ObjectMapper().getSerializerProvider();
-        new ModelLocalUriIdSerializer().serialize(modelLocalUriId, jsonGenerator, serializerProvider);
+        new NamedLocalUriIdSerializer().serialize(namedLocalUriId, jsonGenerator, serializerProvider);
         jsonGenerator.flush();
         String expected = "{\"model\":\"example\",\"basePath\":\"/some-id/instances/some-instance-id\"," +
-                "\"fullPath\":\"/example/some-id/instances/some-instance-id\"}";
-        assertThat(jsonWriter.toString()).isEqualTo(expected);
+                "\"fullPath\":\"/example/some-id/instances/some-instance-id\",\"fileName\":\"fileName\",\"modelName\":\"modelName\"}";
+        assertThat(jsonWriter).hasToString(expected);
     }
 
     @Test
     void serializeEncodedPath() throws IOException {
         String path = "/To+decode+first+part/To+decode+second+part/To+decode+third+part/";
         LocalUri parsed = LocalUri.parse(path);
-        ModelLocalUriId modelLocalUriId = new ModelLocalUriId(parsed);
+        String fileName = "fileName";
+        String modelName = "modelName";
+        NamedLocalUriId namedLocalUriId = new NamedLocalUriId(parsed, fileName, modelName);
         Writer jsonWriter = new StringWriter();
         JsonGenerator jsonGenerator = new JsonFactory().createGenerator(jsonWriter);
         SerializerProvider serializerProvider = new ObjectMapper().getSerializerProvider();
-        new ModelLocalUriIdSerializer().serialize(modelLocalUriId, jsonGenerator, serializerProvider);
+        new NamedLocalUriIdSerializer().serialize(namedLocalUriId, jsonGenerator, serializerProvider);
         jsonGenerator.flush();
         String expected = "{\"model\":\"To%2Bdecode%2Bfirst%2Bpart\"," +
                 "\"basePath\":\"/To+decode+second+part/To+decode+third+part\"," +
-                "\"fullPath\":\"/To+decode+first+part/To+decode+second+part/To+decode+third+part\"}";
-        assertThat(jsonWriter.toString()).isEqualTo(expected);
+                "\"fullPath\":\"/To+decode+first+part/To+decode+second+part/To+decode+third+part\",\"fileName\":\"fileName\",\"modelName" +
+                "\":\"modelName\"}";
+        assertThat(jsonWriter).hasToString(expected);
     }
 
 }

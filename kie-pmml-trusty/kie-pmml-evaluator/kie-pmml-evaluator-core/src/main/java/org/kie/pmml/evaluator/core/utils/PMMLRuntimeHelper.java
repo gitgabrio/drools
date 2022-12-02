@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 import org.kie.api.pmml.PMML4Result;
 import org.kie.api.pmml.PMMLRequestData;
 import org.kie.efesto.common.api.identifiers.ModelLocalUriId;
+import org.kie.efesto.common.api.identifiers.NamedLocalUriId;
 import org.kie.efesto.common.api.model.GeneratedExecutableResource;
 import org.kie.efesto.common.api.model.GeneratedResources;
 import org.kie.efesto.runtimemanager.api.exceptions.KieRuntimeServiceException;
@@ -127,7 +128,10 @@ public class PMMLRuntimeHelper {
         if (runtimeContext instanceof PMMLRuntimeContext) {
             pmmlContext = (PMMLRuntimeContext) runtimeContext;
         } else {
-            pmmlContext = getPMMLRuntimeContext(toEvaluate.getInputData(),
+            NamedLocalUriId namedLocalUriId = (NamedLocalUriId) toEvaluate.getModelLocalUriId();
+            pmmlContext = getPMMLRuntimeContext(namedLocalUriId.fileName(),
+                                                namedLocalUriId.modelName(),
+                                                toEvaluate.getInputData(),
                                                 runtimeContext.getGeneratedResourcesMap());
         }
         EfestoInputPMML efestoInputPMML = getEfestoInputPMML(toEvaluate.getModelLocalUriId(), pmmlContext);
@@ -197,11 +201,10 @@ public class PMMLRuntimeHelper {
         return toReturn;
     }
 
-    static PMMLRuntimeContext getPMMLRuntimeContext(Map<String, Object> inputData,
+    static PMMLRuntimeContext getPMMLRuntimeContext(String fileName,
+                                                    String modelName,
+                                                    Map<String, Object> inputData,
                                                     final Map<String, GeneratedResources> generatedResourcesMap) {
-        String fileName = (String) inputData.get(PMML_FILE_NAME);
-        String modelName = (String) inputData.get(PMML_MODEL_NAME);
-
         PMMLRequestData pmmlRequestData = new PMMLRequestData(UUID.randomUUID().toString(), modelName);
         inputData.entrySet().stream()
                 .filter(entry -> !entry.getKey().equals(PMML_FILE_NAME) && !entry.getKey().equals(PMML_MODEL_NAME))

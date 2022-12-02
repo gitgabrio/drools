@@ -123,7 +123,7 @@ class PMMLRuntimeHelperTest {
     void executeEfestoInputFromMap() {
         modelLocalUriId = getModelLocalUriIdFromPmmlIdFactory(FILE_NAME, MODEL_NAME);
         BaseEfestoInput<Map<String, Object>> inputPMML = new BaseEfestoInput<>(modelLocalUriId,
-                                                                               getInputData(MODEL_NAME, FILE_NAME));
+                                                                               getInputData());
         Optional<EfestoOutputPMML> retrieved = PMMLRuntimeHelper.executeEfestoInputFromMap(inputPMML,
                                                                                            getPMMLContext(FILE_NAME,
                                                                                                           MODEL_NAME,
@@ -190,17 +190,16 @@ class PMMLRuntimeHelperTest {
 
     @Test
     void getPMMLRuntimeContextFromMap() {
-        Map<String, Object> inputData = getInputData(MODEL_NAME, FILE_NAME);
+        Map<String, Object> inputData = getInputData();
         final Random random = new Random();
         IntStream.range(0, 3).forEach(value -> inputData.put("Variable_" + value, random.nextInt(10)));
         final Map<String, GeneratedResources> generatedResourcesMap = new HashMap<>();
         IntStream.range(0, 3).forEach(value -> generatedResourcesMap.put("GenRes_" + value, new GeneratedResources()));
-        PMMLRuntimeContext retrieved = PMMLRuntimeHelper.getPMMLRuntimeContext(inputData, generatedResourcesMap);
+        PMMLRuntimeContext retrieved = PMMLRuntimeHelper.getPMMLRuntimeContext(FILE_NAME, MODEL_NAME, inputData, generatedResourcesMap);
         assertThat(retrieved).isNotNull();
         PMMLRequestData pmmlRequestDataRetrieved = retrieved.getRequestData();
         assertThat(pmmlRequestDataRetrieved).isNotNull();
-        assertThat(pmmlRequestDataRetrieved.getMappedRequestParams()).hasSize(inputData.size() - 2); // Removing
-        // PMML_FILE_NAME and PMML_MODEL_NAME
+        assertThat(pmmlRequestDataRetrieved.getMappedRequestParams()).hasSize(inputData.size());
         assertThat(pmmlRequestDataRetrieved.getMappedRequestParams().entrySet())
                 .allMatch(entry -> inputData.containsKey(entry.getKey()) &&
                         entry.getValue().getValue().equals(inputData.get(entry.getKey())));

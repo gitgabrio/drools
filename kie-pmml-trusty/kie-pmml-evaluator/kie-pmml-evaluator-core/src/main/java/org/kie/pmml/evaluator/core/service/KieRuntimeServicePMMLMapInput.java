@@ -21,6 +21,7 @@ import java.util.Optional;
 
 import org.kie.api.pmml.PMML4Result;
 import org.kie.efesto.common.api.cache.EfestoClassKey;
+import org.kie.efesto.common.api.identifiers.NamedLocalUriId;
 import org.kie.efesto.runtimemanager.api.model.BaseEfestoInput;
 import org.kie.efesto.runtimemanager.api.model.EfestoInput;
 import org.kie.efesto.runtimemanager.api.model.EfestoRuntimeContext;
@@ -41,7 +42,7 @@ public class KieRuntimeServicePMMLMapInput implements KieRuntimeService<Map<Stri
 
     @Override
     public boolean canManageInput(EfestoInput toEvaluate, EfestoRuntimeContext context) {
-        return canManageEfestoInput(toEvaluate, context);
+        return canManageEfestoInput(toEvaluate, context) && toEvaluate.getModelLocalUriId() instanceof NamedLocalUriId;
     }
 
     @Override

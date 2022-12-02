@@ -53,7 +53,7 @@ public class SPIUtils {
         if ( logger.isTraceEnabled() ) {
             logger.trace("getKieRuntimeService {} {} {}", discoveredServices, input, context);
         }
-        return findAtMostOne(discoveredServices, service -> service.canManageInput(input, context),
+        return findAtMostOne(discoveredServices, service -> (service.getModelType().equals(input.getModelLocalUriId().model()) && service.canManageInput(input, context)),
                              (s1, s2) -> new KieRuntimeServiceException("Found more than one compiler services: " + s1 + " and " + s2));
     }
 

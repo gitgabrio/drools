@@ -66,7 +66,7 @@ class KieRuntimeServicePMMLMapInputTest {
     void evaluateCorrectInput() {
         modelLocalUriId = getModelLocalUriIdFromPmmlIdFactory(FILE_NAME, MODEL_NAME);
         inputPMML = new BaseEfestoInput<>(modelLocalUriId,
-                                          getInputData(MODEL_NAME, FILE_NAME));
+                                          getInputData());
         efestoRuntimeContext = getEfestoContext(memoryCompilerClassLoader);
         Optional<EfestoOutputPMML> retrieved = kieRuntimeServicePMMLMapInput.evaluateInput(inputPMML,
                                                                                            efestoRuntimeContext);
@@ -77,7 +77,7 @@ class KieRuntimeServicePMMLMapInputTest {
     void evaluateWrongIdentifier() {
         modelLocalUriId = getModelLocalUriIdFromPmmlIdFactory(FILE_NAME, "wrongmodel");
         inputPMML = new BaseEfestoInput<>(modelLocalUriId,
-                                          getInputData(MODEL_NAME, FILE_NAME));
+                                          getInputData());
         efestoRuntimeContext = getEfestoContext(memoryCompilerClassLoader);
         Optional<EfestoOutputPMML> retrieved = kieRuntimeServicePMMLMapInput.evaluateInput(inputPMML,
                                                                                            efestoRuntimeContext);
@@ -87,7 +87,7 @@ class KieRuntimeServicePMMLMapInputTest {
     @Test
     void evaluatePMMLRuntimeContext() {
         modelLocalUriId = getModelLocalUriIdFromPmmlIdFactory(FILE_NAME, MODEL_NAME);
-        inputPMML = new BaseEfestoInput<>(modelLocalUriId, getInputData(MODEL_NAME, FILE_NAME));
+        inputPMML = new BaseEfestoInput<>(modelLocalUriId, getInputData());
         efestoRuntimeContext = getPMMLContext(FILE_NAME, MODEL_NAME, memoryCompilerClassLoader);
         Optional<EfestoOutputPMML> retrieved = kieRuntimeServicePMMLMapInput.evaluateInput(inputPMML,
                                                                                            efestoRuntimeContext);
