@@ -19,6 +19,8 @@ import java.io.File;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -59,13 +61,13 @@ class JSONUtilsTest {
         String target = LocalComponentIdFoo.PREFIX;
         generatedResource = new GeneratedRedirectResource(localUriId, target);
         expected = String.format("{\"step-type\":\"redirect\",\"modelLocalUriId\":%s,\"target\":\"%s\"}",
-                                 JSONUtils.getModelLocalUriIdString(localUriId), target);
+                JSONUtils.getModelLocalUriIdString(localUriId), target);
         retrieved = JSONUtils.getGeneratedResourceString(generatedResource);
         assertThat(retrieved).isEqualTo(expected);
 
         generatedResource = new GeneratedExecutableResource(localUriId, Collections.singletonList(fullClassName));
         expected = String.format("{\"step-type\":\"executable\",\"modelLocalUriId\":%s,\"fullClassNames\":[\"%s\"]}",
-                                 JSONUtils.getModelLocalUriIdString(localUriId), fullClassName);
+                JSONUtils.getModelLocalUriIdString(localUriId), fullClassName);
         retrieved = JSONUtils.getGeneratedResourceString(generatedResource);
         assertThat(retrieved).isEqualTo(expected);
     }
@@ -98,14 +100,14 @@ class JSONUtilsTest {
                 .asLocalUri();
         ModelLocalUriId localUriId = new ModelLocalUriId(modelLocalUriId);
         GeneratedResource generatedFinalResource = new GeneratedExecutableResource(localUriId,
-                                                                                   Collections.singletonList(fullClassName));
+                Collections.singletonList(fullClassName));
         GeneratedResources generatedResources = new GeneratedResources();
         generatedResources.add(generatedIntermediateResource);
         generatedResources.add(generatedFinalResource);
         String retrieved = JSONUtils.getGeneratedResourcesString(generatedResources);
         String expected1 = String.format("{\"step-type\":\"class\",\"fullClassName\":\"%s\"}", fullClassName);
         String expected2 = String.format("{\"step-type\":\"executable\",\"modelLocalUriId\":%s,\"fullClassNames\":[\"%s\"]}",
-                                         JSONUtils.getModelLocalUriIdString(localUriId), fullClassName);
+                JSONUtils.getModelLocalUriIdString(localUriId), fullClassName);
         assertThat(retrieved).contains(expected1);
         assertThat(retrieved).contains(expected2);
     }
@@ -168,7 +170,7 @@ class JSONUtilsTest {
                 .asLocalUri();
         ModelLocalUriId localUriId = new ModelLocalUriId(modelLocalUriId);
         GeneratedResource expected2 = new GeneratedExecutableResource(localUriId,
-                                                                      Collections.singletonList(fullClassName));
+                Collections.singletonList(fullClassName));
         assertThat(retrieved).contains(expected1);
         assertThat(retrieved).contains(expected2);
         restoreClassLoader(originalClassLoader);
@@ -193,6 +195,19 @@ class JSONUtilsTest {
         String localUriIdString = "{\"model\":\"foo\",\"basePath\":\"/this/is/modelLocalUriId\",\"fullPath\":\"/foo/this/is/modelLocalUriId\"}";
         ModelLocalUriId retrieved = JSONUtils.getModelLocalUriIdObject(localUriIdString);
         assertThat(retrieved).isNotNull();
+    }
+
+    @Test
+    void getInputData() throws JsonProcessingException {
+        String inputDataString = "{\n" +
+                "    \"approved\": true,\n" +
+                "    \"applicantName\": \"John\"\n" +
+                "  }";
+        Map<String, Object> retrieved = JSONUtils.getInputData(inputDataString);
+        Map<String, Object> expected = new HashMap<>();
+        expected.put("approved", true);
+        expected.put("applicantName", "John");
+        assertThat(retrieved).isNotNull().containsExactlyEntriesOf(expected);
     }
 
     private ClassLoader addJarToClassLoader() {

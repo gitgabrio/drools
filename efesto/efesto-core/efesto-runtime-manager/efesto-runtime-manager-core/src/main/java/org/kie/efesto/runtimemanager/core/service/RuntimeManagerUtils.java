@@ -15,15 +15,12 @@
  */
 package org.kie.efesto.runtimemanager.core.service;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.kie.efesto.common.api.cache.EfestoClassKey;
 import org.kie.efesto.common.api.cache.EfestoIdentifierClassKey;
+import org.kie.efesto.common.api.exceptions.KieEfestoCommonException;
+import org.kie.efesto.common.api.identifiers.ModelLocalUriId;
+import org.kie.efesto.runtimemanager.api.model.BaseEfestoInput;
 import org.kie.efesto.runtimemanager.api.model.EfestoInput;
 import org.kie.efesto.runtimemanager.api.model.EfestoOutput;
 import org.kie.efesto.runtimemanager.api.model.EfestoRuntimeContext;
@@ -31,9 +28,13 @@ import org.kie.efesto.runtimemanager.api.service.KieRuntimeService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.kie.efesto.runtimemanager.api.utils.SPIUtils.getDiscoveredKieRuntimeServices;
-import static org.kie.efesto.runtimemanager.api.utils.SPIUtils.getKieRuntimeService;
-import static org.kie.efesto.runtimemanager.api.utils.SPIUtils.getKieRuntimeServiceFromEfestoRuntimeContext;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static org.kie.efesto.common.core.utils.JSONUtils.getModelLocalUriIdObject;
+import static org.kie.efesto.runtimemanager.api.utils.SPIUtils.*;
 
 public class RuntimeManagerUtils {
 
@@ -59,7 +60,7 @@ public class RuntimeManagerUtils {
         discoveredKieRuntimeServices.forEach(kieRuntimeService -> {
             EfestoClassKey efestoClassKey = kieRuntimeService.getEfestoClassKeyIdentifier();
             toPopulate.merge(efestoClassKey, new ArrayList<>(Collections.singletonList(kieRuntimeService)), (previous,
-                                                                          toAdd) -> {
+                                                                                                             toAdd) -> {
                 List<KieRuntimeService> toReturn = new ArrayList<>();
                 toReturn.addAll(previous);
                 toReturn.addAll(toAdd);
@@ -68,8 +69,14 @@ public class RuntimeManagerUtils {
         });
     }
 
+    /**
+     * Retrieves a <code>KieRuntimeService</code> from same JVM instance
+     *
+     * @param context
+     * @param input
+     * @return
+     */
     static Optional<KieRuntimeService> getKieRuntimeServiceLocal(EfestoRuntimeContext context, EfestoInput input) {
-
         KieRuntimeService cachedKieRuntimeService = getKieRuntimeServiceFromSecondLevelCache(input);
         if (cachedKieRuntimeService != null) {
             return Optional.of(cachedKieRuntimeService);
@@ -88,6 +95,7 @@ public class RuntimeManagerUtils {
 
     /**
      * Looks for <code>KieRuntimeService</code> inside the <b>secondLevelCache</b> by <code>EfestoIdentifierClassKey</code>
+     *
      * @param input
      * @return The found <code>KieRuntimeService</code>, or <code>null</code>
      */
@@ -97,6 +105,7 @@ public class RuntimeManagerUtils {
 
     /**
      * Looks for <code>KieRuntimeService</code> inside the <b>firstLevelCache</b> by <code>EfestoClassKey</code>
+     *
      * @param context
      * @param input
      * @return <code>Optional</code> of found <code>KieRuntimeService</code>, or <code>Optional.empty()</code>
@@ -112,14 +121,15 @@ public class RuntimeManagerUtils {
     /**
      * Looks for <code>KieRuntimeService</code> inside the given <code>EfestoRuntimeContext</code> by <code>EfestoClassKey</code>,
      * eventually storing it inside the <b>firstLevelCache</b>.
+     *
      * @param context
      * @param input
      * @return <code>Optional</code> of found <code>KieRuntimeService</code>, or <code>Optional.empty()</code>
      */
     static Optional<KieRuntimeService> getKieRuntimeServiceFromEfestoRuntimeContextLocal(EfestoRuntimeContext context,
-                                                                               EfestoInput input) {
+                                                                                         EfestoInput input) {
         logger.warn("Cannot find KieRuntimeService for {}, looking inside context classloader",
-                    input.getModelLocalUriId());
+                input.getModelLocalUriId());
         Optional<KieRuntimeService> retrieved = getKieRuntimeServiceFromEfestoRuntimeContext(input, context);
         if (retrieved.isPresent()) {
             KieRuntimeService toAdd = retrieved.get();
@@ -140,6 +150,21 @@ public class RuntimeManagerUtils {
     static Optional<EfestoOutput> getOptionalOutput(EfestoRuntimeContext context, EfestoInput input) {
         Optional<KieRuntimeService> retrieved = getKieRuntimeServiceLocal(context, input);
         return retrieved.isPresent() ? retrieved.flatMap(kieRuntimeService -> kieRuntimeService.evaluateInput(input,
-                                                                                                              context)) : Optional.empty();
+                context)) : Optional.empty();
     }
+
+    static Optional<EfestoInput> getOptionalBaseEfestoInput(String modelLocalUriIdString, String inputDataString) {
+        List<KieRuntimeService> discoveredServices = firstLevelCache.values().stream().flatMap((Function<List<KieRuntimeService>, Stream<KieRuntimeService>>) kieRuntimeServices -> kieRuntimeServices.stream()).collect(Collectors.toList());
+        ModelLocalUriId modelLocalUriId;
+        try {
+             modelLocalUriId = getModelLocalUriIdObject(modelLocalUriIdString);
+        } catch (JsonProcessingException e) {
+            throw new KieEfestoCommonException(String.format("Failed to parse %s as ModelLocalUriId", modelLocalUriIdString));
+        }
+        return discoveredServices.stream()
+                .filter(kieRuntimeService -> kieRuntimeService.getModelType().equals(modelLocalUriId.model()))
+                .map(kieRuntimeService -> kieRuntimeService.parseJsonInput(modelLocalUriIdString, inputDataString))
+                .findFirst();
+    }
+
 }

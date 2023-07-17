@@ -18,6 +18,7 @@ package org.kie.efesto.runtimemanager.core.mocks;
 import java.util.Optional;
 
 import org.kie.efesto.runtimemanager.api.exceptions.KieRuntimeServiceException;
+import org.kie.efesto.runtimemanager.api.model.BaseEfestoInput;
 import org.kie.efesto.runtimemanager.api.model.EfestoRuntimeContext;
 import org.kie.efesto.runtimemanager.api.service.KieRuntimeService;
 
@@ -35,5 +36,10 @@ public abstract class AbstractMockKieRuntimeService<T extends AbstractMockEfesto
     @Override
     public String getModelType() {
         return "mock";
+    }
+
+    @Override
+    public BaseEfestoInput parseJsonInput(String modelLocalUriIdString, String inputDataString) {
+        return null;
     }
 }

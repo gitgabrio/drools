@@ -16,10 +16,14 @@
 package org.kie.efesto.common.core.utils;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import org.kie.efesto.common.api.exceptions.KieEfestoCommonException;
 import org.kie.efesto.common.api.identifiers.ModelLocalUriId;
 import org.kie.efesto.common.api.io.IndexFile;
 import org.kie.efesto.common.api.model.GeneratedResource;
@@ -42,6 +46,10 @@ public class JSONUtils {
     private static final Logger logger = LoggerFactory.getLogger(JSONUtils.class.getName());
 
     private JSONUtils() {
+    }
+
+    public static ObjectMapper getObjectMapper() {
+        return objectMapper;
     }
 
     public static String getGeneratedResourceString(GeneratedResource generatedResource) throws JsonProcessingException {
@@ -77,5 +85,12 @@ public class JSONUtils {
 
     public static ModelLocalUriId getModelLocalUriIdObject(String localUriString) throws JsonProcessingException {
         return objectMapper.readValue(localUriString, ModelLocalUriId.class);
+    }
+
+    public static Map<String, Object> getInputData(String inputDataString) throws JsonProcessingException {
+        TypeReference<HashMap<String, Object>> typeRef
+                = new TypeReference<>() {
+        };
+        return objectMapper.readValue(inputDataString, typeRef);
     }
 }

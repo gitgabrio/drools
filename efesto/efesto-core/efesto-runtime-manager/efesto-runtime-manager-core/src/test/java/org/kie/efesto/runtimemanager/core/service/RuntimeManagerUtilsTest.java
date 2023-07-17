@@ -15,18 +15,13 @@
  */
 package org.kie.efesto.runtimemanager.core.service;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
+import org.drools.util.FileUtils;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.kie.efesto.common.api.cache.EfestoClassKey;
 import org.kie.efesto.common.api.identifiers.LocalUri;
 import org.kie.efesto.common.api.identifiers.ModelLocalUriId;
+import org.kie.efesto.common.core.utils.JSONUtils;
 import org.kie.efesto.runtimemanager.api.model.BaseEfestoInput;
 import org.kie.efesto.runtimemanager.api.model.EfestoInput;
 import org.kie.efesto.runtimemanager.api.model.EfestoRuntimeContext;
@@ -36,6 +31,9 @@ import org.kie.efesto.runtimemanager.core.mocks.MockEfestoInputB;
 import org.kie.efesto.runtimemanager.core.mocks.MockEfestoInputC;
 import org.kie.efesto.runtimemanager.core.mocks.MockEfestoOutput;
 import org.kie.efesto.runtimemanager.core.model.EfestoRuntimeContextUtils;
+
+import java.io.IOException;
+import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -212,6 +210,33 @@ class RuntimeManagerUtilsTest {
         assertThat(retrieved).isNotNull().isNotPresent();
     }
 
+    @Test
+    void getOptionalBaseEfestoInputPresent() throws IOException {
+        List<KieRuntimeService> discoveredKieRuntimeServices = Arrays.asList(baseInputService, baseInputExtenderService);
+        RuntimeManagerUtils.populateFirstLevelCache(discoveredKieRuntimeServices, RuntimeManagerUtils.firstLevelCache);
+        String fileName = "BaseEfestoInputModelLocalUriId.json";
+        String modelLocalUriIdString = FileUtils.getFileContent(fileName);
+        String inputDataString = "inputDataString";
+        Optional<EfestoInput> retrieved =  RuntimeManagerUtils.getOptionalBaseEfestoInput(modelLocalUriIdString,
+                inputDataString);
+        assertThat(retrieved).isNotNull().isPresent().get().isExactlyInstanceOf(BaseEfestoInput.class);
+        fileName = "BaseEfestoInputExtenderModelLocalUriId.json";
+        modelLocalUriIdString = FileUtils.getFileContent(fileName);
+        retrieved = RuntimeManagerUtils.getOptionalBaseEfestoInput(modelLocalUriIdString,
+                inputDataString);
+        assertThat(retrieved).isNotNull().isPresent().get().isExactlyInstanceOf(BaseEfestoInputExtender.class);
+    }
+
+    @Test
+    void getOptionalBaseEfestoInputNotPresent() throws IOException {
+        String fileName = "NotExistingEfestoInputModelLocalUriId.json";
+        String modelLocalUriIdString = FileUtils.getFileContent(fileName);
+        String inputDataString = "inputDataString";
+        Optional<EfestoInput> retrieved =  RuntimeManagerUtils.getOptionalBaseEfestoInput(modelLocalUriIdString,
+                inputDataString);
+        assertThat(retrieved).isNotNull().isNotPresent();
+    }
+
     static class BaseEfestoInputExtender extends BaseEfestoInput<String> {
 
         public BaseEfestoInputExtender(ModelLocalUriId modelLocalUriId, String inputData) {
@@ -242,6 +267,16 @@ class RuntimeManagerUtilsTest {
         public String getModelType() {
             return "BaseEfestoInput";
         }
+
+        @Override
+        public BaseEfestoInput<String> parseJsonInput(String modelLocalUriIdString, String inputDataString) {
+            try {
+                ModelLocalUriId modelLocalUriId = JSONUtils.getModelLocalUriIdObject(modelLocalUriIdString);
+                return new BaseEfestoInput<>(modelLocalUriId, inputDataString);
+            } catch (Exception e) {
+                return null;
+            }
+        }
     }
 
     static class BaseInputExtenderService implements KieRuntimeService<String, String, BaseEfestoInputExtender,
@@ -267,6 +302,16 @@ class RuntimeManagerUtilsTest {
         @Override
         public String getModelType() {
             return "BaseEfestoInputExtender";
+        }
+
+        @Override
+        public BaseEfestoInput<String> parseJsonInput(String modelLocalUriIdString, String inputDataString) {
+            try {
+                ModelLocalUriId modelLocalUriId = JSONUtils.getModelLocalUriIdObject(modelLocalUriIdString);
+                return new BaseEfestoInputExtender(modelLocalUriId, inputDataString);
+            } catch (Exception e) {
+                return null;
+            }
         }
     }
 }
