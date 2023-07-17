@@ -15,15 +15,6 @@
  */
 package org.kie.pmml.evaluator.core.utils;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
-
 import org.kie.api.pmml.PMML4Result;
 import org.kie.api.pmml.PMMLRequestData;
 import org.kie.efesto.common.api.identifiers.ModelLocalUriId;
@@ -36,6 +27,7 @@ import org.kie.memorycompiler.KieMemoryCompiler;
 import org.kie.pmml.api.enums.PMML_MODEL;
 import org.kie.pmml.api.enums.PMML_STEP;
 import org.kie.pmml.api.exceptions.KiePMMLException;
+import org.kie.pmml.api.identifiers.AbstractModelLocalUriIdPmml;
 import org.kie.pmml.api.models.PMMLModel;
 import org.kie.pmml.api.models.PMMLStep;
 import org.kie.pmml.api.runtime.PMMLRuntimeContext;
@@ -52,16 +44,14 @@ import org.kie.pmml.evaluator.core.model.EfestoOutputPMML;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.*;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
+
 import static org.kie.efesto.runtimemanager.api.utils.GeneratedResourceUtils.getAllGeneratedExecutableResources;
 import static org.kie.efesto.runtimemanager.api.utils.GeneratedResourceUtils.isPresentExecutableOrRedirect;
-import static org.kie.pmml.api.enums.PMML_STEP.END;
-import static org.kie.pmml.api.enums.PMML_STEP.POST_EVALUATION;
-import static org.kie.pmml.api.enums.PMML_STEP.PRE_EVALUATION;
-import static org.kie.pmml.api.enums.PMML_STEP.START;
-import static org.kie.pmml.commons.Constants.PMML_FILE_NAME;
-import static org.kie.pmml.commons.Constants.PMML_MODEL_NAME;
-import static org.kie.pmml.commons.Constants.PMML_STRING;
-import static org.kie.pmml.commons.Constants.PMML_SUFFIX;
+import static org.kie.pmml.api.enums.PMML_STEP.*;
+import static org.kie.pmml.commons.Constants.*;
 import static org.kie.pmml.commons.utils.PMMLLoaderUtils.loadKiePMMLModelFactory;
 import static org.kie.pmml.evaluator.core.utils.PMMLListenerUtils.stepExecuted;
 import static org.kie.pmml.evaluator.core.utils.PostProcess.postProcess;
@@ -76,7 +66,7 @@ public class PMMLRuntimeHelper {
     }
 
     public static boolean canManageEfestoInput(EfestoInput toEvaluate, EfestoRuntimeContext runtimeContext) {
-        return  isPresentExecutableOrRedirect(toEvaluate.getModelLocalUriId(), runtimeContext);
+        return isPresentExecutableOrRedirect(toEvaluate.getModelLocalUriId(), runtimeContext);
     }
 
     public static Optional<EfestoOutputPMML> executeEfestoInputPMML(EfestoInputPMML toEvaluate,
@@ -86,15 +76,15 @@ public class PMMLRuntimeHelper {
             pmmlContext = (PMMLRuntimeContext) runtimeContext;
         } else {
             pmmlContext = getPMMLRuntimeContext(toEvaluate.getInputData().getRequestData(),
-                                                runtimeContext.getGeneratedResourcesMap());
+                    runtimeContext.getGeneratedResourcesMap());
         }
         KiePMMLModelFactory kiePMMLModelFactory;
         try {
             kiePMMLModelFactory = loadKiePMMLModelFactory(toEvaluate.getModelLocalUriId(), pmmlContext);
         } catch (Exception e) {
             logger.warn("{} can not execute {}",
-                        PMMLRuntimeHelper.class.getName(),
-                        toEvaluate.getModelLocalUriId());
+                    PMMLRuntimeHelper.class.getName(),
+                    toEvaluate.getModelLocalUriId());
             return Optional.empty();
         }
         try {
@@ -115,7 +105,7 @@ public class PMMLRuntimeHelper {
             pmmlContext = (PMMLRuntimeContext) runtimeContext;
         } else {
             pmmlContext = getPMMLRuntimeContext(toEvaluate.getInputData(),
-                                                runtimeContext.getGeneratedResourcesMap());
+                    runtimeContext.getGeneratedResourcesMap());
         }
         EfestoInputPMML efestoInputPMML = getEfestoInputPMML(toEvaluate.getModelLocalUriId(), pmmlContext);
         return executeEfestoInputPMML(efestoInputPMML, pmmlContext);
@@ -127,8 +117,9 @@ public class PMMLRuntimeHelper {
         if (runtimeContext instanceof PMMLRuntimeContext) {
             pmmlContext = (PMMLRuntimeContext) runtimeContext;
         } else {
-            pmmlContext = getPMMLRuntimeContext(toEvaluate.getInputData(),
-                                                runtimeContext.getGeneratedResourcesMap());
+            pmmlContext = getPMMLRuntimeContext(toEvaluate.getModelLocalUriId(),
+                    toEvaluate.getInputData(),
+                    runtimeContext.getGeneratedResourcesMap());
         }
         EfestoInputPMML efestoInputPMML = getEfestoInputPMML(toEvaluate.getModelLocalUriId(), pmmlContext);
         return executeEfestoInputPMML(efestoInputPMML, pmmlContext);
@@ -151,7 +142,7 @@ public class PMMLRuntimeHelper {
         return getPMMLModels(pmmlContext)
                 .stream()
                 .filter(model -> Objects.equals(fileNameToUse, model.getFileName()) && Objects.equals(modelName,
-                                                                                                      model.getName()))
+                        model.getName()))
                 .findFirst();
     }
 
@@ -164,7 +155,7 @@ public class PMMLRuntimeHelper {
         addStep(() -> getStep(PRE_EVALUATION, model, context.getRequestData()), context);
         PMMLModelEvaluator executor = getFromPMMLModelType(model.getPmmlMODEL())
                 .orElseThrow(() -> new KiePMMLException(String.format("PMMLModelEvaluator not found for model %s",
-                                                                      model.getPmmlMODEL())));
+                        model.getPmmlMODEL())));
         PMML4Result toReturn = executor.evaluate(model, context);
         addStep(() -> getStep(POST_EVALUATION, model, context.getRequestData()), context);
         postProcess(toReturn, model, context, processingDTO);
@@ -187,27 +178,29 @@ public class PMMLRuntimeHelper {
                                                     final Map<String, GeneratedResources> generatedResourcesMap) {
         String fileName = (String) pmmlRequestData.getMappedRequestParams().get(PMML_FILE_NAME).getValue();
         PMMLRequestData cleaned = new PMMLRequestData(pmmlRequestData.getCorrelationId(),
-                                                      pmmlRequestData.getModelName());
+                pmmlRequestData.getModelName());
         pmmlRequestData.getRequestParams().stream()
                 .filter(parameterInfo -> !parameterInfo.getName().equals(PMML_FILE_NAME) && !parameterInfo.getName().equals(PMML_MODEL_NAME))
                 .forEach(cleaned::addRequestParam);
         PMMLRuntimeContext toReturn = new PMMLRuntimeContextImpl(cleaned, fileName,
-                                                                 new KieMemoryCompiler.MemoryCompilerClassLoader(Thread.currentThread().getContextClassLoader()));
+                new KieMemoryCompiler.MemoryCompilerClassLoader(Thread.currentThread().getContextClassLoader()));
         toReturn.getGeneratedResourcesMap().putAll(generatedResourcesMap);
         return toReturn;
     }
 
-    static PMMLRuntimeContext getPMMLRuntimeContext(Map<String, Object> inputData,
+    static PMMLRuntimeContext getPMMLRuntimeContext(final ModelLocalUriId modelLocalUriId,
+                                                    final Map<String, Object> inputData,
                                                     final Map<String, GeneratedResources> generatedResourcesMap) {
-        String fileName = (String) inputData.get(PMML_FILE_NAME);
-        String modelName = (String) inputData.get(PMML_MODEL_NAME);
+
+        String fileName = modelLocalUriId instanceof AbstractModelLocalUriIdPmml ? ((AbstractModelLocalUriIdPmml) modelLocalUriId).getFileName() : (String) inputData.get(PMML_FILE_NAME);
+        String modelName = modelLocalUriId instanceof AbstractModelLocalUriIdPmml ? ((AbstractModelLocalUriIdPmml) modelLocalUriId).name() : (String) inputData.get(PMML_MODEL_NAME);
 
         PMMLRequestData pmmlRequestData = new PMMLRequestData(UUID.randomUUID().toString(), modelName);
         inputData.entrySet().stream()
                 .filter(entry -> !entry.getKey().equals(PMML_FILE_NAME) && !entry.getKey().equals(PMML_MODEL_NAME))
                 .forEach(entry -> pmmlRequestData.addRequestParam(entry.getKey(), entry.getValue()));
         PMMLRuntimeContext toReturn = new PMMLRuntimeContextImpl(pmmlRequestData, fileName,
-                                                                 new KieMemoryCompiler.MemoryCompilerClassLoader(Thread.currentThread().getContextClassLoader()));
+                new KieMemoryCompiler.MemoryCompilerClassLoader(Thread.currentThread().getContextClassLoader()));
         toReturn.getGeneratedResourcesMap().putAll(generatedResourcesMap);
         return toReturn;
     }
@@ -229,7 +222,7 @@ public class PMMLRuntimeHelper {
         return kiePMMLModels
                 .stream()
                 .filter(model -> Objects.equals(fileNameToUse, model.getFileName()) && Objects.equals(modelName,
-                                                                                                      model.getName()))
+                        model.getName()))
                 .findFirst();
     }
 
@@ -246,6 +239,7 @@ public class PMMLRuntimeHelper {
     /**
      * Returns an <code>Optional&lt;PMMLModelExecutor&gt;</code> to allow
      * incremental development of different model-specific executors
+     *
      * @param pmmlMODEL
      * @return
      */
@@ -260,6 +254,7 @@ public class PMMLRuntimeHelper {
     /**
      * Send the given <code>PMMLStep</code>
      * to the <code>PMMLRuntimeContext</code>
+     *
      * @param stepSupplier
      * @param pmmlContext
      */

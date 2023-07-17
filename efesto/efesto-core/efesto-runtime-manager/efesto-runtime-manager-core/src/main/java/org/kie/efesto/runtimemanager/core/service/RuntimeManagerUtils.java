@@ -164,6 +164,7 @@ public class RuntimeManagerUtils {
         return discoveredServices.stream()
                 .filter(kieRuntimeService -> kieRuntimeService.getModelType().equals(modelLocalUriId.model()))
                 .map(kieRuntimeService -> kieRuntimeService.parseJsonInput(modelLocalUriIdString, inputDataString))
+                .filter(Objects::nonNull)
                 .findFirst();
     }
 

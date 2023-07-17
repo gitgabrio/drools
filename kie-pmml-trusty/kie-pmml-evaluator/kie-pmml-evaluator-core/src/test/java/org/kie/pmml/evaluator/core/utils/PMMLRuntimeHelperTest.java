@@ -30,6 +30,7 @@ import org.junit.jupiter.api.Test;
 import org.kie.api.pmml.PMML4Result;
 import org.kie.api.pmml.PMMLRequestData;
 import org.kie.api.pmml.ParameterInfo;
+import org.kie.efesto.common.api.identifiers.LocalUri;
 import org.kie.efesto.common.api.identifiers.ModelLocalUriId;
 import org.kie.efesto.common.api.model.GeneratedResources;
 import org.kie.efesto.runtimemanager.api.model.BaseEfestoInput;
@@ -189,13 +190,40 @@ class PMMLRuntimeHelperTest {
     }
 
     @Test
+    void getPMMLRuntimeContextFromModelLocalUriId() {
+        modelLocalUriId = getModelLocalUriIdFromPmmlIdFactory(FILE_NAME, MODEL_NAME);
+        Map<String, Object> inputData = new HashMap<>();
+        final Random random = new Random();
+        IntStream.range(0, 3).forEach(value -> inputData.put("Variable_" + value, random.nextInt(10)));
+        final Map<String, GeneratedResources> generatedResourcesMap = new HashMap<>();
+        IntStream.range(0, 3).forEach(value -> generatedResourcesMap.put("GenRes_" + value, new GeneratedResources()));
+        PMMLRuntimeContext retrieved = PMMLRuntimeHelper.getPMMLRuntimeContext(modelLocalUriId, inputData, generatedResourcesMap);
+        assertThat(retrieved).isNotNull();
+        PMMLRequestData pmmlRequestDataRetrieved = retrieved.getRequestData();
+        assertThat(pmmlRequestDataRetrieved).isNotNull();
+        assertThat(pmmlRequestDataRetrieved.getMappedRequestParams()).hasSize(inputData.size());
+        assertThat(pmmlRequestDataRetrieved.getMappedRequestParams().entrySet())
+                .allMatch(entry -> inputData.containsKey(entry.getKey()) &&
+                        entry.getValue().getValue().equals(inputData.get(entry.getKey())));
+        Map<String, GeneratedResources> generatedResourcesMapRetrieved = retrieved.getGeneratedResourcesMap();
+        assertThat(generatedResourcesMapRetrieved).hasSize(generatedResourcesMap.size() + 1);  // PMMLRuntimeContext
+        // already contains "pmml" GeneratedResources
+        assertThat(generatedResourcesMap.entrySet())
+                .allMatch(entry -> generatedResourcesMapRetrieved.containsKey(entry.getKey()) &&
+                        entry.getValue().equals(generatedResourcesMapRetrieved.get(entry.getKey())));
+    }
+
+    @Test
     void getPMMLRuntimeContextFromMap() {
+        String path = "/example/some-id/instances/some-instance-id";
+        LocalUri parsed = LocalUri.parse(path);
+        modelLocalUriId = new ModelLocalUriId(parsed);
         Map<String, Object> inputData = getInputData(MODEL_NAME, FILE_NAME);
         final Random random = new Random();
         IntStream.range(0, 3).forEach(value -> inputData.put("Variable_" + value, random.nextInt(10)));
         final Map<String, GeneratedResources> generatedResourcesMap = new HashMap<>();
         IntStream.range(0, 3).forEach(value -> generatedResourcesMap.put("GenRes_" + value, new GeneratedResources()));
-        PMMLRuntimeContext retrieved = PMMLRuntimeHelper.getPMMLRuntimeContext(inputData, generatedResourcesMap);
+        PMMLRuntimeContext retrieved = PMMLRuntimeHelper.getPMMLRuntimeContext(modelLocalUriId, inputData, generatedResourcesMap);
         assertThat(retrieved).isNotNull();
         PMMLRequestData pmmlRequestDataRetrieved = retrieved.getRequestData();
         assertThat(pmmlRequestDataRetrieved).isNotNull();
