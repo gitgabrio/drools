@@ -17,8 +17,17 @@
 package org.kie.efesto.runtimemanager.api.model;
 
 import org.kie.efesto.common.api.listener.EfestoListener;
-import org.kie.efesto.common.api.model.EfestoContext;
+import org.kie.efesto.runtimemanager.api.service.KieRuntimeService;
 
-public interface EfestoRuntimeContext<T extends EfestoListener> extends EfestoContext<T> {
+import java.util.ServiceLoader;
 
+/**
+ * This is the internal, local-JVM specific, <code>EfestoRuntimeContext</code>. To be used, internally, by <code>RuntimeSeviceProviders</code>
+ * @param <T>
+ */
+public interface EfestoLocalRuntimeContext<T extends EfestoListener> extends EfestoRuntimeContext<T> {
+
+    Class<?> loadClass(String className) throws ClassNotFoundException;
+
+    ServiceLoader<KieRuntimeService> getKieRuntimeService();
 }

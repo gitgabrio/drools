@@ -16,8 +16,9 @@
 package org.kie.efesto.runtimemanager.core.service;
 
 import org.drools.util.FileUtils;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.kie.efesto.common.api.cache.EfestoClassKey;
 import org.kie.efesto.common.api.identifiers.LocalUri;
 import org.kie.efesto.common.api.identifiers.ModelLocalUriId;
@@ -31,8 +32,12 @@ import org.kie.efesto.runtimemanager.core.mocks.MockEfestoInputB;
 import org.kie.efesto.runtimemanager.core.mocks.MockEfestoInputC;
 import org.kie.efesto.runtimemanager.core.mocks.MockEfestoOutput;
 import org.kie.efesto.runtimemanager.core.model.EfestoRuntimeContextUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -41,12 +46,9 @@ import static org.mockito.Mockito.when;
 
 class RuntimeManagerUtilsTest {
 
-    private static EfestoRuntimeContext context;
+    private static final Logger logger = LoggerFactory.getLogger(RuntimeManagerUtilsTest.class.getName());
 
-    private static final List<Class<? extends EfestoInput>> MANAGED_Efesto_INPUTS =
-            Arrays.asList(MockEfestoInputA.class,
-                          MockEfestoInputB.class,
-                          MockEfestoInputC.class);
+    private static EfestoRuntimeContext context;
 
     private static KieRuntimeService kieRuntimeServiceA;
     private static KieRuntimeService kieRuntimeServiceB;
@@ -60,9 +62,9 @@ class RuntimeManagerUtilsTest {
 
     private static ModelLocalUriId modelLocalUri;
 
-    private static KieRuntimeService baseInputService;
+    public static KieRuntimeService baseInputService  = new BaseInputService();
 
-    private static KieRuntimeService baseInputExtenderService;
+    public static KieRuntimeService baseInputExtenderService  = new BaseInputExtenderService();
 
     @BeforeAll
     static void setUp() {
@@ -83,16 +85,30 @@ class RuntimeManagerUtilsTest {
         String path = "/example/some-id/instances/some-instance-id";
         LocalUri parsed = LocalUri.parse(path);
         modelLocalUri = new ModelLocalUriId(parsed);
+    }
 
-        baseInputService = new BaseInputService();
-        baseInputExtenderService = new BaseInputExtenderService();
+    @BeforeEach
+    void beforeEach(TestInfo testInfo) {
+        RuntimeManagerUtils.secondLevelCache.clear();
+        RuntimeManagerUtils.firstLevelCache.clear();
+        Method testMethod = testInfo.getTestMethod().orElseThrow(() -> new RuntimeException("Missing method in TestInfo") );
+        String content;
+        if (testInfo.getDisplayName() != null && ! testInfo.getDisplayName().isEmpty()) {
+            content = testInfo.getDisplayName();
+        } else {
+            String methodName = testMethod.getName();
+            String parameters = Arrays.stream(testMethod.getParameters()).map(Parameter::toString).toString();
+            content = String.format("%s %s", methodName, parameters);
+        }
+        logger.info(String.format("About to execute  %s ", content));
     }
 
     @Test
+    @DisplayName("populateFirstLevelCache")
     void populateFirstLevelCache() {
         List<KieRuntimeService> discoveredKieRuntimeServices = Arrays.asList(kieRuntimeServiceA, kieRuntimeServiceB,
-                                                                             kieRuntimeServiceC,
-                                                                             kieRuntimeServiceA_cloned);
+                kieRuntimeServiceC,
+                kieRuntimeServiceA_cloned);
         final Map<EfestoClassKey, List<KieRuntimeService>> toPopulate = new HashMap<>();
         RuntimeManagerUtils.populateFirstLevelCache(discoveredKieRuntimeServices, toPopulate);
         assertThat(toPopulate).hasSize(2);
@@ -107,6 +123,7 @@ class RuntimeManagerUtilsTest {
     }
 
     @Test
+    @DisplayName("addKieRuntimeServiceToFirstLevelCache")
     void addKieRuntimeServiceToFirstLevelCache() {
         List<KieRuntimeService> discoveredKieRuntimeServices = Collections.singletonList(kieRuntimeServiceA);
         final Map<EfestoClassKey, List<KieRuntimeService>> toPopulate = new HashMap<>();
@@ -124,13 +141,12 @@ class RuntimeManagerUtilsTest {
     }
 
     @Test
+    @DisplayName("getKieRuntimeServiceFromSecondLevelCacheBaseClassEvaluatedBeforeChild")
     void getKieRuntimeServiceFromSecondLevelCacheBaseClassEvaluatedBeforeChild() {
-        RuntimeManagerUtils.secondLevelCache.clear();
-        RuntimeManagerUtils.firstLevelCache.clear();
         RuntimeManagerUtils.firstLevelCache.put(baseInputService.getEfestoClassKeyIdentifier(),
-                                                Collections.singletonList(baseInputService));
+                Collections.singletonList(baseInputService));
         RuntimeManagerUtils.firstLevelCache.put(baseInputExtenderService.getEfestoClassKeyIdentifier(),
-                                                Collections.singletonList(baseInputExtenderService));
+                Collections.singletonList(baseInputExtenderService));
 
         EfestoInput baseEfestoInput = new BaseEfestoInput(modelLocalUri, "One");
         EfestoInput baseEfestoInputExtender = new BaseEfestoInputExtender(modelLocalUri, "One");
@@ -153,13 +169,12 @@ class RuntimeManagerUtilsTest {
     }
 
     @Test
+    @DisplayName("getKieRuntimeServiceFromSecondLevelCacheChildClassEvaluatedBeforeParent")
     void getKieRuntimeServiceFromSecondLevelCacheChildClassEvaluatedBeforeParent() {
-        RuntimeManagerUtils.secondLevelCache.clear();
-        RuntimeManagerUtils.firstLevelCache.clear();
         RuntimeManagerUtils.firstLevelCache.put(baseInputService.getEfestoClassKeyIdentifier(),
-                                                Collections.singletonList(baseInputService));
+                Collections.singletonList(baseInputService));
         RuntimeManagerUtils.firstLevelCache.put(baseInputExtenderService.getEfestoClassKeyIdentifier(),
-                                                Collections.singletonList(baseInputExtenderService));
+                Collections.singletonList(baseInputExtenderService));
 
         EfestoInput baseEfestoInput = new BaseEfestoInput(modelLocalUri, "One");
         EfestoInput baseEfestoInputExtender = new BaseEfestoInputExtender(modelLocalUri, "One");
@@ -179,22 +194,26 @@ class RuntimeManagerUtilsTest {
         assertThat(RuntimeManagerUtils.getKieRuntimeServiceFromSecondLevelCache(baseEfestoInputExtender)).isEqualTo(baseInputExtenderService);
     }
 
-    @Test
-    void getKieRuntimeServiceLocalPresent() {
-        MANAGED_Efesto_INPUTS.forEach(managedInput -> {
-            try {
-                EfestoInput efestoInput = managedInput.getDeclaredConstructor().newInstance();
-                Optional<KieRuntimeService> retrieved = RuntimeManagerUtils.getKieRuntimeServiceLocal(context,
-                                                                                                      efestoInput);
-                assertThat(retrieved).isNotNull().isPresent();
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        });
+    @ParameterizedTest(name = "getKieRuntimeServiceLocalPresent{0}")
+    @ValueSource(classes = {MockEfestoInputA.class,
+            MockEfestoInputB.class,
+            MockEfestoInputC.class})
+    void getKieRuntimeServiceLocalPresent(Class<? extends EfestoInput> managedInput) {
+        RuntimeManagerUtils.init();
+        try {
+            EfestoInput efestoInput = managedInput.getDeclaredConstructor().newInstance();
+            Optional<KieRuntimeService> retrieved = RuntimeManagerUtils.getKieRuntimeServiceLocal(context,
+                    efestoInput);
+            assertThat(retrieved).withFailMessage(() -> String.format("No KieRuntimeService found for %s", efestoInput.getModelLocalUriId())).isNotNull().isPresent();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Test
+    @DisplayName("getKieRuntimeServiceLocalNotPresent")
     void getKieRuntimeServiceLocalNotPresent() {
+        RuntimeManagerUtils.init();
         EfestoInput efestoInput = new EfestoInput() {
             @Override
             public ModelLocalUriId getModelLocalUriId() {
@@ -217,7 +236,7 @@ class RuntimeManagerUtilsTest {
         String fileName = "BaseEfestoInputModelLocalUriId.json";
         String modelLocalUriIdString = FileUtils.getFileContent(fileName);
         String inputDataString = "inputDataString";
-        Optional<EfestoInput> retrieved =  RuntimeManagerUtils.getOptionalBaseEfestoInput(modelLocalUriIdString,
+        Optional<EfestoInput> retrieved = RuntimeManagerUtils.getOptionalBaseEfestoInput(modelLocalUriIdString,
                 inputDataString);
         assertThat(retrieved).isNotNull().isPresent().get().isExactlyInstanceOf(BaseEfestoInput.class);
         fileName = "BaseEfestoInputExtenderModelLocalUriId.json";
@@ -232,7 +251,7 @@ class RuntimeManagerUtilsTest {
         String fileName = "NotExistingEfestoInputModelLocalUriId.json";
         String modelLocalUriIdString = FileUtils.getFileContent(fileName);
         String inputDataString = "inputDataString";
-        Optional<EfestoInput> retrieved =  RuntimeManagerUtils.getOptionalBaseEfestoInput(modelLocalUriIdString,
+        Optional<EfestoInput> retrieved = RuntimeManagerUtils.getOptionalBaseEfestoInput(modelLocalUriIdString,
                 inputDataString);
         assertThat(retrieved).isNotNull().isNotPresent();
     }

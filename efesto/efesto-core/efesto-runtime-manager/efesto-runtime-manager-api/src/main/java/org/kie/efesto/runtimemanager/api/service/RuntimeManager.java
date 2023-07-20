@@ -21,6 +21,9 @@ import org.kie.efesto.runtimemanager.api.model.EfestoRuntimeContext;
 
 import java.util.Collection;
 
+/**
+ * This is the publicly available API, to be invoked by external, consumer code
+ */
 public interface RuntimeManager {
 
     /**

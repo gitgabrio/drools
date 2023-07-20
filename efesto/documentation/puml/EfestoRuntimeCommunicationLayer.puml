@@ -1,0 +1,35 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+
+title Runtime Service Discovery class
+
+!theme plain
+skinparam linetype ortho
+
+'class AbstractEfestoCompilationOutput
+'class AbstractEfestoFinalCompilationOutput
+interface RuntimeManager << interface >>
+note left: This is the API to be invoked by external, consumer code
+class RuntimeManagerImpl
+note left: Default implementation
+interface RuntimeServiceProvider << interface >>
+note left: This is the abstract communication layer.\nEach communication plugin has to provide an implementation.\nThe default implementation expose "KieRuntimeServices" from the same JVM.\nRemote implementation provides a "wrapper" mechanism to embed communication with the "KieRuntimeServices" inside the specific channel.
+
+'AbstractEfestoCompilationOutput           -[#008200,dashed]-^  EfestoCompilationOutput
+'AbstractEfestoFinalCompilationOutput      -[#000082,plain]-^  AbstractEfestoCompilationOutput
+'AbstractEfestoFinalCompilationOutput      -[#008200,dashed]-^  EfestoFinalOutput
+'EfestoFinalOutput                         -[#008200,plain]-^  EfestoCompilationOutput
+'EfestoFinalOutputClassesContainer         -[#000082,plain]-^  AbstractEfestoFinalCompilationOutput
+'EfestoFinalOutputClassesContainer         -[#008200,dashed]-^  RuntimeManager
+'EfestoIntermediateOutput                  -[#000082,plain]-^  AbstractEfestoCompilationOutput
+
+RuntimeManager  <|-[#008200,dashed]-  RuntimeManagerImpl
+
+
+RuntimeManagerImpl --* RuntimeServiceProvider : use
+
+'RuntimeManagerImpl  -[#000082,plain]-^  EfestoIntermediateOutput
+
+
+@enduml

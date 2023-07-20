@@ -4,7 +4,7 @@
 title Runtime Execution Plan Coordinated by Runtime Manager
 
 autonumber 1
-!include puml/EfestoInventorySD.puml
+!include EfestoInventorySD.puml
 
 Input_provider -> Runtime_Manager: execute (EfestoInput)
 Runtime_Manager -> KieRuntimeService: canManageInput (EfestoInput)

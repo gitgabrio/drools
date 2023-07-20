@@ -15,35 +15,35 @@
  */
 package org.kie.efesto.runtimemanager.core.model;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.ServiceLoader;
-import java.util.Set;
-
 import org.kie.efesto.common.api.identifiers.ModelLocalUriId;
 import org.kie.efesto.common.api.io.IndexFile;
 import org.kie.efesto.common.api.listener.EfestoListener;
 import org.kie.efesto.common.api.model.GeneratedResources;
 import org.kie.efesto.common.core.utils.JSONUtils;
 import org.kie.efesto.runtimemanager.api.exceptions.EfestoRuntimeManagerException;
-import org.kie.efesto.runtimemanager.api.model.EfestoRuntimeContext;
+import org.kie.efesto.runtimemanager.api.model.EfestoLocalRuntimeContext;
 import org.kie.efesto.runtimemanager.api.service.KieRuntimeService;
 import org.kie.efesto.runtimemanager.api.utils.SPIUtils;
 import org.kie.memorycompiler.KieMemoryCompiler;
 
-public class EfestoRuntimeContextImpl<T extends EfestoListener> implements EfestoRuntimeContext<T> {
+import java.util.HashMap;
+import java.util.Map;
+import java.util.ServiceLoader;
+import java.util.Set;
+
+public class EfestoLocalRuntimeContextImpl<T extends EfestoListener> implements EfestoLocalRuntimeContext<T> {
 
     private final KieMemoryCompiler.MemoryCompilerClassLoader memoryCompilerClassLoader;
 
     protected final Map<String, GeneratedResources> generatedResourcesMap = new HashMap<>();
 
-    protected EfestoRuntimeContextImpl(KieMemoryCompiler.MemoryCompilerClassLoader memoryCompilerClassLoader) {
+    protected EfestoLocalRuntimeContextImpl(KieMemoryCompiler.MemoryCompilerClassLoader memoryCompilerClassLoader) {
         this.memoryCompilerClassLoader = memoryCompilerClassLoader;
         prepareClassLoader();
         populateGeneratedResourcesMap();
     }
 
-    protected EfestoRuntimeContextImpl(KieMemoryCompiler.MemoryCompilerClassLoader memoryCompilerClassLoader, Map<String, GeneratedResources> generatedResourcesMap) {
+    protected EfestoLocalRuntimeContextImpl(KieMemoryCompiler.MemoryCompilerClassLoader memoryCompilerClassLoader, Map<String, GeneratedResources> generatedResourcesMap) {
         this.memoryCompilerClassLoader = memoryCompilerClassLoader;
         prepareClassLoader();
         this.generatedResourcesMap.putAll(generatedResourcesMap);

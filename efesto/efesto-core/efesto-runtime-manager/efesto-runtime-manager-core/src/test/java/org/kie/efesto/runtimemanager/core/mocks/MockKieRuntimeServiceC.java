@@ -16,11 +16,13 @@
 package org.kie.efesto.runtimemanager.core.mocks;
 
 import org.kie.efesto.common.api.cache.EfestoClassKey;
+import org.kie.efesto.common.api.exceptions.KieEfestoCommonException;
 import org.kie.efesto.common.api.identifiers.LocalUri;
 import org.kie.efesto.common.api.identifiers.ModelLocalUriId;
-import org.kie.efesto.runtimemanager.api.model.BaseEfestoInput;
 import org.kie.efesto.runtimemanager.api.model.EfestoInput;
 import org.kie.efesto.runtimemanager.api.model.EfestoRuntimeContext;
+
+import static org.kie.efesto.common.core.utils.JSONUtils.getObjectMapper;
 
 public class MockKieRuntimeServiceC extends AbstractMockKieRuntimeService {
 
@@ -35,6 +37,21 @@ public class MockKieRuntimeServiceC extends AbstractMockKieRuntimeService {
     @Override
     public boolean canManageInput(EfestoInput toEvaluate, EfestoRuntimeContext context) {
         return toEvaluate.getModelLocalUriId().equals(modelLocalUriIdC);
+    }
+
+    @Override
+    public String getModelType() {
+        return MockEfestoInputC.class.getSimpleName();
+    }
+
+    @Override
+    public EfestoInput parseJsonInput(String modelLocalUriIdString, String inputDataString) {
+        try {
+            getObjectMapper().readValue(modelLocalUriIdString, ModelLocalUriId.class);
+        } catch (Exception e) {
+            throw new KieEfestoCommonException(String.format("Failed to parse %s as ModelLocalUriId", modelLocalUriIdString));
+        }
+        return new MockEfestoInputC();
     }
 
 }

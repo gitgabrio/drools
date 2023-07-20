@@ -4,7 +4,7 @@ title Runtime Execution Plan
 
 
 autonumber 1
-!include puml/EfestoInventorySD.puml
+!include EfestoInventorySD.puml
 
 participant ExecutionServiceEntry #limegreen
 

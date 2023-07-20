@@ -15,34 +15,46 @@
  */
 package org.kie.efesto.runtimemanager.core.service;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import org.drools.util.FileUtils;
+import org.junit.jupiter.api.*;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.kie.efesto.runtimemanager.api.model.BaseEfestoInput;
 import org.kie.efesto.runtimemanager.api.model.EfestoInput;
 import org.kie.efesto.runtimemanager.api.model.EfestoOutput;
 import org.kie.efesto.runtimemanager.api.model.EfestoRuntimeContext;
+import org.kie.efesto.runtimemanager.api.service.KieRuntimeService;
 import org.kie.efesto.runtimemanager.core.mocks.MockEfestoInputA;
 import org.kie.efesto.runtimemanager.core.mocks.MockEfestoInputB;
 import org.kie.efesto.runtimemanager.core.mocks.MockEfestoInputC;
 import org.kie.efesto.runtimemanager.core.mocks.MockEfestoInputD;
 import org.kie.efesto.runtimemanager.core.model.EfestoRuntimeContextUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
+import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
+import static org.kie.efesto.common.core.utils.JSONUtils.getObjectMapper;
+import static org.kie.efesto.runtimemanager.core.service.RuntimeManagerUtilsTest.baseInputExtenderService;
+import static org.kie.efesto.runtimemanager.core.service.RuntimeManagerUtilsTest.baseInputService;
 
 class RuntimeManagerImplTest {
+
+    private static final Logger logger = LoggerFactory.getLogger(RuntimeManagerImplTest.class.getName());
+
 
     private static RuntimeManagerImpl runtimeManager;
     private static EfestoRuntimeContext context;
 
     private static final List<Class<? extends EfestoInput>> MANAGED_Efesto_INPUTS =
             Arrays.asList(MockEfestoInputA.class,
-                          MockEfestoInputB.class,
-                          MockEfestoInputC.class);
+                    MockEfestoInputB.class,
+                    MockEfestoInputC.class);
 
     @BeforeAll
     static void setUp() {
@@ -50,24 +62,44 @@ class RuntimeManagerImplTest {
         context = EfestoRuntimeContextUtils.buildWithParentClassLoader(Thread.currentThread().getContextClassLoader());
     }
 
-    @Test
-    void evaluateInput() {
-        MANAGED_Efesto_INPUTS.forEach(managedInput -> {
-            try {
-                EfestoInput toProcess = managedInput.getDeclaredConstructor().newInstance();
-                Collection<EfestoOutput> retrieved = runtimeManager.evaluateInput(context, toProcess);
-                assertThat(retrieved).isNotNull().hasSize(1);
-            } catch (Exception e) {
-                fail("Failed assertion on evaluateInput", e);
-            }
-        });
+    @BeforeEach
+    void beforeEach(TestInfo testInfo) {
+        RuntimeManagerUtils.secondLevelCache.clear();
+        RuntimeManagerUtils.firstLevelCache.clear();
+        Method testMethod = testInfo.getTestMethod().orElseThrow(() -> new RuntimeException("Missing method in TestInfo"));
+        String content;
+        if (testInfo.getDisplayName() != null && !testInfo.getDisplayName().isEmpty()) {
+            content = testInfo.getDisplayName();
+        } else {
+            String methodName = testMethod.getName();
+            String parameters = Arrays.stream(testMethod.getParameters()).map(Parameter::toString).toString();
+            content = String.format("%s %s", methodName, parameters);
+        }
+        logger.info(String.format("About to execute  %s ", content));
+    }
+
+    @ParameterizedTest(name = "evaluateInput{0}")
+    @ValueSource(classes = {MockEfestoInputA.class,
+            MockEfestoInputB.class,
+            MockEfestoInputC.class})
+    void evaluateInput(Class<? extends EfestoInput> managedInput) {
+        RuntimeManagerUtils.init();
+        try {
+            EfestoInput toProcess = managedInput.getDeclaredConstructor().newInstance();
+            Collection<EfestoOutput> retrieved = runtimeManager.evaluateInput(context, toProcess);
+            assertThat(retrieved).isNotNull().hasSize(1);
+        } catch (Exception e) {
+            fail("Failed assertion on evaluateInput", e);
+        }
         Collection<EfestoOutput> retrieved = runtimeManager.evaluateInput(context,
-                                                                          new MockEfestoInputD());
+                new MockEfestoInputD());
         assertThat(retrieved).isNotNull().isEmpty();
     }
 
     @Test
+    @DisplayName("evaluateInputs")
     void evaluateInputs() {
+        RuntimeManagerUtils.init();
         List<EfestoInput> toProcess = new ArrayList<>();
         MANAGED_Efesto_INPUTS.forEach(managedInput -> {
             try {
@@ -79,8 +111,26 @@ class RuntimeManagerImplTest {
         });
         toProcess.add(new MockEfestoInputD());
         Collection<EfestoOutput> retrieved = runtimeManager.evaluateInput(context,
-                                                                          toProcess.toArray(new EfestoInput[0]));
+                toProcess.toArray(new EfestoInput[0]));
         assertThat(retrieved).isNotNull().hasSize(MANAGED_Efesto_INPUTS.size());
+    }
+
+    @ParameterizedTest(name = "evaluateInput{0}")
+    @ValueSource(classes = {MockEfestoInputA.class,
+            MockEfestoInputB.class,
+            MockEfestoInputC.class})
+    void getOptionalBaseEfestoInputPresent(Class<? extends EfestoInput> managedInput) {
+        RuntimeManagerUtils.init();
+        try {
+            EfestoInput originalInput = managedInput.getDeclaredConstructor().newInstance();
+            String modelLocalUriIdString = getObjectMapper().writeValueAsString(originalInput.getModelLocalUriId());
+            String inputDataString = originalInput.getInputData().toString();
+            EfestoInput retrieved = runtimeManager.parseJsonInput(modelLocalUriIdString,
+                    inputDataString);
+            assertThat(retrieved).isNotNull().isExactlyInstanceOf(originalInput.getClass()).isEqualTo(originalInput);
+        } catch (Exception e) {
+            fail("Failed assertion on evaluateInput", e);
+        }
     }
 
 }

@@ -13,12 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.kie.efesto.runtimemanager.api.service;
 
-package org.kie.efesto.runtimemanager.api.model;
+import java.util.List;
 
-import org.kie.efesto.common.api.listener.EfestoListener;
-import org.kie.efesto.common.api.model.EfestoContext;
+/**
+ * This is the communication layer abstraction API, to be invoked internally by the framework.
+ * The default implementation uses the KieServices found, by SPI, in the JVM where the  Efesto instance is running.
+ */
+public interface RuntimeServiceProvider {
 
-public interface EfestoRuntimeContext<T extends EfestoListener> extends EfestoContext<T> {
+    /**
+     * Return all the <code>KieRuntimeService</code>s exposed by the actual implementation
+     * @return
+     */
+    List<KieRuntimeService> getKieRuntimeServices();
 
 }

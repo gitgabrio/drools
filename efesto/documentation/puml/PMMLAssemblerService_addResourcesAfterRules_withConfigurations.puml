@@ -42,11 +42,11 @@ PortablePath -> PortablePath : normalizePath
 activate PortablePath
 PortablePath --> PortablePath
 deactivate PortablePath
-create PortablePath
-PortablePath -> PortablePath : new
-activate PortablePath
-PortablePath --> PortablePath
-deactivate PortablePath
+'create PortablePath
+'PortablePath -> PortablePath : new
+'activate PortablePath
+'PortablePath --> PortablePath
+'deactivate PortablePath
 PortablePath --> PortablePath
 deactivate PortablePath
 PortablePath --> PMMLCompilerService
@@ -172,15 +172,15 @@ PMMLCompilerImpl -> PMMLCompilerImpl : λ→
 activate PMMLCompilerImpl
 PMMLCompilerImpl -> CommonCompilationDTO : fromGeneratedPackageNameAndFields
 activate CommonCompilationDTO
-create CommonCompilationDTO
-CommonCompilationDTO -> CommonCompilationDTO : new
+'create CommonCompilationDTO
+'CommonCompilationDTO -> CommonCompilationDTO : new
 activate CommonCompilationDTO
 CommonCompilationDTO -> KiePMMLModelUtils : getSanitizedPackageName
 activate KiePMMLModelUtils
 KiePMMLModelUtils --> CommonCompilationDTO
 deactivate KiePMMLModelUtils
-create CommonCompilationDTO
-CommonCompilationDTO -> CommonCompilationDTO : new
+'create CommonCompilationDTO
+'CommonCompilationDTO -> CommonCompilationDTO : new
 activate CommonCompilationDTO
 CommonCompilationDTO -> ModelUtils : getFieldsFromDataDictionaryTransformationDictionaryAndModel
 activate ModelUtils
@@ -190,8 +190,8 @@ ModelUtils --> ModelUtils
 deactivate ModelUtils
 ModelUtils --> CommonCompilationDTO
 deactivate ModelUtils
-create CommonCompilationDTO
-CommonCompilationDTO -> CommonCompilationDTO : new
+'create CommonCompilationDTO
+'CommonCompilationDTO -> CommonCompilationDTO : new
 activate CommonCompilationDTO
 CommonCompilationDTO -> PMML_MODEL : byName
 activate PMML_MODEL
@@ -508,8 +508,8 @@ activate PMMLAssemblerService
 create PackageDescr
 PMMLAssemblerService -> PackageDescr : new
 activate PackageDescr
-create PackageDescr
-PackageDescr -> PackageDescr : new
+'create PackageDescr
+'PackageDescr -> PackageDescr : new
 activate PackageDescr
 PackageDescr --> PackageDescr
 deactivate PackageDescr
@@ -689,8 +689,8 @@ activate PMMLAssemblerService
 create PackageDescr
 PMMLAssemblerService -> PackageDescr : new
 activate PackageDescr
-create PackageDescr
-PackageDescr -> PackageDescr : new
+'create PackageDescr
+'PackageDescr -> PackageDescr : new
 activate PackageDescr
 PackageDescr --> PackageDescr
 deactivate PackageDescr
@@ -946,8 +946,8 @@ deactivate KieBaseBuilder
 create KnowledgeBuilderImpl
 PMMLLoaderService -> KnowledgeBuilderImpl : new
 activate KnowledgeBuilderImpl
-create KnowledgeBuilderImpl
-KnowledgeBuilderImpl -> KnowledgeBuilderImpl : new
+'create KnowledgeBuilderImpl
+'KnowledgeBuilderImpl -> KnowledgeBuilderImpl : new
 activate KnowledgeBuilderImpl
 KnowledgeBuilderImpl --> KnowledgeBuilderImpl
 deactivate KnowledgeBuilderImpl
@@ -1067,10 +1067,10 @@ PortablePath -> PortablePath : normalizePath
 activate PortablePath
 PortablePath --> PortablePath
 deactivate PortablePath
-create PortablePath
-PortablePath -> PortablePath : new
-activate PortablePath
-PortablePath --> PortablePath
+'create PortablePath
+'PortablePath -> PortablePath : new
+'activate PortablePath
+'PortablePath --> PortablePath
 deactivate PortablePath
 PortablePath --> PortablePath
 deactivate PortablePath
@@ -1185,15 +1185,15 @@ PMMLCompilerImpl -> PMMLCompilerImpl : λ→
 activate PMMLCompilerImpl
 PMMLCompilerImpl -> CommonCompilationDTO : fromGeneratedPackageNameAndFields
 activate CommonCompilationDTO
-create CommonCompilationDTO
-CommonCompilationDTO -> CommonCompilationDTO : new
+'create CommonCompilationDTO
+'CommonCompilationDTO -> CommonCompilationDTO : new
 activate CommonCompilationDTO
 CommonCompilationDTO -> KiePMMLModelUtils : getSanitizedPackageName
 activate KiePMMLModelUtils
 KiePMMLModelUtils --> CommonCompilationDTO
 deactivate KiePMMLModelUtils
-create CommonCompilationDTO
-CommonCompilationDTO -> CommonCompilationDTO : new
+'create CommonCompilationDTO
+'CommonCompilationDTO -> CommonCompilationDTO : new
 activate CommonCompilationDTO
 CommonCompilationDTO -> ModelUtils : getFieldsFromDataDictionaryTransformationDictionaryAndModel
 activate ModelUtils
@@ -1203,8 +1203,8 @@ ModelUtils --> ModelUtils
 deactivate ModelUtils
 ModelUtils --> CommonCompilationDTO
 deactivate ModelUtils
-create CommonCompilationDTO
-CommonCompilationDTO -> CommonCompilationDTO : new
+'create CommonCompilationDTO
+'CommonCompilationDTO -> CommonCompilationDTO : new
 activate CommonCompilationDTO
 CommonCompilationDTO -> PMML_MODEL : byName
 activate PMML_MODEL
@@ -1300,8 +1300,8 @@ activate PMMLAssemblerService
 create PackageDescr
 PMMLAssemblerService -> PackageDescr : new
 activate PackageDescr
-create PackageDescr
-PackageDescr -> PackageDescr : new
+'create PackageDescr
+'PackageDescr -> PackageDescr : new
 activate PackageDescr
 PackageDescr --> PackageDescr
 deactivate PackageDescr
@@ -1481,8 +1481,8 @@ activate PMMLAssemblerService
 create PackageDescr
 PMMLAssemblerService -> PackageDescr : new
 activate PackageDescr
-create PackageDescr
-PackageDescr -> PackageDescr : new
+'create PackageDescr
+'PackageDescr -> PackageDescr : new
 activate PackageDescr
 PackageDescr --> PackageDescr
 deactivate PackageDescr

@@ -28,6 +28,9 @@ import java.util.Collections;
 import static org.kie.efesto.runtimemanager.core.service.RuntimeManagerUtils.getOptionalBaseEfestoInput;
 import static org.kie.efesto.runtimemanager.core.service.RuntimeManagerUtils.getOptionalOutput;
 
+/**
+ * This is the implementation of the publicly available API, to be invoked by external, consumer code
+ */
 public class RuntimeManagerImpl implements RuntimeManager {
 
     @Override

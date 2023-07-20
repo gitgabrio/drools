@@ -27,11 +27,11 @@ public class EfestoRuntimeContextUtils {
     }
 
     public static EfestoRuntimeContext buildWithParentClassLoader(ClassLoader parentClassLoader) {
-        return new EfestoRuntimeContextImpl(new KieMemoryCompiler.MemoryCompilerClassLoader(parentClassLoader));
+        return new EfestoLocalRuntimeContextImpl(new KieMemoryCompiler.MemoryCompilerClassLoader(parentClassLoader));
     }
 
     public static EfestoRuntimeContext buildWithParentClassLoader(ClassLoader parentClassLoader, Map<String, GeneratedResources> generatedResourcesMap) {
-        return new EfestoRuntimeContextImpl(new KieMemoryCompiler.MemoryCompilerClassLoader(parentClassLoader), generatedResourcesMap);
+        return new EfestoLocalRuntimeContextImpl(new KieMemoryCompiler.MemoryCompilerClassLoader(parentClassLoader), generatedResourcesMap);
     }
 
 }
