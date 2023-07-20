@@ -15,22 +15,22 @@
  */
 package org.kie.efesto.runtimemanager.core.model;
 
-import java.util.Map;
-
 import org.kie.efesto.common.api.model.GeneratedResources;
-import org.kie.efesto.runtimemanager.api.model.EfestoRuntimeContext;
+import org.kie.efesto.runtimemanager.api.model.EfestoLocalRuntimeContext;
 import org.kie.memorycompiler.KieMemoryCompiler;
+
+import java.util.Map;
 
 public class EfestoRuntimeContextUtils {
 
     private EfestoRuntimeContextUtils() {
     }
 
-    public static EfestoRuntimeContext buildWithParentClassLoader(ClassLoader parentClassLoader) {
+    public static EfestoLocalRuntimeContext buildWithParentClassLoader(ClassLoader parentClassLoader) {
         return new EfestoLocalRuntimeContextImpl(new KieMemoryCompiler.MemoryCompilerClassLoader(parentClassLoader));
     }
 
-    public static EfestoRuntimeContext buildWithParentClassLoader(ClassLoader parentClassLoader, Map<String, GeneratedResources> generatedResourcesMap) {
+    public static EfestoLocalRuntimeContext buildWithParentClassLoader(ClassLoader parentClassLoader, Map<String, GeneratedResources> generatedResourcesMap) {
         return new EfestoLocalRuntimeContextImpl(new KieMemoryCompiler.MemoryCompilerClassLoader(parentClassLoader), generatedResourcesMap);
     }
 

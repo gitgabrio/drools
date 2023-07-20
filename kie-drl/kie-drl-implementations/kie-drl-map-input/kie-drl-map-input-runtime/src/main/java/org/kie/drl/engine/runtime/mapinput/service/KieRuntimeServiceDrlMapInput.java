@@ -28,6 +28,7 @@ import org.kie.efesto.runtimemanager.api.model.*;
 import org.kie.efesto.runtimemanager.api.service.KieRuntimeService;
 
 import static org.kie.efesto.common.core.utils.JSONUtils.getInputData;
+import static org.kie.efesto.runtimemanager.core.model.EfestoRuntimeContextUtils.buildWithParentClassLoader;
 
 public class KieRuntimeServiceDrlMapInput implements KieRuntimeService<EfestoMapInputDTO, Map<String, Object>,
         BaseEfestoInput<EfestoMapInputDTO>, EfestoOutputDrlMap, EfestoRuntimeContext> {
@@ -48,7 +49,10 @@ public class KieRuntimeServiceDrlMapInput implements KieRuntimeService<EfestoMap
     @Override
     public Optional<EfestoOutputDrlMap> evaluateInput(BaseEfestoInput<EfestoMapInputDTO> toEvaluate,
                                                       EfestoRuntimeContext context) {
-        return DrlRuntimeHelper.execute(toEvaluate, context);
+        if (!(context instanceof EfestoLocalRuntimeContext)) {
+            context = buildWithParentClassLoader(context.getClass().getClassLoader(), context.getGeneratedResourcesMap());
+        }
+        return DrlRuntimeHelper.execute(toEvaluate, (EfestoLocalRuntimeContext) context);
     }
 
     @Override

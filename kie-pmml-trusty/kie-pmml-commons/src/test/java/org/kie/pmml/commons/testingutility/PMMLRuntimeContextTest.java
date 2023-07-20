@@ -171,8 +171,8 @@ public class PMMLRuntimeContextTest implements PMMLRuntimeContext {
         return null;
     }
 
-    @Override
-    public ServiceLoader<KieRuntimeService> getKieRuntimeService() {
-        return null;
-    }
+//    @Override
+//    public ServiceLoader<KieRuntimeService> getKieRuntimeService() {
+//        return null;
+//    }
 }

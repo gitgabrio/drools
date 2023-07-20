@@ -26,6 +26,7 @@ import org.kie.api.runtime.KieSession;
 import org.kie.efesto.common.api.identifiers.ModelLocalUriId;
 import org.kie.efesto.common.api.model.GeneratedExecutableResource;
 import org.kie.efesto.runtimemanager.api.exceptions.KieRuntimeServiceException;
+import org.kie.efesto.runtimemanager.api.model.EfestoLocalRuntimeContext;
 import org.kie.efesto.runtimemanager.api.model.EfestoRuntimeContext;
 import org.kie.efesto.runtimemanager.api.utils.GeneratedResourceUtils;
 import org.slf4j.Logger;
@@ -38,7 +39,7 @@ public class EfestoKieSessionUtil {
     private EfestoKieSessionUtil() {
     }
 
-    public static KieSession loadKieSession(ModelLocalUriId modelLocalUriId, EfestoRuntimeContext context) {
+    public static KieSession loadKieSession(ModelLocalUriId modelLocalUriId, EfestoLocalRuntimeContext context) {
         logger.debug("loadKieSession {} {}", modelLocalUriId, context);
         Optional<GeneratedExecutableResource> generatedExecutableResourceOpt =
                 GeneratedResourceUtils.getGeneratedExecutableResource(modelLocalUriId,
@@ -64,7 +65,7 @@ public class EfestoKieSessionUtil {
         }
     }
 
-    static Model loadModel(String fullModelResourcesSourceClassName, EfestoRuntimeContext context) {
+    static Model loadModel(String fullModelResourcesSourceClassName, EfestoLocalRuntimeContext context) {
         try {
             final Class<? extends Model> aClass = context.loadClass(fullModelResourcesSourceClassName);
             return aClass.getDeclaredConstructor().newInstance();

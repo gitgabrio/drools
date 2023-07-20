@@ -26,6 +26,7 @@ import org.kie.drl.engine.runtime.kiesession.local.model.EfestoOutputDrlKieSessi
 import org.kie.efesto.common.api.identifiers.EfestoAppRoot;
 import org.kie.efesto.runtimemanager.api.exceptions.KieRuntimeServiceException;
 import org.kie.efesto.runtimemanager.api.model.EfestoInput;
+import org.kie.efesto.runtimemanager.api.model.EfestoLocalRuntimeContext;
 import org.kie.efesto.runtimemanager.api.model.EfestoRuntimeContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,7 +45,7 @@ public class DrlRuntimeHelper {
         return getGeneratedExecutableResource(toEvaluate.getModelLocalUriId(), context.getGeneratedResourcesMap()).isPresent();
     }
 
-    public static Optional<EfestoOutputDrlKieSessionLocal> execute(EfestoInputDrlKieSessionLocal toEvaluate, EfestoRuntimeContext context) {
+    public static Optional<EfestoOutputDrlKieSessionLocal> execute(EfestoInputDrlKieSessionLocal toEvaluate, EfestoLocalRuntimeContext context) {
         KieSession kieSession;
         try {
             kieSession = loadKieSession(toEvaluate.getModelLocalUriId(), context);
