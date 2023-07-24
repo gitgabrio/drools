@@ -28,7 +28,6 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.function.Consumer;
 
 public class EfestoClassKeyDeserializer extends StdDeserializer<EfestoClassKey> {
 
