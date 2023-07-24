@@ -22,8 +22,10 @@ import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.connect.json.JsonDeserializer;
+import org.kie.efesto.kafka.api.listeners.EfestoKafkaMessageListener;
 import org.kie.efesto.kafka.api.serialization.EfestoLongDeserializer;
 import org.kie.efesto.kafka.runtime.provider.messages.EfestoKafkaRuntimeServiceNotificationMessage;
+import org.kie.efesto.runtimemanager.api.exceptions.EfestoRuntimeManagerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,7 +37,7 @@ import java.util.Properties;
 import static org.kie.efesto.common.core.utils.JSONUtils.getObjectMapper;
 import static org.kie.efesto.kafka.api.KafkaConstants.BOOTSTRAP_SERVERS;
 import static org.kie.efesto.kafka.api.KafkaConstants.RUNTIMESERVICE_NOTIFICATION_TOPIC;
-import static org.kie.efesto.kafka.api.ThreadUtils.getConsumeThread;
+import static org.kie.efesto.kafka.api.ThreadUtils.getConsumeAndListenThread;
 
 public class KieServiceNotificationConsumer {
 
@@ -46,19 +48,21 @@ public class KieServiceNotificationConsumer {
     private KieServiceNotificationConsumer() {
     }
 
-    public static void startEvaluateConsumer() {
+    public static void startEvaluateConsumer(EfestoKafkaMessageListener listener) {
         logger.info("starting consumer....");
         Consumer<Long, JsonNode> consumer = createConsumer();
-        startEvaluateConsumer(consumer);
+        startEvaluateConsumer(consumer, listener);
     }
 
-    public static void startEvaluateConsumer(Consumer<Long, JsonNode> consumer) {
+    public static void startEvaluateConsumer(Consumer<Long, JsonNode> consumer,
+                                             EfestoKafkaMessageListener listener) {
         logger.info("starting consumer.... {}", consumer);
         final int giveUp = 100;
         receivedMessages.clear();
         try {
-            Thread thread = getConsumeThread(consumer, giveUp, KieServiceNotificationConsumer.class.getSimpleName(),
-                    KieServiceNotificationConsumer::consumeModel);
+            Thread thread = getConsumeAndListenThread(consumer, giveUp, KieServiceNotificationConsumer.class.getSimpleName(),
+                    KieServiceNotificationConsumer::consumeModel,
+                    listener);
             thread.start();
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
@@ -70,7 +74,7 @@ public class KieServiceNotificationConsumer {
     }
 
 
-    static void consumeModel(ConsumerRecord<Long, JsonNode> toConsume) {
+    static EfestoKafkaRuntimeServiceNotificationMessage consumeModel(ConsumerRecord<Long, JsonNode> toConsume) {
         try {
             logger.info("Consume: ({})\n", toConsume);
             JsonNode jsonNode = toConsume.value();
@@ -78,23 +82,17 @@ public class KieServiceNotificationConsumer {
             EfestoKafkaRuntimeServiceNotificationMessage notificationMessage = getMessage(jsonNode);
             logger.info("notificationMessage: ({})\n", notificationMessage);
             receivedMessages.add(notificationMessage);
-//            String modelLocalUriIdString = jsonNode.get("modelLocalUriIdString").asText();
-//            modelLocalUriIdString = URLDecoder.decode(modelLocalUriIdString, StandardCharsets.UTF_8);
-//            String inputDataString = jsonNode.get("inputData").toString();
-//            logger.info("modelLocalUriIdString: ({})\n", modelLocalUriIdString);
-//            logger.info("inputData: ({})\n", inputDataString);
-//            EfestoOutput retrieved = EfestoRuntimeManager.evaluateModel(modelLocalUriIdString, inputDataString);
-//            logger.info("EfestoOutput: ({})\n", retrieved);
-//            runProducer(toConsume.key(), retrieved);
+            return notificationMessage;
         } catch (Exception e) {
-            logger.error("Failed to consume {}", toConsume, e);
+            String errorMessage = String.format("Failed to consume %s", toConsume);
+            logger.error(errorMessage, e);
+            throw new EfestoRuntimeManagerException(errorMessage, e);
         }
     }
 
     private static EfestoKafkaRuntimeServiceNotificationMessage getMessage(JsonNode jsonNode) throws JsonProcessingException {
         logger.info("getMessage: ({})\n", jsonNode);
-        String jsonNodeString = jsonNode.asText();
-        return getObjectMapper().readValue(jsonNodeString, EfestoKafkaRuntimeServiceNotificationMessage.class);
+        return getObjectMapper().readValue(jsonNode.toString(), EfestoKafkaRuntimeServiceNotificationMessage.class);
     }
 
     private static Consumer<Long, JsonNode> createConsumer() {

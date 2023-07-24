@@ -16,6 +16,10 @@
 
     <dependencies>
         <dependency><!-- For unit test logging: configure in src/test/resources/logback-test.xml -->
+            <groupId>org.kie</groupId>
+            <artifactId>efesto-common-core</artifactId>
+        </dependency>
+        <dependency><!-- For unit test logging: configure in src/test/resources/logback-test.xml -->
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
             <scope>test</scope>

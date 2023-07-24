@@ -15,23 +15,24 @@
  */
 package org.kie.efesto.common.core.utils;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import org.kie.efesto.common.api.exceptions.KieEfestoCommonException;
+import org.kie.efesto.common.api.cache.EfestoClassKey;
 import org.kie.efesto.common.api.identifiers.ModelLocalUriId;
 import org.kie.efesto.common.api.io.IndexFile;
 import org.kie.efesto.common.api.model.GeneratedResource;
 import org.kie.efesto.common.api.model.GeneratedResources;
+import org.kie.efesto.common.core.serialization.EfestoClassKeyDeserializer;
 import org.kie.efesto.common.core.serialization.ModelLocalUriIdDeSerializer;
 import org.kie.efesto.common.core.serialization.ModelLocalUriIdSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 public class JSONUtils {
     private static final ObjectMapper objectMapper;
@@ -39,10 +40,12 @@ public class JSONUtils {
     static {
         objectMapper = new ObjectMapper();
         SimpleModule toRegister = new SimpleModule();
+        toRegister.addDeserializer(EfestoClassKey.class, new EfestoClassKeyDeserializer());
         toRegister.addDeserializer(ModelLocalUriId.class, new ModelLocalUriIdDeSerializer());
         toRegister.addSerializer(ModelLocalUriId.class, new ModelLocalUriIdSerializer());
         objectMapper.registerModule(toRegister);
     }
+
     private static final Logger logger = LoggerFactory.getLogger(JSONUtils.class.getName());
 
     private JSONUtils() {
@@ -72,7 +75,7 @@ public class JSONUtils {
         logger.debug("getGeneratedResourcesObject {}", indexFile);
         logger.debug("indexFile.length() {}", indexFile.length());
         return indexFile.length() == 0 ? new GeneratedResources() : objectMapper.readValue(indexFile.getContent(),
-                                                                                           GeneratedResources.class);
+                GeneratedResources.class);
     }
 
     public static void writeGeneratedResourcesObject(GeneratedResources toWrite, IndexFile indexFile) throws IOException {

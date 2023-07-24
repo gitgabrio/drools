@@ -19,6 +19,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
+import org.kie.efesto.kafka.api.listeners.EfestoKafkaMessageListener;
+import org.kie.efesto.kafka.api.messages.AbstractEfestoKafkaMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -115,12 +117,68 @@ public class ThreadUtils {
         };
     }
 
+    /**
+     * Thread to be used when there is a "Listener" listening on the "Consumer" part
+     *
+     * @param consumer
+     * @param giveUp
+     * @param threadName
+     * @param listener
+     * @return
+     */
+    public static Thread getConsumeAndListenThread(Consumer<Long, JsonNode> consumer,
+                                                   int giveUp,
+                                                   String threadName,
+                                                   java.util.function.Function<ConsumerRecord<Long, JsonNode>, AbstractEfestoKafkaMessage> consumerRecordFunction,
+                                                   EfestoKafkaMessageListener listener) {
+        logger.info("Retrieving thread for {}", threadName);
+        return new Thread(threadName) {
+            @Override
+            public void run() {
+                final AtomicInteger noRecordsCount = new AtomicInteger(0);
+                while (true) {
+                    try {
+                        final ConsumerRecords<Long, JsonNode> consumerRecords =
+                                consumer.poll(Duration.ofMillis(100));
+                        if (consumerRecords.count() == 0) {
+                            int currentNoRecordsCount = noRecordsCount.addAndGet(1);
+                            if (currentNoRecordsCount > giveUp) {
+//                            break;
+                            } else {
+                                continue;
+                            }
+                        }
+                        consumerRecords.forEach(record -> consumeAndListenRecord(record, consumerRecordFunction, listener));
+                        consumer.commitAsync();
+                    } catch (Exception e) {
+                        logger.error(e.getMessage(), e);
+                    }
+                }
+//                consumer.close();
+//                logger.info("DONE");
+            }
+        };
+    }
+
     static void consumeRecord(ConsumerRecord<Long, JsonNode> toConsume, java.util.function.Consumer<ConsumerRecord<Long, JsonNode>> consumerRecordFunction) {
         try {
             logger.info("Consumer Record:({}, {}, {}, {})\n",
                     toConsume.key(), toConsume.value(),
                     toConsume.partition(), toConsume.offset());
             consumerRecordFunction.accept(toConsume);
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        }
+
+    }
+
+    static void consumeAndListenRecord(ConsumerRecord<Long, JsonNode> toConsume, java.util.function.Function<ConsumerRecord<Long, JsonNode>, AbstractEfestoKafkaMessage> consumerRecordFunction, EfestoKafkaMessageListener listener) {
+        try {
+            logger.info("Consumer Record:({}, {}, {}, {})\n",
+                    toConsume.key(), toConsume.value(),
+                    toConsume.partition(), toConsume.offset());
+            AbstractEfestoKafkaMessage message = consumerRecordFunction.apply(toConsume);
+            listener.notificationMessageReceived(message);
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
         }
@@ -138,6 +196,6 @@ public class ThreadUtils {
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
         }
-
     }
+
 }

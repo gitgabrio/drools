@@ -32,7 +32,6 @@ public class KieServicesDiscoverProducer {
     public static void runProducer(final Producer<Long, JsonNode> producer) {
         logger.info("runProducer {}", producer);
         long time = System.currentTimeMillis();
-
         try {
             JsonNode jsonNode = getJsonNode();
             final ProducerRecord<Long, JsonNode> record =
