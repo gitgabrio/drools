@@ -20,7 +20,7 @@ class KieServicesDiscoverProducerTest {
 
     @Test
     public void discoverProducerRunTest() {
-        try (MockProducer<Long, JsonNode> kieServicesDiscoverProducer = new MockProducer<Long, JsonNode>(true, new LongSerializer(), new JsonSerializer())) {
+        try (MockProducer<Long, JsonNode> kieServicesDiscoverProducer = new MockProducer<>(true, new LongSerializer(), new JsonSerializer())) {
             assertThat(kieServicesDiscoverProducer.history()).isEmpty();
             KieServicesDiscoverProducer.runProducer(kieServicesDiscoverProducer);
             assertThat(kieServicesDiscoverProducer.history()).hasSize(1);

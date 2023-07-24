@@ -32,7 +32,7 @@ class KieServiceNotificationProducerTest {
 
     @Test
     void notificationProducerTest() {
-        try (MockProducer<Long, JsonNode> kieServiceNotificationProducer = new MockProducer<Long, JsonNode>(true, new LongSerializer(), new JsonSerializer())) {
+        try (MockProducer<Long, JsonNode> kieServiceNotificationProducer = new MockProducer<>(true, new LongSerializer(), new JsonSerializer())) {
             assertThat(kieServiceNotificationProducer.history()).isEmpty();
             KieServiceNotificationProducer.runProducer(kieServiceNotificationProducer, KIERUNTIMESERVICE);
             assertThat(kieServiceNotificationProducer.history()).hasSize(1);
