@@ -267,7 +267,7 @@ public class ThreadUtils {
                     toConsume.key(), toConsume.value(),
                     toConsume.partition(), toConsume.offset());
             AbstractEfestoKafkaMessage message = consumerRecordFunction.apply(toConsume);
-            listeners.forEach(listener -> listener.notificationMessageReceived(message));
+            listeners.forEach(listener -> listener.onMessageReceived(message));
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
         }

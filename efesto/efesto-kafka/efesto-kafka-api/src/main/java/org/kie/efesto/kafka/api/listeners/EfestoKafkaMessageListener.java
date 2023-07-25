@@ -7,5 +7,5 @@ import org.kie.efesto.kafka.api.messages.AbstractEfestoKafkaMessage;
  */
 public interface EfestoKafkaMessageListener {
 
-    void notificationMessageReceived(AbstractEfestoKafkaMessage received);
+    void onMessageReceived(AbstractEfestoKafkaMessage received);
 }

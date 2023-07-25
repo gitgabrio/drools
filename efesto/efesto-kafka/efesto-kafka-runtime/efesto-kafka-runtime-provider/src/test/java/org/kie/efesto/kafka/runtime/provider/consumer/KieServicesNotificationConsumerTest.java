@@ -44,7 +44,7 @@ class KieServicesNotificationConsumerTest {
                 counter++;
             }
             assertThat(receivedMessages).hasSize(1);
-            verify(mockListener, times(1)).notificationMessageReceived(receivedMessages.get(0));
+            verify(mockListener, times(1)).onMessageReceived(receivedMessages.get(0));
         } catch (Exception e) {
             fail("notificationConsumerTest failed", e);
         }
