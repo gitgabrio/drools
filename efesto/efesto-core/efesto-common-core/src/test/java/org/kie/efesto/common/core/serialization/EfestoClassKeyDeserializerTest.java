@@ -37,9 +37,9 @@ class EfestoClassKeyDeserializerTest {
     void deserializeNoParameter() throws IOException {
         EfestoClassKey keyString = new EfestoClassKey(String.class);
         ObjectMapper mapper = getObjectMapper();
-        String json = getObjectMapper().writeValueAsString(keyString);
+        String json = mapper.writeValueAsString(keyString);
         InputStream stream = new ByteArrayInputStream(json.getBytes(StandardCharsets.UTF_8));
-        JsonParser parser = getObjectMapper().getFactory().createParser(stream);
+        JsonParser parser = mapper.getFactory().createParser(stream);
         DeserializationContext ctxt = mapper.getDeserializationContext();
         EfestoClassKey retrieved = new EfestoClassKeyDeserializer().deserialize(parser, ctxt);
         assertThat(retrieved).isEqualTo(keyString);
@@ -49,9 +49,9 @@ class EfestoClassKeyDeserializerTest {
     void deserializeSingleParameter() throws IOException {
         EfestoClassKey keyListString = new EfestoClassKey(List.class, String.class);
         ObjectMapper mapper = getObjectMapper();
-        String json = getObjectMapper().writeValueAsString(keyListString);
+        String json = mapper.writeValueAsString(keyListString);
         InputStream stream = new ByteArrayInputStream(json.getBytes(StandardCharsets.UTF_8));
-        JsonParser parser = getObjectMapper().getFactory().createParser(stream);
+        JsonParser parser = mapper.getFactory().createParser(stream);
         DeserializationContext ctxt = mapper.getDeserializationContext();
         EfestoClassKey retrieved = new EfestoClassKeyDeserializer().deserialize(parser, ctxt);
         assertThat(retrieved).isEqualTo(keyListString);
@@ -63,7 +63,7 @@ class EfestoClassKeyDeserializerTest {
         ObjectMapper mapper = getObjectMapper();
         String json = getObjectMapper().writeValueAsString(keyMapStringLong);
         InputStream stream = new ByteArrayInputStream(json.getBytes(StandardCharsets.UTF_8));
-        JsonParser parser = getObjectMapper().getFactory().createParser(stream);
+        JsonParser parser = mapper.getFactory().createParser(stream);
         DeserializationContext ctxt = mapper.getDeserializationContext();
         EfestoClassKey retrieved = new EfestoClassKeyDeserializer().deserialize(parser, ctxt);
         assertThat(retrieved).isEqualTo(keyMapStringLong);

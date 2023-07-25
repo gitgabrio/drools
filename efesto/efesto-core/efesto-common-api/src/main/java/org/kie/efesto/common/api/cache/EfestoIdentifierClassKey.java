@@ -33,6 +33,14 @@ public class EfestoIdentifierClassKey {
         this.efestoClassKey = efestoClassKey;
     }
 
+    public ModelLocalUriId getModelLocalUriId() {
+        return modelLocalUriId;
+    }
+
+    public EfestoClassKey getEfestoClassKey() {
+        return efestoClassKey;
+    }
+
     @Override
     public String toString() {
         return "EfestoIdentifierClassKey{" +
