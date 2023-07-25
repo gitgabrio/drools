@@ -81,7 +81,7 @@ class ParseJsonInputRequestConsumerTest {
 
     private static JsonNode getJsonNodeWithoutModelLocalUriId() {
         String modelLocalUriIDString = "{\"model\":\"example\",\"basePath\":\"/some-id/instances/some-instance-id\",\"fullPath\":\"/example/some-id/instances/some-instance-id\"}";
-        EfestoKafkaRuntimeParseJsonInputRequestMessage message = new EfestoKafkaRuntimeParseJsonInputRequestMessage(modelLocalUriIDString, "inputDataString");
+        EfestoKafkaRuntimeParseJsonInputRequestMessage message = new EfestoKafkaRuntimeParseJsonInputRequestMessage(modelLocalUriIDString, "inputDataString", 10L);
         return getObjectMapper().valueToTree(message);
     }
 

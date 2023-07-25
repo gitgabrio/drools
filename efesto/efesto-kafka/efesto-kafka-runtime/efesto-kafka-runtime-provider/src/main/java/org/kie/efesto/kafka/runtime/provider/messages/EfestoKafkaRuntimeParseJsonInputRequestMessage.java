@@ -14,15 +14,17 @@ public class EfestoKafkaRuntimeParseJsonInputRequestMessage extends AbstractEfes
 
     protected String modelLocalUriIdString;
     protected String inputDataString;
+    protected Long messageId;
 
     public EfestoKafkaRuntimeParseJsonInputRequestMessage() {
         super(EfestoKafkaMessagingType.RUNTIMEPARSEJSONINPUTREQUEST);
     }
 
-    public EfestoKafkaRuntimeParseJsonInputRequestMessage(String modelLocalUriIdString, String inputDataString) {
+    public EfestoKafkaRuntimeParseJsonInputRequestMessage(String modelLocalUriIdString, String inputDataString, Long messageId) {
         this();
         this.modelLocalUriIdString = modelLocalUriIdString;
         this.inputDataString = inputDataString;
+        this.messageId = messageId;
     }
 
     public String getModelLocalUriIdString() {
@@ -31,5 +33,9 @@ public class EfestoKafkaRuntimeParseJsonInputRequestMessage extends AbstractEfes
 
     public String getInputDataString() {
         return inputDataString;
+    }
+
+    public Long getMessageId() {
+        return messageId;
     }
 }
