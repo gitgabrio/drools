@@ -12,7 +12,6 @@ import org.kie.efesto.kafka.api.messages.EfestoKafkaMessagingType;
 import org.kie.efesto.kafka.runtime.provider.messages.AbstractEfestoKafkaRuntimeMessage;
 import org.kie.efesto.kafka.runtime.provider.messages.EfestoKafkaRuntimeParseJsonInputResponseMessage;
 import org.kie.efesto.runtimemanager.api.model.EfestoInput;
-import org.kie.efesto.runtimemanager.api.utils.SPIUtils;
 import org.kie.efesto.runtimemanager.core.mocks.MockEfestoInputA;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -32,11 +31,11 @@ class ParseJsonInputResponseProducerTest {
 
     @Test
     void parseJsonInputResponseProducerTest() {
-        try (MockProducer<Long, JsonNode> kieServiceNotificationProducer = new MockProducer<>(true, new LongSerializer(), new JsonSerializer())) {
-            assertThat(kieServiceNotificationProducer.history()).isEmpty();
-            ParseJsonInputResponseProducer.runProducer(kieServiceNotificationProducer, EFESTOINPUT);
-            assertThat(kieServiceNotificationProducer.history()).hasSize(1);
-            ProducerRecord<Long, JsonNode> retrieved = kieServiceNotificationProducer.history().get(0);
+        try (MockProducer<Long, JsonNode> parseJsonInputResponseProducer = new MockProducer<>(true, new LongSerializer(), new JsonSerializer())) {
+            assertThat(parseJsonInputResponseProducer.history()).isEmpty();
+            ParseJsonInputResponseProducer.runProducer(parseJsonInputResponseProducer, EFESTOINPUT);
+            assertThat(parseJsonInputResponseProducer.history()).hasSize(1);
+            ProducerRecord<Long, JsonNode> retrieved = parseJsonInputResponseProducer.history().get(0);
             assertThat(retrieved).isNotNull();
             AbstractEfestoKafkaRuntimeMessage abstractEfestoKafkaRuntimeMessage = getObjectMapper().readValue(retrieved.value().toString(), AbstractEfestoKafkaRuntimeMessage.class);
             assertThat(abstractEfestoKafkaRuntimeMessage).isNotNull().isExactlyInstanceOf(EfestoKafkaRuntimeParseJsonInputResponseMessage.class);
