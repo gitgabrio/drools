@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -29,7 +30,9 @@ public class KafkaRuntimeServiceProvider implements RuntimeServiceProvider, Efes
 
     public KafkaRuntimeServiceProvider() {
         logger.info("Starting listening for AbstractEfestoKafkaMessage info on Kafka channel");
-        KieServiceNotificationConsumer.startEvaluateConsumer(this);
+        Collection<EfestoKafkaMessageListener> listeners = new ArrayList<>();
+        listeners.add(this);
+        KieServiceNotificationConsumer.startEvaluateConsumer(listeners);
         logger.info("Requesting KieRuntimeServices info on Kafka channel");
         KieServicesDiscoverProducer.runProducer();
     }
@@ -37,7 +40,9 @@ public class KafkaRuntimeServiceProvider implements RuntimeServiceProvider, Efes
 
     public KafkaRuntimeServiceProvider(final Consumer<Long, JsonNode> consumer, final Producer<Long, JsonNode> producer) {
         logger.info("Starting listening for AbstractEfestoKafkaMessage info on Kafka channel");
-        KieServiceNotificationConsumer.startEvaluateConsumer(consumer, this);
+        Collection<EfestoKafkaMessageListener> listeners = new ArrayList<>();
+        listeners.add(this);
+        KieServiceNotificationConsumer.startEvaluateConsumer(consumer, listeners);
         logger.info("Requesting KieRuntimeServices info on Kafka channel");
         KieServicesDiscoverProducer.runProducer(producer);
     }

@@ -25,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
+import java.util.Collection;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class ThreadUtils {
@@ -211,14 +212,14 @@ public class ThreadUtils {
      * @param consumer
      * @param giveUp
      * @param threadName
-     * @param listener
+     * @param listeners
      * @return
      */
     public static Thread getConsumeAndListenThread(Consumer<Long, JsonNode> consumer,
                                                    int giveUp,
                                                    String threadName,
                                                    java.util.function.Function<ConsumerRecord<Long, JsonNode>, AbstractEfestoKafkaMessage> consumerRecordFunction,
-                                                   EfestoKafkaMessageListener listener) {
+                                                   Collection<EfestoKafkaMessageListener> listeners) {
         logger.info("Retrieving thread for {}", threadName);
         return new Thread(threadName) {
             @Override
@@ -236,7 +237,7 @@ public class ThreadUtils {
                                 continue;
                             }
                         }
-                        consumerRecords.forEach(record -> consumeAndListenRecord(record, consumerRecordFunction, listener));
+                        consumerRecords.forEach(record -> consumeAndListenRecord(record, consumerRecordFunction, listeners));
                         consumer.commitAsync();
                     } catch (Exception e) {
                         logger.error(e.getMessage(), e);
@@ -260,13 +261,13 @@ public class ThreadUtils {
 
     }
 
-    static void consumeAndListenRecord(ConsumerRecord<Long, JsonNode> toConsume, java.util.function.Function<ConsumerRecord<Long, JsonNode>, AbstractEfestoKafkaMessage> consumerRecordFunction, EfestoKafkaMessageListener listener) {
+    static void consumeAndListenRecord(ConsumerRecord<Long, JsonNode> toConsume, java.util.function.Function<ConsumerRecord<Long, JsonNode>, AbstractEfestoKafkaMessage> consumerRecordFunction, Collection<EfestoKafkaMessageListener> listeners) {
         try {
             logger.info("Consumer Record:({}, {}, {}, {})\n",
                     toConsume.key(), toConsume.value(),
                     toConsume.partition(), toConsume.offset());
             AbstractEfestoKafkaMessage message = consumerRecordFunction.apply(toConsume);
-            listener.notificationMessageReceived(message);
+            listeners.forEach(listener -> listener.notificationMessageReceived(message));
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
         }

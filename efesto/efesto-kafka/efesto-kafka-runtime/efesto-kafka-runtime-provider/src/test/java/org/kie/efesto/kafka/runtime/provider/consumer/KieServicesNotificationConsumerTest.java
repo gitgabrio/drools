@@ -32,7 +32,7 @@ class KieServicesNotificationConsumerTest {
         MockConsumer<Long, JsonNode> kieServicesNotificationConsumer = new MockConsumer<>(OffsetResetStrategy.EARLIEST);
         EfestoKafkaMessageListener mockListener = mock(EfestoKafkaMessageListener.class);
         try {
-            KieServiceNotificationConsumer.startEvaluateConsumer(kieServicesNotificationConsumer, mockListener);
+            KieServiceNotificationConsumer.startEvaluateConsumer(kieServicesNotificationConsumer, Collections.singleton(mockListener));
             kieServicesNotificationConsumer.updateBeginningOffsets(startOffsets);
             kieServicesNotificationConsumer.assign(Collections.singleton(topicPartition));
             kieServicesNotificationConsumer.addRecord(consumerRecord);

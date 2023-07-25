@@ -29,10 +29,7 @@ import org.kie.efesto.runtimemanager.api.exceptions.EfestoRuntimeManagerExceptio
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 
 import static org.kie.efesto.common.core.utils.JSONUtils.getObjectMapper;
 import static org.kie.efesto.kafka.api.KafkaConstants.BOOTSTRAP_SERVERS;
@@ -45,25 +42,37 @@ public class KieServiceNotificationConsumer {
 
     private static final List<EfestoKafkaRuntimeServiceNotificationMessage> receivedMessages = new ArrayList<>();
 
+    private static Thread consumerThread;
+
+    private static Set<EfestoKafkaMessageListener> registeredListeners;
+
     private KieServiceNotificationConsumer() {
     }
 
-    public static void startEvaluateConsumer(EfestoKafkaMessageListener listener) {
-        logger.info("starting consumer....");
-        Consumer<Long, JsonNode> consumer = createConsumer();
-        startEvaluateConsumer(consumer, listener);
+    public static void startEvaluateConsumer(Collection<EfestoKafkaMessageListener> listeners) {
+        logger.info("startEvaluateConsumer");
+        if (consumerThread != null) {
+            logger.info("KieServiceNotificationConsumer already started");
+            registeredListeners.addAll(listeners);
+        } else {
+            logger.info("Starting KieServiceNotificationConsumer....");
+            Consumer<Long, JsonNode> consumer = createConsumer();
+            startEvaluateConsumer(consumer, listeners);
+        }
     }
 
     public static void startEvaluateConsumer(Consumer<Long, JsonNode> consumer,
-                                             EfestoKafkaMessageListener listener) {
+                                             Collection<EfestoKafkaMessageListener> listeners) {
         logger.info("starting consumer.... {}", consumer);
         final int giveUp = 100;
         receivedMessages.clear();
         try {
-            Thread thread = getConsumeAndListenThread(consumer, giveUp, KieServiceNotificationConsumer.class.getSimpleName(),
+            registeredListeners = new HashSet<>();
+            registeredListeners.addAll(listeners);
+            consumerThread = getConsumeAndListenThread(consumer, giveUp, KieServiceNotificationConsumer.class.getSimpleName(),
                     KieServiceNotificationConsumer::consumeModel,
-                    listener);
-            thread.start();
+                    registeredListeners);
+            consumerThread.start();
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
         }

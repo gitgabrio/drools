@@ -46,22 +46,29 @@ public class ParseJsonInputRequestConsumer {
 
     private static final List<EfestoKafkaRuntimeParseJsonInputRequestMessage> receivedMessages = new ArrayList<>();
 
+    private static Thread consumerThread;
+
     private ParseJsonInputRequestConsumer() {
     }
 
     public static void startEvaluateConsumer() {
-        logger.info("starting consumer....");
-        Consumer<Long, JsonNode> consumer = createConsumer();
-        startEvaluateConsumer(consumer, ParseJsonInputRequestConsumer::parseJsonInput);
+        logger.info("startEvaluateConsumer");
+        if (consumerThread != null) {
+            logger.info("ParseJsonInputRequestConsumer already started");
+        } else {
+            logger.info("Starting ParseJsonInputRequestConsumer....");
+            Consumer<Long, JsonNode> consumer = createConsumer();
+            startEvaluateConsumer(consumer, ParseJsonInputRequestConsumer::parseJsonInput);
+        }
     }
 
     public static void startEvaluateConsumer(Consumer<Long, JsonNode> consumer, final java.util.function.Function<EfestoKafkaRuntimeParseJsonInputRequestMessage, Boolean> parseJsonInputProducer) {
         logger.info("starting consumer.... {}", consumer);
         final int giveUp = 100;
         try {
-            Thread thread = getConsumeAndProduceThread(consumer, parseJsonInputProducer, giveUp, ParseJsonInputRequestConsumer.class.getSimpleName(),
+            consumerThread = getConsumeAndProduceThread(consumer, parseJsonInputProducer, giveUp, ParseJsonInputRequestConsumer.class.getSimpleName(),
                     ParseJsonInputRequestConsumer::consumeModelAndProduceRecord);
-            thread.start();
+            consumerThread.start();
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
         }
