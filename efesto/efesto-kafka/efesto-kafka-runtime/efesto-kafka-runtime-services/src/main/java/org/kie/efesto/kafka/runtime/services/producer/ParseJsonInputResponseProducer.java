@@ -28,23 +28,21 @@ public class ParseJsonInputResponseProducer {
     private static final AtomicLong COUNTER = new AtomicLong();
 
 
-    public static void runProducer(EfestoInput toPublish) {
+    public static void runProducer(EfestoInput toPublish, long messageId) {
         logger.info("runProducer");
         final Producer<Long, JsonNode> producer = createProducer();
-        runProducer(producer, toPublish);
+        runProducer(producer, toPublish, messageId);
     }
 
-    public static void runProducer(final Producer<Long, JsonNode> producer, EfestoInput toPublish) {
+    public static void runProducer(final Producer<Long, JsonNode> producer, EfestoInput toPublish, long messageId) {
         logger.info("runProducer {}", producer);
         long time = System.currentTimeMillis();
 
         try {
-            JsonNode jsonNode = getJsonNode(toPublish);
+            JsonNode jsonNode = getJsonNode(toPublish, messageId);
             final ProducerRecord<Long, JsonNode> record =
                     new ProducerRecord<>(RUNTIMESERVICE_PARSEJSONINPUTRESPONSE_TOPIC, COUNTER.incrementAndGet(), jsonNode);
-
             RecordMetadata metadata = producer.send(record).get();
-
             long elapsedTime = System.currentTimeMillis() - time;
             logger.info("sent record(key={} value={}) " +
                             "meta(partition={}, offset={}) time={}\n",
@@ -58,8 +56,8 @@ public class ParseJsonInputResponseProducer {
         }
     }
 
-    static JsonNode getJsonNode(EfestoInput toPublish) {
-        EfestoKafkaRuntimeParseJsonInputResponseMessage responseMessage = new EfestoKafkaRuntimeParseJsonInputResponseMessage(toPublish);
+    static JsonNode getJsonNode(EfestoInput toPublish, long messageId) {
+        EfestoKafkaRuntimeParseJsonInputResponseMessage responseMessage = new EfestoKafkaRuntimeParseJsonInputResponseMessage(toPublish, messageId);
         ObjectMapper mapper = getObjectMapper();
         SimpleModule toRegister = new SimpleModule();
         toRegister.addDeserializer(EfestoInput.class, new EfestoInputDeserializer());

@@ -20,7 +20,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.BiFunction;
+import java.util.function.Function;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
@@ -49,10 +49,11 @@ class ParseJsonInputRequestConsumerTest {
         ConsumerRecord<Long, JsonNode> consumerRecord = getConsumerRecordWithoutModelLocalUriId(topicPartition);
         MockConsumer<Long, JsonNode> parseJsonInputRequestConsumer = new MockConsumer<>(OffsetResetStrategy.EARLIEST);
         MockProducer<Long, JsonNode> parseJsonInputResponseProducer = new MockProducer<>(true, new LongSerializer(), new JsonSerializer());
-        BiFunction parseJsonInputProducer = (BiFunction<String, String, Boolean>) (modelLocalUriIdString, inputDataString) -> {
-            Optional<EfestoInput> retrievedEfestoInput = KIERUNTIMESERVICES.stream().map(kieRuntimeService -> parseJsonInput(kieRuntimeService, modelLocalUriIdString, inputDataString))
+        Function parseJsonInputProducer = (Function<EfestoKafkaRuntimeParseJsonInputRequestMessage, Boolean>) (requestMessage) -> {
+            Optional<EfestoInput> retrievedEfestoInput = KIERUNTIMESERVICES.stream()
+                    .map(kieRuntimeService -> parseJsonInput(kieRuntimeService, requestMessage.getModelLocalUriIdString(), requestMessage.getInputDataString()))
                     .findFirst();
-            retrievedEfestoInput.ifPresent(efestoInput -> ParseJsonInputResponseProducer.runProducer(parseJsonInputResponseProducer, efestoInput));
+            retrievedEfestoInput.ifPresent(efestoInput -> ParseJsonInputResponseProducer.runProducer(parseJsonInputResponseProducer, efestoInput, 10L));
             return retrievedEfestoInput.isPresent();
         };
         try {

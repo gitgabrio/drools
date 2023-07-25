@@ -33,7 +33,7 @@ class ParseJsonInputResponseProducerTest {
     void parseJsonInputResponseProducerTest() {
         try (MockProducer<Long, JsonNode> parseJsonInputResponseProducer = new MockProducer<>(true, new LongSerializer(), new JsonSerializer())) {
             assertThat(parseJsonInputResponseProducer.history()).isEmpty();
-            ParseJsonInputResponseProducer.runProducer(parseJsonInputResponseProducer, EFESTOINPUT);
+            ParseJsonInputResponseProducer.runProducer(parseJsonInputResponseProducer, EFESTOINPUT, 10L);
             assertThat(parseJsonInputResponseProducer.history()).hasSize(1);
             ProducerRecord<Long, JsonNode> retrieved = parseJsonInputResponseProducer.history().get(0);
             assertThat(retrieved).isNotNull();
@@ -46,11 +46,12 @@ class ParseJsonInputResponseProducerTest {
 
     @Test
     void getJsonNodeTest() throws JsonProcessingException {
-        JsonNode retrieved = ParseJsonInputResponseProducer.getJsonNode(EFESTOINPUT);
+        JsonNode retrieved = ParseJsonInputResponseProducer.getJsonNode(EFESTOINPUT, 10L);
         assertNotNull(retrieved);
         AbstractEfestoKafkaRuntimeMessage responseMessage = getObjectMapper().readValue(retrieved.toString(), AbstractEfestoKafkaRuntimeMessage.class);
         assertThat(responseMessage).isExactlyInstanceOf(EfestoKafkaRuntimeParseJsonInputResponseMessage.class);
         assertThat(responseMessage.getKind()).isEqualTo(EfestoKafkaMessagingType.RUNTIMEPARSEJSONINPUTRESPONSE);
         assertThat(((EfestoKafkaRuntimeParseJsonInputResponseMessage) responseMessage).getEfestoInput()).isEqualTo(EFESTOINPUT);
+        assertThat(((EfestoKafkaRuntimeParseJsonInputResponseMessage) responseMessage).getMessageId()).isEqualTo(10L);
     }
 }

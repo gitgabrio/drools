@@ -12,17 +12,23 @@ public class EfestoKafkaRuntimeParseJsonInputResponseMessage extends AbstractEfe
 
 
     protected EfestoInput efestoInput;
+    protected Long messageId;
 
     public EfestoKafkaRuntimeParseJsonInputResponseMessage() {
         super(EfestoKafkaMessagingType.RUNTIMEPARSEJSONINPUTRESPONSE);
     }
 
-    public EfestoKafkaRuntimeParseJsonInputResponseMessage(EfestoInput efestoInput) {
+    public EfestoKafkaRuntimeParseJsonInputResponseMessage(EfestoInput efestoInput, long messageId) {
         this();
         this.efestoInput = efestoInput;
+        this.messageId = messageId;
     }
 
     public EfestoInput getEfestoInput() {
         return efestoInput;
+    }
+
+    public long getMessageId() {
+        return messageId;
     }
 }
