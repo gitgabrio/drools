@@ -29,7 +29,7 @@ class KieServicesNotificationConsumerTest {
         HashMap<TopicPartition, Long> startOffsets = new HashMap<>();
         startOffsets.put(topicPartition, 0L);
         ConsumerRecord<Long, JsonNode> consumerRecord = getConsumerRecordWithoutModelLocalUriId(topicPartition);
-        MockConsumer<Long, JsonNode> kieServicesNotificationConsumer = new MockConsumer<Long, JsonNode>(OffsetResetStrategy.EARLIEST);
+        MockConsumer<Long, JsonNode> kieServicesNotificationConsumer = new MockConsumer<>(OffsetResetStrategy.EARLIEST);
         EfestoKafkaMessageListener mockListener = mock(EfestoKafkaMessageListener.class);
         try {
             KieServiceNotificationConsumer.startEvaluateConsumer(kieServicesNotificationConsumer, mockListener);
