@@ -47,8 +47,7 @@ public class EfestoInputDeserializer extends StdDeserializer<EfestoInput> {
         try {
             String modelLocalUriIdString = node.get("modelLocalUriId").toString();
             String inputDataString = node.get("inputData").toString();
-            EfestoInput toReturn = runtimeManager.parseJsonInput(modelLocalUriIdString, inputDataString);
-            return toReturn;
+            return runtimeManager.parseJsonInput(modelLocalUriIdString, inputDataString);
         } catch (Exception e) {
             throw new KieEfestoCommonException(String.format("Failed to deserialize %s as EfestoIdentifierClassKey", node), e);
         }
