@@ -80,7 +80,7 @@ class KafkaRuntimeServiceProviderTest {
             }
             assertThat(retrieved).hasSize(1);
             AbstractEfestoKafkaMessage received = new EfestoKafkaRuntimeServiceDiscoverMessage();
-            kafkaRuntimeServiceProvider.notificationMessageReceived(received);
+            kafkaRuntimeServiceProvider.onMessageReceived(received);
             retrieved = kafkaRuntimeServiceProvider.getKieRuntimeServices();
             assertThat(retrieved).hasSize(1);
         } catch (Exception e) {
@@ -100,7 +100,7 @@ class KafkaRuntimeServiceProviderTest {
             }
             assertThat(retrieved).hasSize(1);
             AbstractEfestoKafkaMessage received = new EfestoKafkaRuntimeServiceNotificationMessage("NEW_MODEL", new EfestoClassKey(String.class));
-            kafkaRuntimeServiceProvider.notificationMessageReceived(received);
+            kafkaRuntimeServiceProvider.onMessageReceived(received);
             retrieved = kafkaRuntimeServiceProvider.getKieRuntimeServices();
             assertThat(retrieved).hasSize(2);
         } catch (Exception e) {
@@ -119,7 +119,7 @@ class KafkaRuntimeServiceProviderTest {
                 counter++;
             }
             assertThat(retrieved).hasSize(1);
-            kafkaRuntimeServiceProvider.notificationMessageReceived(efestoKafkaRuntimeServiceNotificationMessage);
+            kafkaRuntimeServiceProvider.onMessageReceived(efestoKafkaRuntimeServiceNotificationMessage);
             retrieved = kafkaRuntimeServiceProvider.getKieRuntimeServices();
             assertThat(retrieved).hasSize(1);
         } catch (Exception e) {

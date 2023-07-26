@@ -53,7 +53,7 @@ public class KafkaRuntimeServiceProvider implements RuntimeServiceProvider, Efes
     }
 
     @Override
-    public void notificationMessageReceived(AbstractEfestoKafkaMessage received) {
+    public void onMessageReceived(AbstractEfestoKafkaMessage received) {
         if (!(received instanceof EfestoKafkaRuntimeServiceNotificationMessage)) {
             logger.warn("Unexpected message {}", received);
         } else {
