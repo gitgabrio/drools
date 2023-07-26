@@ -25,8 +25,6 @@ import org.apache.kafka.connect.json.JsonDeserializer;
 import org.kie.efesto.kafka.api.listeners.EfestoKafkaMessageListener;
 import org.kie.efesto.kafka.api.serialization.EfestoLongDeserializer;
 import org.kie.efesto.kafka.runtime.provider.messages.EfestoKafkaRuntimeParseJsonInputRequestMessage;
-import org.kie.efesto.kafka.runtime.services.producer.ParseJsonInputResponseProducer;
-import org.kie.efesto.kafka.runtime.services.service.KafkaRuntimeLocalServiceProvider;
 import org.kie.efesto.runtimemanager.api.exceptions.EfestoRuntimeManagerException;
 import org.kie.efesto.runtimemanager.api.model.EfestoInput;
 import org.kie.efesto.runtimemanager.api.service.KieRuntimeService;
@@ -43,8 +41,6 @@ import static org.kie.efesto.kafka.api.ThreadUtils.getConsumeAndListenThread;
 public class ParseJsonInputRequestConsumer {
 
     private static final Logger logger = LoggerFactory.getLogger(ParseJsonInputRequestConsumer.class);
-
-    private static final KafkaRuntimeLocalServiceProvider localServiceProvider = new KafkaRuntimeLocalServiceProvider();
 
     private static final List<EfestoKafkaRuntimeParseJsonInputRequestMessage> receivedMessages = new ArrayList<>();
 

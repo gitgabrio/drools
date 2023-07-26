@@ -17,6 +17,8 @@ package org.kie.efesto.kafka.runtime.provider.consumer;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -26,6 +28,8 @@ import org.kie.efesto.kafka.api.listeners.EfestoKafkaMessageListener;
 import org.kie.efesto.kafka.api.serialization.EfestoLongDeserializer;
 import org.kie.efesto.kafka.runtime.provider.messages.EfestoKafkaRuntimeParseJsonInputResponseMessage;
 import org.kie.efesto.runtimemanager.api.exceptions.EfestoRuntimeManagerException;
+import org.kie.efesto.runtimemanager.api.model.EfestoInput;
+import org.kie.efesto.runtimemanager.core.serialization.EfestoInputDeserializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,15 +52,25 @@ public class ParseJsonInputResponseConsumer {
     private ParseJsonInputResponseConsumer() {
     }
 
-    public static void startEvaluateConsumer(Collection<EfestoKafkaMessageListener> listeners) {
+    public static void removeListener(EfestoKafkaMessageListener toRemove) {
+        logger.info("removeListener {}", toRemove);
+        if (registeredListeners != null) {
+            logger.info("Removing {}", toRemove);
+            registeredListeners.remove(toRemove);
+        }
+    }
+
+    public static void startEvaluateConsumer(EfestoKafkaMessageListener toRegister) {
         logger.info("startEvaluateConsumer");
         if (consumerThread != null) {
             logger.info("ParseJsonInputResponseConsumer already started");
-            registeredListeners.addAll(listeners);
+            registeredListeners.add(toRegister);
         } else {
             logger.info("Starting ParseJsonInputResponseConsumer....");
             Consumer<Long, JsonNode> consumer = createConsumer();
-            startEvaluateConsumer(consumer, listeners);
+            registeredListeners = new HashSet<>();
+            registeredListeners.add(toRegister);
+            startEvaluateConsumer(consumer, registeredListeners);
         }
     }
 
@@ -66,11 +80,9 @@ public class ParseJsonInputResponseConsumer {
         final int giveUp = 100;
         receivedMessages.clear();
         try {
-            registeredListeners = new HashSet<>();
-            registeredListeners.addAll(listeners);
             consumerThread = getConsumeAndListenThread(consumer, giveUp, ParseJsonInputResponseConsumer.class.getSimpleName(),
                     ParseJsonInputResponseConsumer::consumeModel,
-                    registeredListeners);
+                    listeners);
             consumerThread.start();
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
@@ -86,10 +98,10 @@ public class ParseJsonInputResponseConsumer {
             logger.info("Consume: ({})\n", toConsume);
             JsonNode jsonNode = toConsume.value();
             logger.info("JsonNode: ({})\n", jsonNode);
-            EfestoKafkaRuntimeParseJsonInputResponseMessage parseJsonInputRequestMessage = getMessage(jsonNode);
-            logger.info("parseJsonInputRequestMessage: ({})\n", parseJsonInputRequestMessage);
-            receivedMessages.add(parseJsonInputRequestMessage);
-            return parseJsonInputRequestMessage;
+            EfestoKafkaRuntimeParseJsonInputResponseMessage toReturn = getMessage(jsonNode);
+            logger.info("parseJsonInputRequestMessage: ({})\n", toReturn);
+            receivedMessages.add(toReturn);
+            return toReturn;
         } catch (Exception e) {
             String errorMessage = String.format("Failed to consume %s", toConsume);
             logger.error(errorMessage, e);
@@ -98,7 +110,11 @@ public class ParseJsonInputResponseConsumer {
     }
 
     private static EfestoKafkaRuntimeParseJsonInputResponseMessage getMessage(JsonNode jsonNode) throws JsonProcessingException {
-        return getObjectMapper().readValue(jsonNode.toString(), EfestoKafkaRuntimeParseJsonInputResponseMessage.class);
+        ObjectMapper mapper = getObjectMapper();
+        SimpleModule toRegister = new SimpleModule();
+        toRegister.addDeserializer(EfestoInput.class, new EfestoInputDeserializer());
+        mapper.registerModule(toRegister);
+        return mapper.readValue(jsonNode.toString(), EfestoKafkaRuntimeParseJsonInputResponseMessage.class);
     }
 
     private static Consumer<Long, JsonNode> createConsumer() {

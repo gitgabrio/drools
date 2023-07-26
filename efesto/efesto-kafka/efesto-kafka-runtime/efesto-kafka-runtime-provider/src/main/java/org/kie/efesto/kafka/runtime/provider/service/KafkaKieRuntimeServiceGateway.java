@@ -10,7 +10,8 @@ import org.kie.efesto.runtimemanager.api.service.KieRuntimeService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -86,7 +87,7 @@ public class KafkaKieRuntimeServiceGateway implements KieRuntimeService {
         CompletableFuture<EfestoInput> completableFuture = CompletableFuture.supplyAsync(() -> {
             EfestoKafkaRuntimeParseJsonInputResponseMessageListener listener = new EfestoKafkaRuntimeParseJsonInputResponseMessageListener();
             logger.info("Sending EfestoKafkaRuntimeParseJsonInputRequestMessage...");
-            ParseJsonInputResponseConsumer.startEvaluateConsumer(Collections.singleton(listener));
+            ParseJsonInputResponseConsumer.startEvaluateConsumer(listener);
             long messageId = ParseJsonInputRequestProducer.runProducer(modelLocalUriIdString, inputDataString);
             logger.info("messageId {}", messageId);
             EfestoInput received = listener.getEfestoInput(messageId);
