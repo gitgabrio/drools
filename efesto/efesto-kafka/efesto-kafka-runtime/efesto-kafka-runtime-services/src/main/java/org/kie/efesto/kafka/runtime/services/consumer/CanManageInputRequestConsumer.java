@@ -98,7 +98,7 @@ public class CanManageInputRequestConsumer {
             JsonNode jsonNode = toConsume.value();
             logger.info("JsonNode: ({})\n", jsonNode);
             EfestoKafkaRuntimeCanManageInputRequestMessage toReturn = getMessage(jsonNode);
-            logger.info("parseJsonInputRequestMessage: ({})\n", toReturn);
+            logger.info("EfestoKafkaRuntimeCanManageInputRequestMessage: ({})\n", toReturn);
             receivedMessages.add(toReturn);
             return toReturn;
         } catch (Exception e) {

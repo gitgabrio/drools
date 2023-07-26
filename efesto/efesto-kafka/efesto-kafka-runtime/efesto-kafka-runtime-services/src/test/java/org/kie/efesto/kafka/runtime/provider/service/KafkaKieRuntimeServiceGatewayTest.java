@@ -1,9 +1,15 @@
 package org.kie.efesto.kafka.runtime.provider.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import org.apache.kafka.clients.admin.AdminClient;
+import org.apache.kafka.clients.admin.KafkaAdminClient;
+import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.kie.efesto.common.api.identifiers.ModelLocalUriId;
+import org.kie.efesto.kafka.runtime.provider.model.EfestoKafkaRuntimeContextImpl;
+import org.kie.efesto.kafka.runtime.services.consumer.CanManageInputRequestConsumer;
 import org.kie.efesto.kafka.runtime.services.service.KafkaRuntimeLocalServiceProvider;
 import org.kie.efesto.runtimemanager.api.model.EfestoInput;
 import org.kie.efesto.runtimemanager.api.service.KieRuntimeService;
@@ -12,10 +18,13 @@ import org.kie.efesto.runtimemanager.core.mocks.MockEfestoInputA;
 import org.kie.efesto.runtimemanager.core.mocks.MockEfestoInputD;
 import org.kie.efesto.runtimemanager.core.mocks.MockKieRuntimeServiceA;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Properties;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.kie.efesto.common.core.utils.JSONUtils.getObjectMapper;
+import static org.kie.efesto.kafka.api.KafkaConstants.*;
 import static org.kie.efesto.runtimemanager.core.service.RuntimeManagerUtils.rePopulateFirstLevelCache;
 
 /**
@@ -26,6 +35,7 @@ class KafkaKieRuntimeServiceGatewayTest {
 
     private static KafkaKieRuntimeServiceGateway KAFKAKIERUNTIMESERVICEGATEWAY;
     private static List<KieRuntimeService> KIERUNTIMESERVICES;
+    private static AdminClient ADMIN_CLIENT;
 
     @BeforeAll
     public static void setup() {
@@ -40,6 +50,27 @@ class KafkaKieRuntimeServiceGatewayTest {
         rePopulateFirstLevelCache(KIERUNTIMESERVICES);
         MockKieRuntimeServiceA mockService = new MockKieRuntimeServiceA();
         KAFKAKIERUNTIMESERVICEGATEWAY = new KafkaKieRuntimeServiceGateway(mockService.getModelType(), mockService.getEfestoClassKeyIdentifier());
+        ADMIN_CLIENT = createAdminClient();
+    }
+
+    @BeforeEach
+    public void init() {
+        ADMIN_CLIENT.deleteTopics(Arrays.asList(RUNTIMESERVICE_PARSEJSONINPUTREQUEST_TOPIC,
+                RUNTIMESERVICE_PARSEJSONINPUTRESPONSE_TOPIC,
+                RUNTIMESERVICE_CANMANAGEINPUTREQUEST_TOPIC,
+                RUNTIMESERVICE_CANMANAGEINPUTRESPONSE_TOPIC));
+    }
+
+    @Test
+    void canManageInputExistingTest() {
+        boolean retrieved = KAFKAKIERUNTIMESERVICEGATEWAY.canManageInput(new MockEfestoInputA(), new EfestoKafkaRuntimeContextImpl());
+        assertThat(retrieved).isTrue();
+    }
+
+    @Test
+    void canManageInputNotExistingTest() {
+        boolean retrieved = KAFKAKIERUNTIMESERVICEGATEWAY.canManageInput(new MockEfestoInputD(), new EfestoKafkaRuntimeContextImpl());
+        assertThat(retrieved).isFalse();
     }
 
     @Test
@@ -58,6 +89,15 @@ class KafkaKieRuntimeServiceGatewayTest {
         String inputDataString = "inputData";
         EfestoInput retrieved = KAFKAKIERUNTIMESERVICEGATEWAY.parseJsonInput(modelLocalUriIdString, inputDataString);
         assertThat(retrieved).isNull();
+    }
+
+    private static AdminClient createAdminClient() {
+        final Properties props = new Properties();
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG,
+                BOOTSTRAP_SERVERS);
+        props.put(ConsumerConfig.GROUP_ID_CONFIG,
+                CanManageInputRequestConsumer.class.getSimpleName());
+        return KafkaAdminClient.create(props);
     }
 
 }

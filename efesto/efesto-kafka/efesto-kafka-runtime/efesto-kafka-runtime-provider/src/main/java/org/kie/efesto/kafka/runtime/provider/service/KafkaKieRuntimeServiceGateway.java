@@ -1,8 +1,11 @@
 package org.kie.efesto.kafka.runtime.provider.service;
 
 import org.kie.efesto.common.api.cache.EfestoClassKey;
+import org.kie.efesto.kafka.runtime.provider.consumer.CanManageInputResponseConsumer;
 import org.kie.efesto.kafka.runtime.provider.consumer.ParseJsonInputResponseConsumer;
+import org.kie.efesto.kafka.runtime.provider.listeners.EfestoKafkaRuntimeCanManageInputResponseMessageListener;
 import org.kie.efesto.kafka.runtime.provider.listeners.EfestoKafkaRuntimeParseJsonInputResponseMessageListener;
+import org.kie.efesto.kafka.runtime.provider.producer.CanManageInputRequestProducer;
 import org.kie.efesto.kafka.runtime.provider.producer.ParseJsonInputRequestProducer;
 import org.kie.efesto.runtimemanager.api.model.EfestoInput;
 import org.kie.efesto.runtimemanager.api.model.EfestoRuntimeContext;
@@ -37,35 +40,32 @@ public class KafkaKieRuntimeServiceGateway implements KieRuntimeService {
 
     @Override
     public boolean canManageInput(EfestoInput toEvaluate, EfestoRuntimeContext context) {
-//        logger.info("canManageInput");
-//        logger.trace("{} {}", toEvaluate, context);
-//        logger.info("Starting ParseJsonInputResponseConsumer...");
-//        CompletableFuture<EfestoInput> completableFuture = CompletableFuture.supplyAsync(() -> {
-//            EfestoKafkaRuntimeParseJsonInputResponseMessageListener listener = new EfestoKafkaRuntimeParseJsonInputResponseMessageListener();
-//            logger.info("Sending EfestoKafkaRuntimeParseJsonInputRequestMessage...");
-//            ParseJsonInputResponseConsumer.startEvaluateConsumer(Collections.singleton(listener));
-//            long messageId = ParseJsonInputRequestProducer.runProducer(modelLocalUriIdString, inputDataString);
-//            logger.info("messageId {}", messageId);
-//            EfestoInput received = listener.getEfestoInput(messageId);
-//            while (received == null) {
-//                try {
-//                    Thread.sleep(100);
-//                    received = listener.getEfestoInput(messageId);
-//                } catch (InterruptedException e) {
-//                    //
-//                }
-//            }
-//            return received;
-//        });
-//        try {
-//            return completableFuture.get(30, TimeUnit.SECONDS);
-//        } catch (Exception e) {
-//            logger.warn("Failed to retrieve EfestoInput for {} {}", modelLocalUriIdString, inputDataString);
-//            return null;
-//        }
-
-        // TOBE IMPLEMENTED OVER topic
-        return false;
+        logger.info("parseJsonInput");
+        logger.trace("{} {}", toEvaluate, context);
+        CompletableFuture<Boolean> completableFuture = CompletableFuture.supplyAsync(() -> {
+            logger.info("Sending EfestoKafkaRuntimeParseJsonInputRequestMessage...");
+            EfestoKafkaRuntimeCanManageInputResponseMessageListener listener = new EfestoKafkaRuntimeCanManageInputResponseMessageListener();
+            logger.info("Starting CanManageInputResponseConsumer...");
+            CanManageInputResponseConsumer.startEvaluateConsumer(listener);
+            long messageId = CanManageInputRequestProducer.runProducer(toEvaluate);
+            logger.info("messageId {}", messageId);
+            Boolean received = listener.getIsCanManage(messageId);
+            while (received == null) {
+                try {
+                    Thread.sleep(100);
+                    received = listener.getIsCanManage(messageId);
+                } catch (InterruptedException e) {
+                    //
+                }
+            }
+            return received;
+        });
+        try {
+            return completableFuture.get(30, TimeUnit.SECONDS);
+        } catch (Exception e) {
+            logger.warn("Failed to retrieve canManageInput for {} {}", toEvaluate, context);
+            return false;
+        }
     }
 
     @Override
@@ -83,11 +83,11 @@ public class KafkaKieRuntimeServiceGateway implements KieRuntimeService {
     public EfestoInput parseJsonInput(String modelLocalUriIdString, String inputDataString) {
         logger.info("parseJsonInput");
         logger.trace("{} {}", modelLocalUriIdString, inputDataString);
-        logger.info("Starting ParseJsonInputResponseConsumer...");
         CompletableFuture<EfestoInput> completableFuture = CompletableFuture.supplyAsync(() -> {
             EfestoKafkaRuntimeParseJsonInputResponseMessageListener listener = new EfestoKafkaRuntimeParseJsonInputResponseMessageListener();
-            logger.info("Sending EfestoKafkaRuntimeParseJsonInputRequestMessage...");
+            logger.info("Starting ParseJsonInputResponseConsumer...");
             ParseJsonInputResponseConsumer.startEvaluateConsumer(listener);
+            logger.info("Sending EfestoKafkaRuntimeParseJsonInputRequestMessage...");
             long messageId = ParseJsonInputRequestProducer.runProducer(modelLocalUriIdString, inputDataString);
             logger.info("messageId {}", messageId);
             EfestoInput received = listener.getEfestoInput(messageId);
