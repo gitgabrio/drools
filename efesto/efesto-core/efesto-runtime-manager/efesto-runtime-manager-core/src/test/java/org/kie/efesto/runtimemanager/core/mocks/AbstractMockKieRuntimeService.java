@@ -15,14 +15,27 @@
  */
 package org.kie.efesto.runtimemanager.core.mocks;
 
+import org.kie.efesto.common.api.exceptions.KieEfestoCommonException;
+import org.kie.efesto.common.api.identifiers.ModelLocalUriId;
 import org.kie.efesto.runtimemanager.api.exceptions.KieRuntimeServiceException;
+import org.kie.efesto.runtimemanager.api.model.EfestoInput;
 import org.kie.efesto.runtimemanager.api.model.EfestoRuntimeContext;
 import org.kie.efesto.runtimemanager.api.service.KieRuntimeService;
 
 import java.util.Optional;
 
+import static org.kie.efesto.common.core.utils.JSONUtils.getObjectMapper;
+
 public abstract class AbstractMockKieRuntimeService<T extends AbstractMockEfestoInput> implements KieRuntimeService<String, String, T, MockEfestoOutput, EfestoRuntimeContext> {
 
+
+    protected ModelLocalUriId modelLocalUriId;
+
+    protected AbstractMockKieRuntimeService(ModelLocalUriId modelLocalUriId) {
+        this.modelLocalUriId = modelLocalUriId;
+    }
+
+    abstract EfestoInput getMockedEfestoInput();
 
     @Override
     public Optional<MockEfestoOutput> evaluateInput(T toEvaluate, EfestoRuntimeContext context) {
@@ -30,6 +43,21 @@ public abstract class AbstractMockKieRuntimeService<T extends AbstractMockEfesto
             throw new KieRuntimeServiceException(String.format("Unmanaged input %s", toEvaluate.getModelLocalUriId()));
         }
         return Optional.of(new MockEfestoOutput());
+    }
+
+    @Override
+    public boolean canManageInput(EfestoInput toEvaluate, EfestoRuntimeContext context) {
+        return toEvaluate.getModelLocalUriId().equals(modelLocalUriId);
+    }
+
+    @Override
+    public EfestoInput parseJsonInput(String modelLocalUriIdString, String inputDataString) {
+        try {
+            ModelLocalUriId requested = getObjectMapper().readValue(modelLocalUriIdString, ModelLocalUriId.class);
+            return requested.equals(modelLocalUriId) ? getMockedEfestoInput() : null;
+        } catch (Exception e) {
+            throw new KieEfestoCommonException(String.format("Failed to parse %s as ModelLocalUriId", modelLocalUriIdString));
+        }
     }
 
 }

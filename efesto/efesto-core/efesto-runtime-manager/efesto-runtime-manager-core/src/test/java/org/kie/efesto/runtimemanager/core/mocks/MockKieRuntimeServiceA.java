@@ -16,32 +16,22 @@
 package org.kie.efesto.runtimemanager.core.mocks;
 
 import org.kie.efesto.common.api.cache.EfestoClassKey;
-import org.kie.efesto.common.api.exceptions.KieEfestoCommonException;
 import org.kie.efesto.common.api.identifiers.LocalUri;
 import org.kie.efesto.common.api.identifiers.ModelLocalUriId;
 import org.kie.efesto.runtimemanager.api.model.EfestoInput;
-import org.kie.efesto.runtimemanager.api.model.EfestoRuntimeContext;
-
-import java.util.Collections;
-import java.util.List;
 
 import static org.kie.efesto.common.api.identifiers.LocalUri.SLASH;
-import static org.kie.efesto.common.core.utils.JSONUtils.getObjectMapper;
 
 public class MockKieRuntimeServiceA extends AbstractMockKieRuntimeService {
 
-    private static List<ModelLocalUriId> managedResources =
-            Collections.singletonList(new ModelLocalUriId(LocalUri.parse(SLASH + MockEfestoInputA.class.getSimpleName() + SLASH + MockEfestoInputA.class.getPackage().getName())));
 
+    public MockKieRuntimeServiceA() {
+        super(new ModelLocalUriId(LocalUri.parse(SLASH + MockEfestoInputA.class.getSimpleName() + SLASH + MockEfestoInputA.class.getPackage().getName())));
+    }
 
     @Override
     public EfestoClassKey getEfestoClassKeyIdentifier() {
         return new EfestoClassKey(MockEfestoInputA.class, String.class);
-    }
-
-    @Override
-    public boolean canManageInput(EfestoInput toEvaluate, EfestoRuntimeContext context) {
-        return managedResources.contains(toEvaluate.getModelLocalUriId());
     }
 
     @Override
@@ -50,12 +40,7 @@ public class MockKieRuntimeServiceA extends AbstractMockKieRuntimeService {
     }
 
     @Override
-    public EfestoInput parseJsonInput(String modelLocalUriIdString, String inputDataString) {
-        try {
-            getObjectMapper().readValue(modelLocalUriIdString, ModelLocalUriId.class);
-        } catch (Exception e) {
-            throw new KieEfestoCommonException(String.format("Failed to parse %s as ModelLocalUriId", modelLocalUriIdString));
-        }
+    public EfestoInput getMockedEfestoInput() {
         return new MockEfestoInputA();
     }
 }
