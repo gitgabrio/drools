@@ -36,6 +36,33 @@ public class KafkaKieRuntimeServiceGateway implements KieRuntimeService {
 
     @Override
     public boolean canManageInput(EfestoInput toEvaluate, EfestoRuntimeContext context) {
+//        logger.info("canManageInput");
+//        logger.trace("{} {}", toEvaluate, context);
+//        logger.info("Starting ParseJsonInputResponseConsumer...");
+//        CompletableFuture<EfestoInput> completableFuture = CompletableFuture.supplyAsync(() -> {
+//            EfestoKafkaRuntimeParseJsonInputResponseMessageListener listener = new EfestoKafkaRuntimeParseJsonInputResponseMessageListener();
+//            logger.info("Sending EfestoKafkaRuntimeParseJsonInputRequestMessage...");
+//            ParseJsonInputResponseConsumer.startEvaluateConsumer(Collections.singleton(listener));
+//            long messageId = ParseJsonInputRequestProducer.runProducer(modelLocalUriIdString, inputDataString);
+//            logger.info("messageId {}", messageId);
+//            EfestoInput received = listener.getEfestoInput(messageId);
+//            while (received == null) {
+//                try {
+//                    Thread.sleep(100);
+//                    received = listener.getEfestoInput(messageId);
+//                } catch (InterruptedException e) {
+//                    //
+//                }
+//            }
+//            return received;
+//        });
+//        try {
+//            return completableFuture.get(30, TimeUnit.SECONDS);
+//        } catch (Exception e) {
+//            logger.warn("Failed to retrieve EfestoInput for {} {}", modelLocalUriIdString, inputDataString);
+//            return null;
+//        }
+
         // TOBE IMPLEMENTED OVER topic
         return false;
     }

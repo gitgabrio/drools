@@ -180,4 +180,13 @@ public class RuntimeManagerUtils {
                         s2)));
     }
 
+    // only for testing purpose
+    public static void rePopulateFirstLevelCache(final List<KieRuntimeService> discoveredKieRuntimeServices) {
+        logger.info("rePopulateFirstLevelCache");
+        logger.debug("{}", discoveredKieRuntimeServices);
+        firstLevelCache.clear();
+        populateFirstLevelCache(discoveredKieRuntimeServices, firstLevelCache);
+    }
+
+
 }
