@@ -4,30 +4,24 @@ import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.MockConsumer;
 import org.apache.kafka.clients.consumer.OffsetResetStrategy;
-import org.apache.kafka.clients.producer.MockProducer;
 import org.apache.kafka.common.TopicPartition;
-import org.apache.kafka.common.serialization.LongSerializer;
-import org.apache.kafka.connect.json.JsonSerializer;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.kie.efesto.kafka.api.listeners.EfestoKafkaMessageListener;
 import org.kie.efesto.kafka.runtime.provider.messages.EfestoKafkaRuntimeParseJsonInputRequestMessage;
-import org.kie.efesto.kafka.runtime.services.producer.ParseJsonInputResponseProducer;
-import org.kie.efesto.runtimemanager.api.model.EfestoInput;
 import org.kie.efesto.runtimemanager.api.service.KieRuntimeService;
 import org.kie.efesto.runtimemanager.api.utils.SPIUtils;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Optional;
-import java.util.function.Function;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 import static org.kie.efesto.common.core.utils.JSONUtils.getObjectMapper;
 import static org.kie.efesto.kafka.api.KafkaConstants.RUNTIMESERVICE_PARSEJSONINPUTREQUEST_TOPIC;
-import static org.kie.efesto.kafka.runtime.services.consumer.ParseJsonInputRequestConsumer.parseJsonInput;
 import static org.kie.efesto.kafka.runtime.services.consumer.ParseJsonInputRequestConsumer.receivedMessages;
+import static org.mockito.Mockito.*;
 
 
 class ParseJsonInputRequestConsumerTest {
@@ -40,7 +34,6 @@ class ParseJsonInputRequestConsumerTest {
         assertThat(KIERUNTIMESERVICES).isNotNull().isNotEmpty();
     }
 
-
     @Test
     public void parseJsonInputConsumerTest() {
         TopicPartition topicPartition = new TopicPartition(RUNTIMESERVICE_PARSEJSONINPUTREQUEST_TOPIC, 0);
@@ -48,17 +41,9 @@ class ParseJsonInputRequestConsumerTest {
         startOffsets.put(topicPartition, 0L);
         ConsumerRecord<Long, JsonNode> consumerRecord = getConsumerRecordWithoutModelLocalUriId(topicPartition);
         MockConsumer<Long, JsonNode> parseJsonInputRequestConsumer = new MockConsumer<>(OffsetResetStrategy.EARLIEST);
-        MockProducer<Long, JsonNode> parseJsonInputResponseProducer = new MockProducer<>(true, new LongSerializer(), new JsonSerializer());
-        Function parseJsonInputProducer = (Function<EfestoKafkaRuntimeParseJsonInputRequestMessage, Boolean>) (requestMessage) -> {
-            Optional<EfestoInput> retrievedEfestoInput = KIERUNTIMESERVICES.stream()
-                    .map(kieRuntimeService -> parseJsonInput(kieRuntimeService, requestMessage.getModelLocalUriIdString(), requestMessage.getInputDataString()))
-                    .findFirst();
-            retrievedEfestoInput.ifPresent(efestoInput -> ParseJsonInputResponseProducer.runProducer(parseJsonInputResponseProducer, efestoInput, 10L));
-            return retrievedEfestoInput.isPresent();
-        };
+        EfestoKafkaMessageListener mockListener = mock(EfestoKafkaMessageListener.class);
         try {
-            assertThat(parseJsonInputResponseProducer.history()).isEmpty();
-            ParseJsonInputRequestConsumer.startEvaluateConsumer(parseJsonInputRequestConsumer, parseJsonInputProducer);
+            ParseJsonInputRequestConsumer.startEvaluateConsumer(parseJsonInputRequestConsumer, Collections.singleton(mockListener));
             parseJsonInputRequestConsumer.updateBeginningOffsets(startOffsets);
             parseJsonInputRequestConsumer.assign(Collections.singleton(topicPartition));
             parseJsonInputRequestConsumer.addRecord(consumerRecord);
@@ -70,7 +55,7 @@ class ParseJsonInputRequestConsumerTest {
                 counter++;
             }
             assertThat(receivedMessages).hasSize(1);
-            assertThat(parseJsonInputResponseProducer.history()).hasSize(1);
+            verify(mockListener, times(1)).onMessageReceived(receivedMessages.get(0));
         } catch (Exception e) {
             fail("parseJsonInputConsumerTest failed", e);
         }

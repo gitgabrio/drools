@@ -22,6 +22,7 @@ import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.connect.json.JsonDeserializer;
+import org.kie.efesto.kafka.api.listeners.EfestoKafkaMessageListener;
 import org.kie.efesto.kafka.api.serialization.EfestoLongDeserializer;
 import org.kie.efesto.kafka.runtime.provider.messages.EfestoKafkaRuntimeParseJsonInputRequestMessage;
 import org.kie.efesto.kafka.runtime.services.producer.ParseJsonInputResponseProducer;
@@ -37,7 +38,7 @@ import java.util.*;
 import static org.kie.efesto.common.core.utils.JSONUtils.getObjectMapper;
 import static org.kie.efesto.kafka.api.KafkaConstants.BOOTSTRAP_SERVERS;
 import static org.kie.efesto.kafka.api.KafkaConstants.RUNTIMESERVICE_PARSEJSONINPUTREQUEST_TOPIC;
-import static org.kie.efesto.kafka.api.ThreadUtils.getConsumeAndProduceThread;
+import static org.kie.efesto.kafka.api.ThreadUtils.getConsumeAndListenThread;
 
 public class ParseJsonInputRequestConsumer {
 
@@ -49,26 +50,41 @@ public class ParseJsonInputRequestConsumer {
 
     private static Thread consumerThread;
 
+    private static Set<EfestoKafkaMessageListener> registeredListeners;
+
     private ParseJsonInputRequestConsumer() {
     }
 
-    public static void startEvaluateConsumer() {
-        logger.info("startEvaluateConsumer");
-        if (consumerThread != null) {
-            logger.info("ParseJsonInputRequestConsumer already started");
-        } else {
-            logger.info("Starting ParseJsonInputRequestConsumer....");
-            Consumer<Long, JsonNode> consumer = createConsumer();
-            startEvaluateConsumer(consumer, ParseJsonInputRequestConsumer::parseJsonInput);
+    public static void removeListener(EfestoKafkaMessageListener toRemove) {
+        logger.info("removeListener {}", toRemove);
+        if (registeredListeners != null) {
+            logger.info("Removing {}", toRemove);
+            registeredListeners.remove(toRemove);
         }
     }
 
-    public static void startEvaluateConsumer(Consumer<Long, JsonNode> consumer, final java.util.function.Function<EfestoKafkaRuntimeParseJsonInputRequestMessage, Boolean> parseJsonInputProducer) {
+    public static void startEvaluateConsumer(EfestoKafkaMessageListener toRegister) {
+        logger.info("startEvaluateConsumer {}", toRegister);
+        if (consumerThread != null) {
+            logger.info("ParseJsonInputRequestConsumer already started");
+            registeredListeners.add(toRegister);
+        } else {
+            logger.info("Starting ParseJsonInputRequestConsumer....");
+            Consumer<Long, JsonNode> consumer = createConsumer();
+            registeredListeners = new HashSet<>();
+            registeredListeners.add(toRegister);
+            startEvaluateConsumer(consumer, registeredListeners);
+        }
+    }
+
+    public static void startEvaluateConsumer(Consumer<Long, JsonNode> consumer,
+                                             Collection<EfestoKafkaMessageListener> listeners) {
         logger.info("starting consumer.... {}", consumer);
         final int giveUp = 100;
         try {
-            consumerThread = getConsumeAndProduceThread(consumer, parseJsonInputProducer, giveUp, ParseJsonInputRequestConsumer.class.getSimpleName(),
-                    ParseJsonInputRequestConsumer::consumeModelAndProduceRecord);
+            consumerThread = getConsumeAndListenThread(consumer, giveUp, ParseJsonInputRequestConsumer.class.getSimpleName(),
+                    ParseJsonInputRequestConsumer::consumeModel,
+                    listeners);
             consumerThread.start();
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
@@ -79,15 +95,15 @@ public class ParseJsonInputRequestConsumer {
         return Collections.unmodifiableList(receivedMessages);
     }
 
-    static Object consumeModelAndProduceRecord(ConsumerRecord<Long, JsonNode> toConsume, final java.util.function.Function parseJsonInputProducer) {
+    static EfestoKafkaRuntimeParseJsonInputRequestMessage consumeModel(ConsumerRecord<Long, JsonNode> toConsume) {
         try {
             logger.info("Consume: ({})\n", toConsume);
             JsonNode jsonNode = toConsume.value();
             logger.info("JsonNode: ({})\n", jsonNode);
-            EfestoKafkaRuntimeParseJsonInputRequestMessage parseJsonInputRequestMessage = getMessage(jsonNode);
-            logger.info("parseJsonInputRequestMessage: ({})\n", parseJsonInputRequestMessage);
-            receivedMessages.add(parseJsonInputRequestMessage);
-            return parseJsonInputProducer.apply(parseJsonInputRequestMessage);
+            EfestoKafkaRuntimeParseJsonInputRequestMessage toReturn = getMessage(jsonNode);
+            logger.info("parseJsonInputRequestMessage: ({})\n", toReturn);
+            receivedMessages.add(toReturn);
+            return toReturn;
         } catch (Exception e) {
             String errorMessage = String.format("Failed to consume %s", toConsume);
             logger.error(errorMessage, e);
@@ -95,18 +111,18 @@ public class ParseJsonInputRequestConsumer {
         }
     }
 
-    static boolean parseJsonInput(EfestoKafkaRuntimeParseJsonInputRequestMessage requestMessage) {
-        logger.info("parseJsonInput {}", requestMessage);
-        Optional<EfestoInput> retrievedEfestoInput = localServiceProvider.getKieRuntimeServices().stream()
-                .map(kieRuntimeService -> parseJsonInput(kieRuntimeService, requestMessage.getModelLocalUriIdString(), requestMessage.getInputDataString()))
-                .findFirst();
-        retrievedEfestoInput.ifPresent(efestoInput -> {
-            logger.info("Going to send EfestoKafkaRuntimeParseJsonInputResponseMessage with {} {}", efestoInput, requestMessage.getMessageId());
-            ParseJsonInputResponseProducer.runProducer(efestoInput, requestMessage.getMessageId());
-        });
-
-        return retrievedEfestoInput.isPresent();
-    }
+//    static boolean parseJsonInput(EfestoKafkaRuntimeParseJsonInputRequestMessage requestMessage) {
+//        logger.info("parseJsonInput {}", requestMessage);
+//        Optional<EfestoInput> retrievedEfestoInput = localServiceProvider.getKieRuntimeServices().stream()
+//                .map(kieRuntimeService -> parseJsonInput(kieRuntimeService, requestMessage.getModelLocalUriIdString(), requestMessage.getInputDataString()))
+//                .findFirst();
+//        retrievedEfestoInput.ifPresent(efestoInput -> {
+//            logger.info("Going to send EfestoKafkaRuntimeParseJsonInputResponseMessage with {} {}", efestoInput, requestMessage.getMessageId());
+//            ParseJsonInputResponseProducer.runProducer(efestoInput, requestMessage.getMessageId());
+//        });
+//
+//        return retrievedEfestoInput.isPresent();
+//    }
 
     public static EfestoInput parseJsonInput(KieRuntimeService toQuery, String modelLocalUriIdString, String inputDataString) {
         logger.info("parseJsonInput {} {} {}", toQuery, modelLocalUriIdString, inputDataString);
