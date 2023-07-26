@@ -10,6 +10,8 @@ import static org.kie.efesto.common.core.utils.JSONUtils.getObjectMapper;
 
 public class EfestoKafkaRuntimeServiceDiscoverMessageTest {
 
+    private static final String template = "{\"modelLocalUriId\":{\"model\":\"example\",\"basePath\":\"/some-id/instances/some-instance-id\",\"fullPath\":\"/example/some-id/instances/some-instance-id\"},\"kind\":\"RUNTIMESERVICEDISCOVER\"}";
+
 
     @Test
     void serializeTest() throws JsonProcessingException {
@@ -22,8 +24,7 @@ public class EfestoKafkaRuntimeServiceDiscoverMessageTest {
         ModelLocalUriId modelLocalUriId = new ModelLocalUriId(parsed);
         toSerialize = new EfestoKafkaRuntimeServiceDiscoverMessage(modelLocalUriId);
         retrieved = getObjectMapper().writeValueAsString(toSerialize);
-        expected = "{\"modelLocalUriId\":{\"model\":\"example\",\"basePath\":\"/some-id/instances/some-instance-id\",\"fullPath\":\"/example/some-id/instances/some-instance-id\"},\"kind\":\"RUNTIMESERVICEDISCOVER\"}";
-        assertThat(retrieved).isNotNull().isEqualTo(expected);
+        assertThat(retrieved).isNotNull().isEqualTo(template);
     }
 
     @Test
@@ -32,8 +33,7 @@ public class EfestoKafkaRuntimeServiceDiscoverMessageTest {
         AbstractEfestoKafkaRuntimeMessage retrieved = getObjectMapper().readValue(toDeserialize, AbstractEfestoKafkaRuntimeMessage.class);
         assertThat(retrieved).isNotNull().isExactlyInstanceOf(EfestoKafkaRuntimeServiceDiscoverMessage.class);
         assertThat(((EfestoKafkaRuntimeServiceDiscoverMessage)retrieved).getModelLocalUriId()).isNull();
-        toDeserialize = "{\"modelLocalUriId\":{\"model\":\"example\",\"basePath\":\"/some-id/instances/some-instance-id\",\"fullPath\":\"/example/some-id/instances/some-instance-id\"},\"kind\":\"RUNTIMESERVICEDISCOVER\"}";
-        retrieved = getObjectMapper().readValue(toDeserialize, AbstractEfestoKafkaRuntimeMessage.class);
+        retrieved = getObjectMapper().readValue(template, AbstractEfestoKafkaRuntimeMessage.class);
         assertThat(retrieved).isNotNull().isExactlyInstanceOf(EfestoKafkaRuntimeServiceDiscoverMessage.class);
         String path = "/example/some-id/instances/some-instance-id";
         LocalUri parsed = LocalUri.parse(path);

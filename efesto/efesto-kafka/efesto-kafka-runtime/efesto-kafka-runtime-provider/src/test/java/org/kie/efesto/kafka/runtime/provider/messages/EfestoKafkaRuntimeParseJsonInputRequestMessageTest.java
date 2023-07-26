@@ -10,6 +10,8 @@ import static org.kie.efesto.common.core.utils.JSONUtils.getObjectMapper;
 
 public class EfestoKafkaRuntimeParseJsonInputRequestMessageTest {
 
+    private static final String template = "{\"modelLocalUriIdString\":\"{\\\"model\\\":\\\"example\\\",\\\"basePath\\\":\\\"/some-id/instances/some-instance-id\\\",\\\"fullPath\\\":\\\"/example/some-id/instances/some-instance-id\\\"}\",\"inputDataString\":\"inputDataString\",\"messageId\":10,\"kind\":\"RUNTIMEPARSEJSONINPUTREQUEST\"}";
+
 
     @Test
     void serializeTest() throws JsonProcessingException {
@@ -19,14 +21,12 @@ public class EfestoKafkaRuntimeParseJsonInputRequestMessageTest {
         String modelLocalUriIDString = getObjectMapper().writeValueAsString(modelLocalUriId);
         EfestoKafkaRuntimeParseJsonInputRequestMessage toSerialize = new EfestoKafkaRuntimeParseJsonInputRequestMessage(modelLocalUriIDString, "inputDataString", 10L);
         String retrieved = getObjectMapper().writeValueAsString(toSerialize);
-        String expected = "{\"modelLocalUriIdString\":\"{\\\"model\\\":\\\"example\\\",\\\"basePath\\\":\\\"/some-id/instances/some-instance-id\\\",\\\"fullPath\\\":\\\"/example/some-id/instances/some-instance-id\\\"}\",\"inputDataString\":\"inputDataString\",\"messageId\":10,\"kind\":\"RUNTIMEPARSEJSONINPUTREQUEST\"}";
-        assertThat(retrieved).isNotNull().isEqualTo(expected);
+        assertThat(retrieved).isNotNull().isEqualTo(template);
     }
 
     @Test
     void deserializeTest() throws JsonProcessingException {
-        String toDeserialize = "{\"modelLocalUriIdString\":\"{\\\"model\\\":\\\"example\\\",\\\"basePath\\\":\\\"/some-id/instances/some-instance-id\\\",\\\"fullPath\\\":\\\"/example/some-id/instances/some-instance-id\\\"}\",\"inputDataString\":\"inputDataString\",\"messageId\":10,\"kind\":\"RUNTIMEPARSEJSONINPUTREQUEST\"}";
-        AbstractEfestoKafkaRuntimeMessage retrieved = getObjectMapper().readValue(toDeserialize, AbstractEfestoKafkaRuntimeMessage.class);
+        AbstractEfestoKafkaRuntimeMessage retrieved = getObjectMapper().readValue(template, AbstractEfestoKafkaRuntimeMessage.class);
         assertThat(retrieved).isNotNull().isExactlyInstanceOf(EfestoKafkaRuntimeParseJsonInputRequestMessage.class);
         String modelLocalUriIdString = ((EfestoKafkaRuntimeParseJsonInputRequestMessage) retrieved).getModelLocalUriIdString();
         assertThat(modelLocalUriIdString).isNotNull().isNotEmpty();

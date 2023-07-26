@@ -11,6 +11,8 @@ import static org.kie.efesto.common.core.utils.JSONUtils.getObjectMapper;
 
 public class EfestoKafkaRuntimeServiceNotificationMessageTest {
 
+    private static final String template = "{\"model\":\"test\",\"efestoClassKey\":{\"rawType\":\"java.util.List\",\"actualTypeArguments\":[\"java.lang.String\"],\"ownerType\":null,\"typeName\":\"java.util.List<java.lang.String>\"},\"kind\":\"RUNTIMESERVICENOTIFICATION\"}";
+
 
     @Test
     void serializeTest() throws JsonProcessingException {
@@ -22,8 +24,7 @@ public class EfestoKafkaRuntimeServiceNotificationMessageTest {
         EfestoClassKey efestoClassKey = new EfestoClassKey(List.class, String.class);
         toSerialize = new EfestoKafkaRuntimeServiceNotificationMessage(model, efestoClassKey);
         retrieved = getObjectMapper().writeValueAsString(toSerialize);
-        expected = "{\"model\":\"test\",\"efestoClassKey\":{\"rawType\":\"java.util.List\",\"actualTypeArguments\":[\"java.lang.String\"],\"ownerType\":null,\"typeName\":\"java.util.List<java.lang.String>\"},\"kind\":\"RUNTIMESERVICENOTIFICATION\"}";
-        assertThat(retrieved).isNotNull().isEqualTo(expected);
+        assertThat(retrieved).isNotNull().isEqualTo(template);
     }
 
     @Test
@@ -33,8 +34,7 @@ public class EfestoKafkaRuntimeServiceNotificationMessageTest {
         assertThat(retrieved).isNotNull().isExactlyInstanceOf(EfestoKafkaRuntimeServiceNotificationMessage.class);
         assertThat(((EfestoKafkaRuntimeServiceNotificationMessage) retrieved).getModel()).isNull();
         assertThat(((EfestoKafkaRuntimeServiceNotificationMessage) retrieved).getEfestoClassKey()).isNull();
-        toDeserialize = "{\"model\":\"test\",\"efestoClassKey\":{\"rawType\":\"java.util.List\",\"actualTypeArguments\":[\"java.lang.String\"],\"ownerType\":null,\"typeName\":\"java.util.List<java.lang.String>\"},\"kind\":\"RUNTIMESERVICENOTIFICATION\"}";
-        retrieved = getObjectMapper().readValue(toDeserialize, AbstractEfestoKafkaRuntimeMessage.class);
+        retrieved = getObjectMapper().readValue(template, AbstractEfestoKafkaRuntimeMessage.class);
         assertThat(retrieved).isNotNull().isExactlyInstanceOf(EfestoKafkaRuntimeServiceNotificationMessage.class);
         String expectedModel = "test";
         EfestoClassKey expectedEfestoClassKey = new EfestoClassKey(List.class, String.class);
