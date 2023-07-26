@@ -2,14 +2,11 @@ package org.kie.efesto.kafka.runtime.provider.producer;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.apache.kafka.clients.producer.*;
 import org.apache.kafka.common.serialization.LongSerializer;
 import org.apache.kafka.connect.json.JsonSerializer;
 import org.kie.efesto.common.api.exceptions.KieEfestoCommonException;
 import org.kie.efesto.kafka.runtime.provider.messages.EfestoKafkaRuntimeParseJsonInputRequestMessage;
-import org.kie.efesto.runtimemanager.api.model.EfestoInput;
-import org.kie.efesto.runtimemanager.core.serialization.EfestoInputDeserializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,7 +14,8 @@ import java.util.Properties;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static org.kie.efesto.common.core.utils.JSONUtils.getObjectMapper;
-import static org.kie.efesto.kafka.api.KafkaConstants.*;
+import static org.kie.efesto.kafka.api.KafkaConstants.BOOTSTRAP_SERVERS;
+import static org.kie.efesto.kafka.api.KafkaConstants.RUNTIMESERVICE_PARSEJSONINPUTREQUEST_TOPIC;
 
 public class ParseJsonInputRequestProducer {
 
@@ -26,13 +24,13 @@ public class ParseJsonInputRequestProducer {
     private static final AtomicLong COUNTER = new AtomicLong();
 
 
-    public static void runProducer(String modelLocalUriIdString, String inputDataString) {
+    public static long runProducer(String modelLocalUriIdString, String inputDataString) {
         logger.info("runProducer");
         final Producer<Long, JsonNode> producer = createProducer();
-        runProducer(producer, modelLocalUriIdString, inputDataString);
+        return runProducer(producer, modelLocalUriIdString, inputDataString);
     }
 
-    public static void runProducer(final Producer<Long, JsonNode> producer, String modelLocalUriIdString, String inputDataString) {
+    public static long runProducer(final Producer<Long, JsonNode> producer, String modelLocalUriIdString, String inputDataString) {
         logger.info("runProducer {}", producer);
         long time = System.currentTimeMillis();
 
@@ -49,6 +47,7 @@ public class ParseJsonInputRequestProducer {
                             "meta(partition={}, offset={}) time={}\n",
                     record.key(), record.value(), metadata.partition(),
                     metadata.offset(), elapsedTime);
+            return messageId;
         } catch (Exception e) {
             throw new KieEfestoCommonException(e);
         } finally {

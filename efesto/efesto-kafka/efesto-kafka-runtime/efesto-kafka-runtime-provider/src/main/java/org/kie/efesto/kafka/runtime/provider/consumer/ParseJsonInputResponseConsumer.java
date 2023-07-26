@@ -32,8 +32,7 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 
 import static org.kie.efesto.common.core.utils.JSONUtils.getObjectMapper;
-import static org.kie.efesto.kafka.api.KafkaConstants.BOOTSTRAP_SERVERS;
-import static org.kie.efesto.kafka.api.KafkaConstants.RUNTIMESERVICE_PARSEJSONINPUTRESPONSE_TOPIC;
+import static org.kie.efesto.kafka.api.KafkaConstants.*;
 import static org.kie.efesto.kafka.api.ThreadUtils.getConsumeAndListenThread;
 
 public class ParseJsonInputResponseConsumer {

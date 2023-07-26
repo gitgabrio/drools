@@ -24,6 +24,7 @@ import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.connect.json.JsonDeserializer;
 import org.kie.efesto.kafka.api.serialization.EfestoLongDeserializer;
 import org.kie.efesto.kafka.runtime.provider.messages.EfestoKafkaRuntimeParseJsonInputRequestMessage;
+import org.kie.efesto.kafka.runtime.services.producer.ParseJsonInputResponseProducer;
 import org.kie.efesto.kafka.runtime.services.service.KafkaRuntimeLocalServiceProvider;
 import org.kie.efesto.runtimemanager.api.exceptions.EfestoRuntimeManagerException;
 import org.kie.efesto.runtimemanager.api.model.EfestoInput;
@@ -99,11 +100,15 @@ public class ParseJsonInputRequestConsumer {
         Optional<EfestoInput> retrievedEfestoInput = localServiceProvider.getKieRuntimeServices().stream()
                 .map(kieRuntimeService -> parseJsonInput(kieRuntimeService, requestMessage.getModelLocalUriIdString(), requestMessage.getInputDataString()))
                 .findFirst();
-        retrievedEfestoInput.ifPresent(efestoInput -> logger.info("Going to send EfestoKafkaRuntimeParseJsonInputResponseMessage with {} {}", efestoInput, requestMessage.getMessageId()));
+        retrievedEfestoInput.ifPresent(efestoInput -> {
+            logger.info("Going to send EfestoKafkaRuntimeParseJsonInputResponseMessage with {} {}", efestoInput, requestMessage.getMessageId());
+            ParseJsonInputResponseProducer.runProducer(efestoInput, requestMessage.getMessageId());
+        });
+
         return retrievedEfestoInput.isPresent();
     }
 
-    static EfestoInput parseJsonInput(KieRuntimeService toQuery, String modelLocalUriIdString, String inputDataString) {
+    public static EfestoInput parseJsonInput(KieRuntimeService toQuery, String modelLocalUriIdString, String inputDataString) {
         logger.info("parseJsonInput {} {} {}", toQuery, modelLocalUriIdString, inputDataString);
         return toQuery.parseJsonInput(modelLocalUriIdString, inputDataString);
     }
