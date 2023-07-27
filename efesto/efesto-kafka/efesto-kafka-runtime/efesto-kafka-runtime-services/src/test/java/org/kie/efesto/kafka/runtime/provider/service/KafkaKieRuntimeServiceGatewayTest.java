@@ -6,20 +6,24 @@ import org.apache.kafka.clients.admin.KafkaAdminClient;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.kie.efesto.common.api.identifiers.ModelLocalUriId;
 import org.kie.efesto.kafka.runtime.provider.model.EfestoKafkaRuntimeContextImpl;
 import org.kie.efesto.kafka.runtime.services.consumer.CanManageInputRequestConsumer;
 import org.kie.efesto.kafka.runtime.services.service.KafkaRuntimeLocalServiceProvider;
 import org.kie.efesto.runtimemanager.api.model.EfestoInput;
+import org.kie.efesto.runtimemanager.api.model.EfestoOutput;
 import org.kie.efesto.runtimemanager.api.service.KieRuntimeService;
 import org.kie.efesto.runtimemanager.api.utils.SPIUtils;
 import org.kie.efesto.runtimemanager.core.mocks.MockEfestoInputA;
 import org.kie.efesto.runtimemanager.core.mocks.MockEfestoInputD;
+import org.kie.efesto.runtimemanager.core.mocks.MockEfestoOutput;
 import org.kie.efesto.runtimemanager.core.mocks.MockKieRuntimeServiceA;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -61,18 +65,35 @@ class KafkaKieRuntimeServiceGatewayTest {
                 RUNTIMESERVICE_CANMANAGEINPUTRESPONSE_TOPIC));
     }
 
+    @Disabled("It needs full Kafka env")
+    @Test
+    void evaluateInputExistingTest() {
+        Optional<EfestoOutput> retrieved = KAFKAKIERUNTIMESERVICEGATEWAY.evaluateInput(new MockEfestoInputA(), new EfestoKafkaRuntimeContextImpl());
+        assertThat(retrieved).isNotNull().isPresent().containsInstanceOf(MockEfestoOutput.class);
+    }
+
+    @Disabled("It needs full Kafka env")
+    @Test
+    void evaluateInputNotExistingTest() {
+        Optional<EfestoOutput> retrieved = KAFKAKIERUNTIMESERVICEGATEWAY.evaluateInput(new MockEfestoInputD(), new EfestoKafkaRuntimeContextImpl());
+        assertThat(retrieved).isNotNull().isNotPresent();
+    }
+
+    @Disabled("It needs full Kafka env")
     @Test
     void canManageInputExistingTest() {
         boolean retrieved = KAFKAKIERUNTIMESERVICEGATEWAY.canManageInput(new MockEfestoInputA(), new EfestoKafkaRuntimeContextImpl());
         assertThat(retrieved).isTrue();
     }
 
+    @Disabled("It needs full Kafka env")
     @Test
     void canManageInputNotExistingTest() {
         boolean retrieved = KAFKAKIERUNTIMESERVICEGATEWAY.canManageInput(new MockEfestoInputD(), new EfestoKafkaRuntimeContextImpl());
         assertThat(retrieved).isFalse();
     }
 
+    @Disabled("It needs full Kafka env")
     @Test
     void parseJsonInputExistingTest() throws JsonProcessingException {
         ModelLocalUriId modelLocalUriId = new MockEfestoInputA().getModelLocalUriId();
@@ -82,6 +103,7 @@ class KafkaKieRuntimeServiceGatewayTest {
         assertThat(retrieved).isNotNull();
     }
 
+    @Disabled("It needs full Kafka env")
     @Test
     void parseJsonInputNotExistingTest() throws JsonProcessingException {
         ModelLocalUriId modelLocalUriId = new MockEfestoInputD().getModelLocalUriId();

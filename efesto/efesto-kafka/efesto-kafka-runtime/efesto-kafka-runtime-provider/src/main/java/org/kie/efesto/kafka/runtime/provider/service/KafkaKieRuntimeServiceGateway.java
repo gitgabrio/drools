@@ -2,12 +2,16 @@ package org.kie.efesto.kafka.runtime.provider.service;
 
 import org.kie.efesto.common.api.cache.EfestoClassKey;
 import org.kie.efesto.kafka.runtime.provider.consumer.CanManageInputResponseConsumer;
+import org.kie.efesto.kafka.runtime.provider.consumer.EvaluateInputResponseConsumer;
 import org.kie.efesto.kafka.runtime.provider.consumer.ParseJsonInputResponseConsumer;
 import org.kie.efesto.kafka.runtime.provider.listeners.EfestoKafkaRuntimeCanManageInputResponseMessageListener;
+import org.kie.efesto.kafka.runtime.provider.listeners.EfestoKafkaRuntimeEvaluateInputResponseMessageListener;
 import org.kie.efesto.kafka.runtime.provider.listeners.EfestoKafkaRuntimeParseJsonInputResponseMessageListener;
 import org.kie.efesto.kafka.runtime.provider.producer.CanManageInputRequestProducer;
+import org.kie.efesto.kafka.runtime.provider.producer.EvaluateInputRequestProducer;
 import org.kie.efesto.kafka.runtime.provider.producer.ParseJsonInputRequestProducer;
 import org.kie.efesto.runtimemanager.api.model.EfestoInput;
+import org.kie.efesto.runtimemanager.api.model.EfestoOutput;
 import org.kie.efesto.runtimemanager.api.model.EfestoRuntimeContext;
 import org.kie.efesto.runtimemanager.api.service.KieRuntimeService;
 import org.slf4j.Logger;
@@ -40,13 +44,13 @@ public class KafkaKieRuntimeServiceGateway implements KieRuntimeService {
 
     @Override
     public boolean canManageInput(EfestoInput toEvaluate, EfestoRuntimeContext context) {
-        logger.info("parseJsonInput");
+        logger.info("canManageInput");
         logger.trace("{} {}", toEvaluate, context);
         CompletableFuture<Boolean> completableFuture = CompletableFuture.supplyAsync(() -> {
-            logger.info("Sending EfestoKafkaRuntimeParseJsonInputRequestMessage...");
             EfestoKafkaRuntimeCanManageInputResponseMessageListener listener = new EfestoKafkaRuntimeCanManageInputResponseMessageListener();
             logger.info("Starting CanManageInputResponseConsumer...");
             CanManageInputResponseConsumer.startEvaluateConsumer(listener);
+            logger.info("Sending EfestoKafkaRuntimeCanManageInputRequestMessage...");
             long messageId = CanManageInputRequestProducer.runProducer(toEvaluate);
             logger.info("messageId {}", messageId);
             Boolean received = listener.getIsCanManage(messageId);
@@ -69,9 +73,33 @@ public class KafkaKieRuntimeServiceGateway implements KieRuntimeService {
     }
 
     @Override
-    public Optional evaluateInput(EfestoInput toEvaluate, EfestoRuntimeContext context) {
-        // TOBE IMPLEMENTED OVER topic
-        return null;
+    public Optional<EfestoOutput> evaluateInput(EfestoInput toEvaluate, EfestoRuntimeContext context) {
+        logger.info("canManageInput");
+        logger.trace("{} {}", toEvaluate, context);
+        CompletableFuture<EfestoOutput> completableFuture = CompletableFuture.supplyAsync(() -> {
+            EfestoKafkaRuntimeEvaluateInputResponseMessageListener listener = new EfestoKafkaRuntimeEvaluateInputResponseMessageListener();
+            logger.info("Starting EvaluateInputResponseConsumer...");
+            EvaluateInputResponseConsumer.startEvaluateConsumer(listener);
+            logger.info("Sending EfestoKafkaRuntimeEvaluateInputResponseMessage...");
+            long messageId = EvaluateInputRequestProducer.runProducer(toEvaluate);
+            logger.info("messageId {}", messageId);
+            EfestoOutput received = listener.getEfestoOutput(messageId);
+            while (received == null) {
+                try {
+                    Thread.sleep(100);
+                    received = listener.getEfestoOutput(messageId);
+                } catch (InterruptedException e) {
+                    //
+                }
+            }
+            return received;
+        });
+        try {
+            return Optional.of(completableFuture.get(30, TimeUnit.SECONDS));
+        } catch (Exception e) {
+            logger.warn("Failed to retrieve evaluateInput for {} {}", toEvaluate, context);
+            return Optional.empty();
+        }
     }
 
     @Override

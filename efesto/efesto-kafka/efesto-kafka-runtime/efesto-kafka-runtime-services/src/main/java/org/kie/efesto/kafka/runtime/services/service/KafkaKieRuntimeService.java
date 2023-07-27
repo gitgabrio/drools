@@ -3,12 +3,20 @@ package org.kie.efesto.kafka.runtime.services.service;
 import org.kie.efesto.common.api.cache.EfestoClassKey;
 import org.kie.efesto.kafka.api.listeners.EfestoKafkaMessageListener;
 import org.kie.efesto.kafka.api.messages.AbstractEfestoKafkaMessage;
+import org.kie.efesto.kafka.runtime.provider.messages.EfestoKafkaRuntimeCanManageInputRequestMessage;
+import org.kie.efesto.kafka.runtime.provider.messages.EfestoKafkaRuntimeEvaluateInputRequestMessage;
 import org.kie.efesto.kafka.runtime.provider.messages.EfestoKafkaRuntimeParseJsonInputRequestMessage;
+import org.kie.efesto.kafka.runtime.services.consumer.CanManageInputRequestConsumer;
+import org.kie.efesto.kafka.runtime.services.consumer.EvaluateInputRequestConsumer;
 import org.kie.efesto.kafka.runtime.services.consumer.ParseJsonInputRequestConsumer;
+import org.kie.efesto.kafka.runtime.services.producer.CanManageInputResponseProducer;
+import org.kie.efesto.kafka.runtime.services.producer.EvaluateInputResponseProducer;
 import org.kie.efesto.kafka.runtime.services.producer.ParseJsonInputResponseProducer;
 import org.kie.efesto.runtimemanager.api.model.EfestoInput;
+import org.kie.efesto.runtimemanager.api.model.EfestoOutput;
 import org.kie.efesto.runtimemanager.api.model.EfestoRuntimeContext;
 import org.kie.efesto.runtimemanager.api.service.KieRuntimeService;
+import org.kie.efesto.runtimemanager.core.model.EfestoRuntimeContextUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,10 +35,9 @@ public class KafkaKieRuntimeService implements KieRuntimeService, EfestoKafkaMes
     public KafkaKieRuntimeService(KieRuntimeService wrappedService) {
         this.wrappedService = wrappedService;
         wrappedServiceName = wrappedService.getClass().getSimpleName();
-//        logger = LoggerFactory.getLogger(String.format("Kafka-%s", wrappedService.getClass().getSimpleName()));
-        //logger = LoggerFactory.getLogger(wrappedService.getClass());
         ParseJsonInputRequestConsumer.startEvaluateConsumer(this);
-
+        CanManageInputRequestConsumer.startEvaluateConsumer(this);
+        EvaluateInputRequestConsumer.startEvaluateConsumer(this);
     }
 
     @Override
@@ -38,6 +45,12 @@ public class KafkaKieRuntimeService implements KieRuntimeService, EfestoKafkaMes
         switch (received.getClass().getSimpleName()) {
             case "EfestoKafkaRuntimeParseJsonInputRequestMessage":
                 manageEfestoKafkaRuntimeParseJsonInputRequestMessage((EfestoKafkaRuntimeParseJsonInputRequestMessage) received);
+                break;
+            case "EfestoKafkaRuntimeCanManageInputRequestMessage":
+                manageEfestoKafkaRuntimeCanManageInputRequestMessage((EfestoKafkaRuntimeCanManageInputRequestMessage) received);
+                break;
+            case "EfestoKafkaRuntimeEvaluateInputRequestMessage":
+                manageEfestoKafkaRuntimeEvaluateInputRequestMessage((EfestoKafkaRuntimeEvaluateInputRequestMessage) received);
                 break;
             default:
                 logger.debug("{}- Unmanaged message {}", wrappedServiceName, received);
@@ -57,7 +70,7 @@ public class KafkaKieRuntimeService implements KieRuntimeService, EfestoKafkaMes
     }
 
     @Override
-    public Optional evaluateInput(EfestoInput toEvaluate, EfestoRuntimeContext context) {
+    public Optional<EfestoOutput> evaluateInput(EfestoInput toEvaluate, EfestoRuntimeContext context) {
         return wrappedService.evaluateInput(toEvaluate, context);
     }
 
@@ -80,4 +93,25 @@ public class KafkaKieRuntimeService implements KieRuntimeService, EfestoKafkaMes
             ParseJsonInputResponseProducer.runProducer(efestoInput, toManage.getMessageId());
         }
     }
+
+    private void manageEfestoKafkaRuntimeCanManageInputRequestMessage(EfestoKafkaRuntimeCanManageInputRequestMessage toManage) {
+        logger.info("{}- manageEfestoKafkaRuntimeCanManageInputRequestMessage", wrappedServiceName);
+        logger.debug("{}", toManage);
+        EfestoRuntimeContext runtimeContext = EfestoRuntimeContextUtils.buildWithParentClassLoader(Thread.currentThread().getContextClassLoader());
+        boolean canManage = canManageInput(toManage.getEfestoInput(), runtimeContext);
+        logger.info("{}- Going to send EfestoKafkaRuntimeCanManageInputResponseMessage with {} {}", wrappedServiceName, canManage, toManage.getMessageId());
+        CanManageInputResponseProducer.runProducer(canManage, toManage.getMessageId());
+    }
+
+    private void manageEfestoKafkaRuntimeEvaluateInputRequestMessage(EfestoKafkaRuntimeEvaluateInputRequestMessage toManage) {
+        logger.info("{}- manageEfestoKafkaRuntimeEvaluateInputRequestMessage", wrappedServiceName);
+        logger.debug("{}", toManage);
+        EfestoRuntimeContext runtimeContext = EfestoRuntimeContextUtils.buildWithParentClassLoader(Thread.currentThread().getContextClassLoader());
+        Optional<EfestoOutput> efestoOutput = evaluateInput(toManage.getEfestoInput(), runtimeContext);
+        efestoOutput.ifPresent(toPublish -> {
+            logger.info("{}- Going to send EfestoKafkaRuntimeEvaluateInputResponseMessage with {} {}", wrappedServiceName, toPublish, toManage.getMessageId());
+            EvaluateInputResponseProducer.runProducer(toPublish, toManage.getMessageId());
+        });
+    }
+
 }
