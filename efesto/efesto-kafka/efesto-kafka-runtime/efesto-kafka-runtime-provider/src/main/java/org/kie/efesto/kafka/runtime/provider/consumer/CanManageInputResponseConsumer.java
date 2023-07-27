@@ -17,8 +17,6 @@ package org.kie.efesto.kafka.runtime.provider.consumer;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -28,8 +26,6 @@ import org.kie.efesto.kafka.api.listeners.EfestoKafkaMessageListener;
 import org.kie.efesto.kafka.api.serialization.EfestoLongDeserializer;
 import org.kie.efesto.kafka.runtime.provider.messages.EfestoKafkaRuntimeCanManageInputResponseMessage;
 import org.kie.efesto.runtimemanager.api.exceptions.EfestoRuntimeManagerException;
-import org.kie.efesto.runtimemanager.api.model.EfestoInput;
-import org.kie.efesto.runtimemanager.core.serialization.EfestoInputDeserializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -111,11 +107,7 @@ public class CanManageInputResponseConsumer {
     }
 
     private static EfestoKafkaRuntimeCanManageInputResponseMessage getMessage(JsonNode jsonNode) throws JsonProcessingException {
-        ObjectMapper mapper = getObjectMapper();
-        SimpleModule toRegister = new SimpleModule();
-        toRegister.addDeserializer(EfestoInput.class, new EfestoInputDeserializer());
-        mapper.registerModule(toRegister);
-        return mapper.readValue(jsonNode.toString(), EfestoKafkaRuntimeCanManageInputResponseMessage.class);
+       return getObjectMapper().readValue(jsonNode.toString(), EfestoKafkaRuntimeCanManageInputResponseMessage.class);
     }
 
     private static Consumer<Long, JsonNode> createConsumer() {

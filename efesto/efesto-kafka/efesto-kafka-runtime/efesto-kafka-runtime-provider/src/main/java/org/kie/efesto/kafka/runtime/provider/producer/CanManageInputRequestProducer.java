@@ -1,15 +1,12 @@
 package org.kie.efesto.kafka.runtime.provider.producer;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.apache.kafka.clients.producer.*;
 import org.apache.kafka.common.serialization.LongSerializer;
 import org.apache.kafka.connect.json.JsonSerializer;
 import org.kie.efesto.common.api.exceptions.KieEfestoCommonException;
 import org.kie.efesto.kafka.runtime.provider.messages.EfestoKafkaRuntimeCanManageInputRequestMessage;
 import org.kie.efesto.runtimemanager.api.model.EfestoInput;
-import org.kie.efesto.runtimemanager.core.serialization.EfestoInputDeserializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,11 +58,7 @@ public class CanManageInputRequestProducer {
 
     static JsonNode getJsonNode(EfestoInput efestoInput, long messageId) {
         EfestoKafkaRuntimeCanManageInputRequestMessage requestMessage = new EfestoKafkaRuntimeCanManageInputRequestMessage(efestoInput, messageId);
-        ObjectMapper mapper = getObjectMapper();
-        SimpleModule toRegister = new SimpleModule();
-        toRegister.addDeserializer(EfestoInput.class, new EfestoInputDeserializer());
-        mapper.registerModule(toRegister);
-        return mapper.valueToTree(requestMessage);
+        return getObjectMapper().valueToTree(requestMessage);
     }
 
     private static Producer<Long, JsonNode> createProducer() {

@@ -1,7 +1,6 @@
 package org.kie.efesto.kafka.runtime.provider.producer;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.kafka.clients.producer.*;
 import org.apache.kafka.common.serialization.LongSerializer;
 import org.apache.kafka.connect.json.JsonSerializer;
@@ -58,11 +57,7 @@ public class ParseJsonInputRequestProducer {
 
     static JsonNode getJsonNode(String modelLocalUriIdString, String inputDataString, long messageId) {
         EfestoKafkaRuntimeParseJsonInputRequestMessage requestMessage = new EfestoKafkaRuntimeParseJsonInputRequestMessage(modelLocalUriIdString, inputDataString, messageId);
-        ObjectMapper mapper = getObjectMapper();
-//        SimpleModule toRegister = new SimpleModule();
-//        toRegister.addDeserializer(EfestoInput.class, new EfestoInputDeserializer());
-//        mapper.registerModule(toRegister);
-        return mapper.valueToTree(requestMessage);
+        return getObjectMapper().valueToTree(requestMessage);
     }
 
     private static Producer<Long, JsonNode> createProducer() {

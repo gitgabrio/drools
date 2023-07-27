@@ -12,19 +12,29 @@ import org.kie.efesto.kafka.api.messages.EfestoKafkaMessagingType;
 import org.kie.efesto.kafka.runtime.provider.messages.AbstractEfestoKafkaRuntimeMessage;
 import org.kie.efesto.kafka.runtime.provider.messages.EfestoKafkaRuntimeParseJsonInputResponseMessage;
 import org.kie.efesto.runtimemanager.api.model.EfestoInput;
+import org.kie.efesto.runtimemanager.api.service.KieRuntimeService;
+import org.kie.efesto.runtimemanager.api.utils.SPIUtils;
 import org.kie.efesto.runtimemanager.core.mocks.MockEfestoInputA;
+
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.kie.efesto.common.core.utils.JSONUtils.getObjectMapper;
+import static org.kie.efesto.runtimemanager.core.service.RuntimeManagerUtils.rePopulateFirstLevelCache;
 
 class ParseJsonInputResponseProducerTest {
 
     private static EfestoInput EFESTOINPUT;
 
+    private static List<KieRuntimeService> KIERUNTIMESERVICES;
+
     @BeforeAll
     public static void setup() {
+        KIERUNTIMESERVICES = SPIUtils.getKieRuntimeServices(true);
+        assertThat(KIERUNTIMESERVICES).isNotNull().isNotEmpty();
+        rePopulateFirstLevelCache(KIERUNTIMESERVICES);
         EFESTOINPUT = new MockEfestoInputA();
     }
 

@@ -19,37 +19,39 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import org.kie.efesto.common.api.cache.EfestoClassKey;
-import org.kie.efesto.common.api.cache.EfestoIdentifierClassKey;
 import org.kie.efesto.common.api.identifiers.ModelLocalUriId;
 import org.kie.efesto.common.api.io.IndexFile;
 import org.kie.efesto.common.api.model.GeneratedResource;
 import org.kie.efesto.common.api.model.GeneratedResources;
-import org.kie.efesto.common.core.serialization.EfestoClassKeyDeserializer;
-import org.kie.efesto.common.core.serialization.EfestoIdentifierClassKeyDeserializer;
-import org.kie.efesto.common.core.serialization.ModelLocalUriIdDeSerializer;
-import org.kie.efesto.common.core.serialization.ModelLocalUriIdSerializer;
+import org.kie.efesto.common.core.serialization.DeserializerService;
+import org.kie.efesto.common.core.serialization.SerializerService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.ServiceLoader;
 
 public class JSONUtils {
+    private static final Logger logger = LoggerFactory.getLogger(JSONUtils.class.getName());
+    private static final ServiceLoader<DeserializerService> deserializerServiceServiceLoader = ServiceLoader.load(DeserializerService.class);
+    private static final ServiceLoader<SerializerService> serializerServiceServiceLoader = ServiceLoader.load(SerializerService.class);
     private static final ObjectMapper objectMapper;
 
     static {
         objectMapper = new ObjectMapper();
         SimpleModule toRegister = new SimpleModule();
-        toRegister.addDeserializer(EfestoClassKey.class, new EfestoClassKeyDeserializer());
-        toRegister.addDeserializer(EfestoIdentifierClassKey.class, new EfestoIdentifierClassKeyDeserializer());
-        toRegister.addDeserializer(ModelLocalUriId.class, new ModelLocalUriIdDeSerializer());
-        toRegister.addSerializer(ModelLocalUriId.class, new ModelLocalUriIdSerializer());
+        deserializerServiceServiceLoader.forEach(deserializerService -> {
+            logger.debug("Registering deserializer {} for {}", deserializerService.deser(), deserializerService.type());
+            toRegister.addDeserializer(deserializerService.type(), deserializerService.deser());
+        });
+        serializerServiceServiceLoader.forEach(serializerService -> {
+            logger.debug("Registering serializer {} for {}", serializerService.ser(), serializerService.type());
+            toRegister.addSerializer(serializerService.type(), serializerService.ser());
+        });
         objectMapper.registerModule(toRegister);
     }
-
-    private static final Logger logger = LoggerFactory.getLogger(JSONUtils.class.getName());
 
     private JSONUtils() {
     }

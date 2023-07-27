@@ -4,8 +4,6 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
-import org.kie.efesto.common.api.identifiers.ModelLocalUriId;
-import org.kie.efesto.common.core.serialization.ModelLocalUriIdDeSerializer;
 import org.kie.pmml.api.identifiers.AbstractModelLocalUriIdPmml;
 import org.kie.pmml.api.identifiers.LocalComponentIdPmml;
 import org.kie.pmml.api.identifiers.LocalComponentIdRedirectPmml;

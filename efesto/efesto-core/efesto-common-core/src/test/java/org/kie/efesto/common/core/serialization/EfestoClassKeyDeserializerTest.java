@@ -61,7 +61,7 @@ class EfestoClassKeyDeserializerTest {
     void deserializeMultipleParameters() throws IOException {
         EfestoClassKey keyMapStringLong = new EfestoClassKey(Map.class, String.class, Long.class);
         ObjectMapper mapper = getObjectMapper();
-        String json = getObjectMapper().writeValueAsString(keyMapStringLong);
+        String json = mapper.writeValueAsString(keyMapStringLong);
         InputStream stream = new ByteArrayInputStream(json.getBytes(StandardCharsets.UTF_8));
         JsonParser parser = mapper.getFactory().createParser(stream);
         DeserializationContext ctxt = mapper.getDeserializationContext();

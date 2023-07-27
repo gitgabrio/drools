@@ -1,8 +1,6 @@
 package org.kie.efesto.kafka.runtime.provider.consumer;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.MockConsumer;
 import org.apache.kafka.clients.consumer.OffsetResetStrategy;
@@ -12,7 +10,6 @@ import org.kie.efesto.kafka.api.listeners.EfestoKafkaMessageListener;
 import org.kie.efesto.kafka.runtime.provider.messages.EfestoKafkaRuntimeParseJsonInputResponseMessage;
 import org.kie.efesto.runtimemanager.api.model.EfestoInput;
 import org.kie.efesto.runtimemanager.core.mocks.MockEfestoInputA;
-import org.kie.efesto.runtimemanager.core.serialization.EfestoInputDeserializer;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -62,11 +59,7 @@ class ParseJsonInputResponseConsumerTest {
     private static JsonNode getJsonNode() {
         EfestoInput originalInput = new MockEfestoInputA();
         EfestoKafkaRuntimeParseJsonInputResponseMessage toSerialize = new EfestoKafkaRuntimeParseJsonInputResponseMessage(originalInput, 10L);
-        ObjectMapper mapper = getObjectMapper();
-        SimpleModule toRegister = new SimpleModule();
-        toRegister.addDeserializer(EfestoInput.class, new EfestoInputDeserializer());
-        mapper.registerModule(toRegister);
-        return mapper.valueToTree(toSerialize);
+        return getObjectMapper().valueToTree(toSerialize);
     }
 
 }
