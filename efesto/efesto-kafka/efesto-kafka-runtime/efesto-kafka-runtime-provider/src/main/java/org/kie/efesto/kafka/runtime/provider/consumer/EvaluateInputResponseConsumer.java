@@ -24,7 +24,7 @@ import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.connect.json.JsonDeserializer;
 import org.kie.efesto.kafka.api.listeners.EfestoKafkaMessageListener;
 import org.kie.efesto.kafka.api.serialization.EfestoLongDeserializer;
-import org.kie.efesto.kafka.runtime.provider.messages.EfestoKafkaRuntimeCanManageInputResponseMessage;
+import org.kie.efesto.kafka.runtime.provider.messages.EfestoKafkaRuntimeEvaluateInputResponseMessage;
 import org.kie.efesto.runtimemanager.api.exceptions.EfestoRuntimeManagerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,20 +33,20 @@ import java.util.*;
 
 import static org.kie.efesto.common.core.utils.JSONUtils.getObjectMapper;
 import static org.kie.efesto.kafka.api.KafkaConstants.BOOTSTRAP_SERVERS;
-import static org.kie.efesto.kafka.api.KafkaConstants.RUNTIMESERVICE_CANMANAGEINPUTRESPONSE_TOPIC;
+import static org.kie.efesto.kafka.api.KafkaConstants.RUNTIMESERVICE_EVALUATEINPUTRESPONSE_TOPIC;
 import static org.kie.efesto.kafka.api.ThreadUtils.getConsumeAndListenThread;
 
-public class CanManageInputResponseConsumer {
+public class EvaluateInputResponseConsumer {
 
-    private static final Logger logger = LoggerFactory.getLogger(CanManageInputResponseConsumer.class);
+    private static final Logger logger = LoggerFactory.getLogger(EvaluateInputResponseConsumer.class);
 
-    private static final List<EfestoKafkaRuntimeCanManageInputResponseMessage> receivedMessages = new ArrayList<>();
+    private static final List<EfestoKafkaRuntimeEvaluateInputResponseMessage> receivedMessages = new ArrayList<>();
 
     private static Thread consumerThread;
 
     private static Set<EfestoKafkaMessageListener> registeredListeners;
 
-    private CanManageInputResponseConsumer() {
+    private EvaluateInputResponseConsumer() {
     }
 
     public static void removeListener(EfestoKafkaMessageListener toRemove) {
@@ -60,10 +60,10 @@ public class CanManageInputResponseConsumer {
     public static void startEvaluateConsumer(EfestoKafkaMessageListener toRegister) {
         logger.info("startEvaluateConsumer");
         if (consumerThread != null) {
-            logger.info("CanManageInputResponseConsumer already started");
+            logger.info("EvaluateInputResponseConsumer already started");
             registeredListeners.add(toRegister);
         } else {
-            logger.info("Starting CanManageInputResponseConsumer....");
+            logger.info("Starting EvaluateInputResponseConsumer....");
             Consumer<Long, JsonNode> consumer = createConsumer();
             registeredListeners = new HashSet<>();
             registeredListeners.add(toRegister);
@@ -77,8 +77,8 @@ public class CanManageInputResponseConsumer {
         final int giveUp = 100;
         receivedMessages.clear();
         try {
-            consumerThread = getConsumeAndListenThread(consumer, giveUp, CanManageInputResponseConsumer.class.getSimpleName(),
-                    CanManageInputResponseConsumer::consumeModel,
+            consumerThread = getConsumeAndListenThread(consumer, giveUp, EvaluateInputResponseConsumer.class.getSimpleName(),
+                    EvaluateInputResponseConsumer::consumeModel,
                     listeners);
             consumerThread.start();
         } catch (Exception e) {
@@ -86,17 +86,17 @@ public class CanManageInputResponseConsumer {
         }
     }
 
-    public static List<EfestoKafkaRuntimeCanManageInputResponseMessage> receivedMessages() {
+    public static List<EfestoKafkaRuntimeEvaluateInputResponseMessage> receivedMessages() {
         return Collections.unmodifiableList(receivedMessages);
     }
 
-    static EfestoKafkaRuntimeCanManageInputResponseMessage consumeModel(ConsumerRecord<Long, JsonNode> toConsume) {
+    static EfestoKafkaRuntimeEvaluateInputResponseMessage consumeModel(ConsumerRecord<Long, JsonNode> toConsume) {
         try {
             logger.info("Consume: ({})\n", toConsume);
             JsonNode jsonNode = toConsume.value();
             logger.info("JsonNode: ({})\n", jsonNode);
-            EfestoKafkaRuntimeCanManageInputResponseMessage toReturn = getMessage(jsonNode);
-            logger.info("EfestoKafkaRuntimeCanManageInputResponseMessage: ({})\n", toReturn);
+            EfestoKafkaRuntimeEvaluateInputResponseMessage toReturn = getMessage(jsonNode);
+            logger.info("EfestoKafkaRuntimeEvaluateInputResponseMessage: ({})\n", toReturn);
             receivedMessages.add(toReturn);
             return toReturn;
         } catch (Exception e) {
@@ -106,8 +106,8 @@ public class CanManageInputResponseConsumer {
         }
     }
 
-    private static EfestoKafkaRuntimeCanManageInputResponseMessage getMessage(JsonNode jsonNode) throws JsonProcessingException {
-        return getObjectMapper().readValue(jsonNode.toString(), EfestoKafkaRuntimeCanManageInputResponseMessage.class);
+    private static EfestoKafkaRuntimeEvaluateInputResponseMessage getMessage(JsonNode jsonNode) throws JsonProcessingException {
+        return getObjectMapper().readValue(jsonNode.toString(), EfestoKafkaRuntimeEvaluateInputResponseMessage.class);
     }
 
     private static Consumer<Long, JsonNode> createConsumer() {
@@ -115,7 +115,7 @@ public class CanManageInputResponseConsumer {
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG,
                 BOOTSTRAP_SERVERS);
         props.put(ConsumerConfig.GROUP_ID_CONFIG,
-                CanManageInputResponseConsumer.class.getSimpleName());
+                EvaluateInputResponseConsumer.class.getSimpleName());
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,
                 EfestoLongDeserializer.class.getName());
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
@@ -125,7 +125,7 @@ public class CanManageInputResponseConsumer {
         final Consumer<Long, JsonNode> consumer = new KafkaConsumer<>(props);
 
         // Subscribe to the topic.
-        consumer.subscribe(Collections.singletonList(RUNTIMESERVICE_CANMANAGEINPUTRESPONSE_TOPIC));
+        consumer.subscribe(Collections.singletonList(RUNTIMESERVICE_EVALUATEINPUTRESPONSE_TOPIC));
         return consumer;
     }
 }
