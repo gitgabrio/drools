@@ -7,7 +7,7 @@ import org.kie.efesto.runtimemanager.api.model.EfestoRuntimeContext;
 /**
  * Message published by
  * {@link org.kie.efesto.kafka.runtime.provider.service.KafkaKieRuntimeServiceGateway#evaluateInput(EfestoInput, EfestoRuntimeContext)}
- * to eventually retrieve a <code>EfestoInput</code>
+ * to eventually retrieve an <code>EfestoOutput</code>
  */
 public class EfestoKafkaRuntimeEvaluateInputRequestMessage extends AbstractEfestoKafkaRuntimeMessage {
 
