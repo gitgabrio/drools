@@ -18,7 +18,6 @@ public class EfestoKafkaRuntimeEvaluateInputResponseMessageTest {
     void serializeTest() throws JsonProcessingException {
         EfestoKafkaRuntimeEvaluateInputResponseMessage toSerialize = new EfestoKafkaRuntimeEvaluateInputResponseMessage(new MockEfestoOutput(), 10L);
         String retrieved = getObjectMapper().writeValueAsString(toSerialize);
-        System.out.println(retrieved);
         assertThat(retrieved).isNotNull().isEqualTo(template);
     }
 

@@ -21,11 +21,11 @@ class CanManageInputResponseProducerTest {
 
     @Test
     void canManageInputResponseProducerTest() {
-        try (MockProducer<Long, JsonNode> parseJsonInputResponseProducer = new MockProducer<>(true, new LongSerializer(), new JsonSerializer())) {
-            assertThat(parseJsonInputResponseProducer.history()).isEmpty();
-            CanManageInputResponseProducer.runProducer(parseJsonInputResponseProducer, true, 10L);
-            assertThat(parseJsonInputResponseProducer.history()).hasSize(1);
-            ProducerRecord<Long, JsonNode> retrieved = parseJsonInputResponseProducer.history().get(0);
+        try (MockProducer<Long, JsonNode> canManageInputResponseProducer = new MockProducer<>(true, new LongSerializer(), new JsonSerializer())) {
+            assertThat(canManageInputResponseProducer.history()).isEmpty();
+            CanManageInputResponseProducer.runProducer(canManageInputResponseProducer, true, 10L);
+            assertThat(canManageInputResponseProducer.history()).hasSize(1);
+            ProducerRecord<Long, JsonNode> retrieved = canManageInputResponseProducer.history().get(0);
             assertThat(retrieved).isNotNull();
             AbstractEfestoKafkaRuntimeMessage abstractEfestoKafkaRuntimeMessage = getObjectMapper().readValue(retrieved.value().toString(), AbstractEfestoKafkaRuntimeMessage.class);
             assertThat(abstractEfestoKafkaRuntimeMessage).isNotNull().isExactlyInstanceOf(EfestoKafkaRuntimeCanManageInputResponseMessage.class);

@@ -44,6 +44,10 @@ public class KafkaConstants {
 
     public final static String RUNTIMESERVICE_CANMANAGEINPUTRESPONSE_TOPIC = "runtimeservice_canmanageinputresponse_topic";
 
+    public final static String RUNTIMESERVICE_EVALUATEINPUTREQUEST_TOPIC = "runtimeservice_evaluateinputrequest_topic";
+
+    public final static String RUNTIMESERVICE_EVALUATEINPUTRESPONSE_TOPIC = "runtimeservice_evaluateinputresponse_topic";
+
 
 
 }
