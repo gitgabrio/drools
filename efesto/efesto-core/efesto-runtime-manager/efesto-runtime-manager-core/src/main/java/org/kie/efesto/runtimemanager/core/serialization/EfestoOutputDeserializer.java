@@ -21,12 +21,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.kie.efesto.common.api.exceptions.KieEfestoCommonException;
-import org.kie.efesto.common.api.identifiers.ModelLocalUriId;
-import org.kie.efesto.runtimemanager.api.exceptions.KieRuntimeServiceException;
-import org.kie.efesto.runtimemanager.api.model.AbstractEfestoOutput;
 import org.kie.efesto.runtimemanager.api.model.EfestoOutput;
-import org.kie.efesto.runtimemanager.api.service.RuntimeManager;
-import org.kie.efesto.runtimemanager.api.utils.SPIUtils;
 
 import java.io.IOException;
 
@@ -35,8 +30,6 @@ import static org.kie.efesto.common.core.utils.JSONUtils.getObjectMapper;
 public class EfestoOutputDeserializer extends StdDeserializer<EfestoOutput> {
 
     private static final long serialVersionUID = 5014755163979962781L;
-
-    private static final RuntimeManager runtimeManager = SPIUtils.getRuntimeManager(true).orElseThrow(() -> new KieRuntimeServiceException("Failed to retrieve an instance of RuntimeManager"));
 
     public EfestoOutputDeserializer() {
         this(null);
@@ -52,7 +45,7 @@ public class EfestoOutputDeserializer extends StdDeserializer<EfestoOutput> {
         try {
             String kind = node.get("kind").asText();
             Class<?> actualClass = Class.forName(kind);
-            ((ObjectNode)node).remove("kind");
+            ((ObjectNode) node).remove("kind");
             String cleanedNode = node.toString();
             return (EfestoOutput) getObjectMapper().readValue(cleanedNode, actualClass);
         } catch (Exception e) {

@@ -18,12 +18,9 @@ package org.kie.efesto.runtimemanager.core.serialization;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
-import org.kie.efesto.common.core.utils.JSONUtils;
 import org.kie.efesto.runtimemanager.api.model.EfestoOutput;
 
 import java.io.IOException;
-
-import static org.kie.efesto.common.core.utils.JSONUtils.getObjectMapper;
 
 public class EfestoOutputSerializer extends StdSerializer<EfestoOutput> {
 

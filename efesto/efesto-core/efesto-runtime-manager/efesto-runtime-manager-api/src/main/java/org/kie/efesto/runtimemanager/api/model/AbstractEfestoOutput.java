@@ -17,6 +17,8 @@ package org.kie.efesto.runtimemanager.api.model;
 
 import org.kie.efesto.common.api.identifiers.ModelLocalUriId;
 
+import java.util.Objects;
+
 public abstract class AbstractEfestoOutput<T> implements EfestoOutput<T> {
 
     private final ModelLocalUriId modelLocalUriId;
@@ -35,5 +37,18 @@ public abstract class AbstractEfestoOutput<T> implements EfestoOutput<T> {
     @Override
     public T getOutputData() {
         return outputData;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        AbstractEfestoOutput<?> that = (AbstractEfestoOutput<?>) o;
+        return Objects.equals(modelLocalUriId, that.modelLocalUriId) && Objects.equals(outputData, that.outputData);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(modelLocalUriId, outputData);
     }
 }

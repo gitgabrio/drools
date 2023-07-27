@@ -25,6 +25,8 @@ import org.kie.efesto.common.core.utils.JSONUtils;
 
 import java.io.IOException;
 
+import static org.kie.efesto.common.core.utils.JSONUtils.getObjectMapper;
+
 public class MockEfestoOutputDeserializer extends StdDeserializer<MockEfestoOutput> {
 
     private static final long serialVersionUID = 5014755163979962781L;
@@ -43,8 +45,8 @@ public class MockEfestoOutputDeserializer extends StdDeserializer<MockEfestoOutp
         try {
             String modelLocalUriIdString = node.get("modelLocalUriId").toString();
             ModelLocalUriId modelLocalUriId = JSONUtils.getModelLocalUriIdObject(modelLocalUriIdString);
-            String outputDataString = node.get("outputData").toString();
-            return new MockEfestoOutput(modelLocalUriId, outputDataString);
+            String outputData = getObjectMapper().readValue(node.get("outputData").toString(), String.class);
+            return new MockEfestoOutput(modelLocalUriId, outputData);
         } catch (Exception e) {
             throw new KieEfestoCommonException(String.format("Failed to deserialize %s as MockEfestoOutput", node), e);
         }
