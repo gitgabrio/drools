@@ -27,4 +27,7 @@ public class MockEfestoOutput extends AbstractEfestoOutput<String> {
               "MockEfestoOutput");
     }
 
+    public MockEfestoOutput(ModelLocalUriId modelLocalUriId, String outputData) {
+        super(modelLocalUriId, outputData);
+    }
 }
