@@ -44,7 +44,7 @@ class EvaluateInputResponseProducerTest {
         assertNotNull(retrieved);
         AbstractEfestoKafkaRuntimeMessage responseMessage = getObjectMapper().readValue(retrieved.toString(), AbstractEfestoKafkaRuntimeMessage.class);
         assertThat(responseMessage).isExactlyInstanceOf(EfestoKafkaRuntimeEvaluateInputResponseMessage.class);
-        assertThat(responseMessage.getKind()).isEqualTo(EfestoKafkaMessagingType.RUNTIMECANMANAGEINPUTRESPONSE);
+        assertThat(responseMessage.getKind()).isEqualTo(EfestoKafkaMessagingType.RUNTIMEEVALUATEINPUTRESPONSE);
         assertThat(((EfestoKafkaRuntimeEvaluateInputResponseMessage) responseMessage).getEfestoOutput()).isEqualTo(efestoOutput);
         assertThat(((EfestoKafkaRuntimeEvaluateInputResponseMessage) responseMessage).getMessageId()).isEqualTo(10L);
     }

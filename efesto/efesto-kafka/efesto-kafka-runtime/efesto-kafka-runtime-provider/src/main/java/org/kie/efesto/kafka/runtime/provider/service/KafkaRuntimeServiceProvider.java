@@ -10,6 +10,7 @@ import org.kie.efesto.kafka.runtime.provider.messages.EfestoKafkaRuntimeServiceN
 import org.kie.efesto.kafka.runtime.provider.producer.KieServicesDiscoverProducer;
 import org.kie.efesto.runtimemanager.api.service.KieRuntimeService;
 import org.kie.efesto.runtimemanager.api.service.RuntimeServiceProvider;
+import org.kie.efesto.runtimemanager.core.service.RuntimeManagerUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,12 +30,6 @@ public class KafkaRuntimeServiceProvider implements RuntimeServiceProvider, Efes
 
 
     public KafkaRuntimeServiceProvider() {
-        logger.info("Starting listening for AbstractEfestoKafkaMessage info on Kafka channel");
-        Collection<EfestoKafkaMessageListener> listeners = new ArrayList<>();
-        listeners.add(this);
-        KieServiceNotificationConsumer.startEvaluateConsumer(listeners);
-        logger.info("Requesting KieRuntimeServices info on Kafka channel");
-        KieServicesDiscoverProducer.runProducer();
     }
 
 
@@ -43,7 +38,18 @@ public class KafkaRuntimeServiceProvider implements RuntimeServiceProvider, Efes
         Collection<EfestoKafkaMessageListener> listeners = new ArrayList<>();
         listeners.add(this);
         KieServiceNotificationConsumer.startEvaluateConsumer(consumer, listeners);
-        logger.info("Requesting KieRuntimeServices info on Kafka channel");
+        searchServices(producer);
+
+    }
+
+    public void searchServices() {
+        logger.info("Starting listening for AbstractEfestoKafkaMessage info on Kafka channel");
+        KieServiceNotificationConsumer.startEvaluateConsumer(this);
+        KieServicesDiscoverProducer.runProducer();
+    }
+
+    public void searchServices(final Producer<Long, JsonNode> producer) {
+        logger.info("Requesting KieRuntimeServices info on Kafka channel with {}", producer);
         KieServicesDiscoverProducer.runProducer(producer);
     }
 
@@ -62,6 +68,7 @@ public class KafkaRuntimeServiceProvider implements RuntimeServiceProvider, Efes
             if (!kieRuntimeServices.contains(toAdd)) {
                 logger.info("Adding newly discovered KieRuntimeService {}", toAdd);
                 kieRuntimeServices.add(toAdd);
+                RuntimeManagerUtils.addKieRuntimeServiceToFirstLevelCache(toAdd);
             } else {
                 logger.warn("KieRuntimeService already discovered {}", toAdd);
             }

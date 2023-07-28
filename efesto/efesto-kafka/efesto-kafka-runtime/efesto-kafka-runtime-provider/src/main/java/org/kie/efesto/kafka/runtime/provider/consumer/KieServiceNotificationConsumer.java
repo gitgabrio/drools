@@ -49,15 +49,25 @@ public class KieServiceNotificationConsumer {
     private KieServiceNotificationConsumer() {
     }
 
-    public static void startEvaluateConsumer(Collection<EfestoKafkaMessageListener> listeners) {
-        logger.info("startEvaluateConsumer");
+    public static void removeListener(EfestoKafkaMessageListener toRemove) {
+        logger.info("removeListener {}", toRemove);
+        if (registeredListeners != null) {
+            logger.info("Removing {}", toRemove);
+            registeredListeners.remove(toRemove);
+        }
+    }
+
+    public static void startEvaluateConsumer(EfestoKafkaMessageListener toRegister) {
+        logger.info("startEvaluateConsumer {}", toRegister);
         if (consumerThread != null) {
             logger.info("KieServiceNotificationConsumer already started");
-            registeredListeners.addAll(listeners);
+            registeredListeners.add(toRegister);
         } else {
             logger.info("Starting KieServiceNotificationConsumer....");
             Consumer<Long, JsonNode> consumer = createConsumer();
-            startEvaluateConsumer(consumer, listeners);
+            registeredListeners = new HashSet<>();
+            registeredListeners.add(toRegister);
+            startEvaluateConsumer(consumer, registeredListeners);
         }
     }
 

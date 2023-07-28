@@ -58,6 +58,12 @@ public class RuntimeManagerUtils {
         populateFirstLevelCache(firstLevelCache);
     }
 
+    public static void addKieRuntimeServiceToFirstLevelCache(final KieRuntimeService discoveredKieRuntimeService) {
+        logger.info("addKieRuntimeServiceToFirstLevelCache");
+        logger.debug("{}", discoveredKieRuntimeService);
+        populateFirstLevelCache(discoveredKieRuntimeService, firstLevelCache);
+    }
+
     static void populateFirstLevelCache(final Map<EfestoClassKey, List<KieRuntimeService>> toPopulate) {
         logger.debug("populateFirstLevelCache");
         logger.trace("{}", toPopulate);
@@ -70,15 +76,22 @@ public class RuntimeManagerUtils {
                                         final Map<EfestoClassKey, List<KieRuntimeService>> toPopulate) {
         logger.debug("populateFirstLevelCache");
         logger.trace("{} {}", discoveredKieRuntimeServices, toPopulate);
-        discoveredKieRuntimeServices.forEach(kieRuntimeService -> {
-            EfestoClassKey efestoClassKey = kieRuntimeService.getEfestoClassKeyIdentifier();
-            toPopulate.merge(efestoClassKey, new ArrayList<>(Collections.singletonList(kieRuntimeService)), (previous,
-                                                                                                             toAdd) -> {
-                List<KieRuntimeService> toReturn = new ArrayList<>();
-                toReturn.addAll(previous);
-                toReturn.addAll(toAdd);
-                return toReturn;
-            });
+        for (KieRuntimeService kieRuntimeService : discoveredKieRuntimeServices) {
+            populateFirstLevelCache(kieRuntimeService, toPopulate);
+        }
+    }
+
+    static void populateFirstLevelCache(final KieRuntimeService kieRuntimeService,
+                                        final Map<EfestoClassKey, List<KieRuntimeService>> toPopulate) {
+        logger.debug("populateFirstLevelCache");
+        logger.trace("{} {}", kieRuntimeService, toPopulate);
+        EfestoClassKey efestoClassKey = kieRuntimeService.getEfestoClassKeyIdentifier();
+        toPopulate.merge(efestoClassKey, new ArrayList<>(Collections.singletonList(kieRuntimeService)), (previous,
+                                                                                                         toAdd) -> {
+            List<KieRuntimeService> toReturn = new ArrayList<>();
+            toReturn.addAll(previous);
+            toReturn.addAll(toAdd);
+            return toReturn;
         });
     }
 

@@ -14,8 +14,7 @@ import java.util.Properties;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static org.kie.efesto.common.core.utils.JSONUtils.getObjectMapper;
-import static org.kie.efesto.kafka.api.KafkaConstants.BOOTSTRAP_SERVERS;
-import static org.kie.efesto.kafka.api.KafkaConstants.RUNTIMESERVICE_DISCOVER_TOPIC;
+import static org.kie.efesto.kafka.api.KafkaConstants.*;
 
 public class KieServiceNotificationProducer {
 
@@ -37,7 +36,7 @@ public class KieServiceNotificationProducer {
         try {
             JsonNode jsonNode = getJsonNode(toPublish);
             final ProducerRecord<Long, JsonNode> record =
-                    new ProducerRecord<>(RUNTIMESERVICE_DISCOVER_TOPIC, COUNTER.incrementAndGet(), jsonNode);
+                    new ProducerRecord<>(RUNTIMESERVICE_NOTIFICATION_TOPIC, COUNTER.incrementAndGet(), jsonNode);
 
             RecordMetadata metadata = producer.send(record).get();
 
