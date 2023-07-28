@@ -18,7 +18,7 @@ import static org.kie.efesto.kafka.api.KafkaConstants.RUNTIMESERVICE_DISCOVER_TO
 
 public class KieServicesDiscoverProducer {
 
-    private static final Logger logger = LoggerFactory.getLogger(ServerEvaluatedProducer.class);
+    private static final Logger logger = LoggerFactory.getLogger(KieServicesDiscoverProducer.class);
 
     private static final AtomicLong COUNTER = new AtomicLong();
 

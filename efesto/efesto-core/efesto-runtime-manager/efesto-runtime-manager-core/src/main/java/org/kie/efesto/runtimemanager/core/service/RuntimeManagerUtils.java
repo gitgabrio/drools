@@ -180,7 +180,12 @@ public class RuntimeManagerUtils {
                         s2)));
     }
 
-    // only for testing purpose
+    /**
+     * This is only for testing purpose.
+     * Currently (To be fixed) only one service is expected for a given <b>modelLocalUri/input data</b> pair, otherwise an exception is thrown
+     * {@link RuntimeManagerUtils#getOptionalBaseEfestoInput(String, String)}
+     * @param discoveredKieRuntimeServices
+     */
     public static void rePopulateFirstLevelCache(final List<KieRuntimeService> discoveredKieRuntimeServices) {
         logger.info("rePopulateFirstLevelCache");
         logger.debug("{}", discoveredKieRuntimeServices);
