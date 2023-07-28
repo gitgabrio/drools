@@ -9,6 +9,7 @@ import org.kie.efesto.kafka.runtime.provider.messages.EfestoKafkaRuntimeParseJso
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Serializable;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -23,19 +24,19 @@ public class ParseJsonInputRequestProducer {
     private static final AtomicLong COUNTER = new AtomicLong();
 
 
-    public static long runProducer(String modelLocalUriIdString, String inputDataString) {
+    public static long runProducer(String modelLocalUriIdString, Serializable inputData) {
         logger.info("runProducer");
         final Producer<Long, JsonNode> producer = createProducer();
-        return runProducer(producer, modelLocalUriIdString, inputDataString);
+        return runProducer(producer, modelLocalUriIdString, inputData);
     }
 
-    public static long runProducer(final Producer<Long, JsonNode> producer, String modelLocalUriIdString, String inputDataString) {
+    public static long runProducer(final Producer<Long, JsonNode> producer, String modelLocalUriIdString, Serializable inputData) {
         logger.info("runProducer {}", producer);
         long time = System.currentTimeMillis();
 
         try {
             long messageId = COUNTER.incrementAndGet();
-            JsonNode jsonNode = getJsonNode(modelLocalUriIdString, inputDataString, messageId);
+            JsonNode jsonNode = getJsonNode(modelLocalUriIdString, inputData, messageId);
             final ProducerRecord<Long, JsonNode> record =
                     new ProducerRecord<>(RUNTIMESERVICE_PARSEJSONINPUTREQUEST_TOPIC, messageId, jsonNode);
 
@@ -55,8 +56,8 @@ public class ParseJsonInputRequestProducer {
         }
     }
 
-    static JsonNode getJsonNode(String modelLocalUriIdString, String inputDataString, long messageId) {
-        EfestoKafkaRuntimeParseJsonInputRequestMessage requestMessage = new EfestoKafkaRuntimeParseJsonInputRequestMessage(modelLocalUriIdString, inputDataString, messageId);
+    static JsonNode getJsonNode(String modelLocalUriIdString, Serializable inputData, long messageId) {
+        EfestoKafkaRuntimeParseJsonInputRequestMessage requestMessage = new EfestoKafkaRuntimeParseJsonInputRequestMessage(modelLocalUriIdString, inputData, messageId);
         return getObjectMapper().valueToTree(requestMessage);
     }
 

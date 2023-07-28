@@ -10,7 +10,7 @@ import static org.kie.efesto.common.core.utils.JSONUtils.getObjectMapper;
 
 public class EfestoKafkaRuntimeParseJsonInputRequestMessageTest {
 
-    private static final String template = "{\"modelLocalUriIdString\":\"{\\\"model\\\":\\\"example\\\",\\\"basePath\\\":\\\"/some-id/instances/some-instance-id\\\",\\\"fullPath\\\":\\\"/example/some-id/instances/some-instance-id\\\"}\",\"inputDataString\":\"inputDataString\",\"messageId\":10,\"kind\":\"RUNTIMEPARSEJSONINPUTREQUEST\"}";
+    private static final String template = "{\"modelLocalUriIdString\":\"{\\\"model\\\":\\\"example\\\",\\\"basePath\\\":\\\"/some-id/instances/some-instance-id\\\",\\\"fullPath\\\":\\\"/example/some-id/instances/some-instance-id\\\"}\",\"inputData\":\"inputDataString\",\"messageId\":10,\"kind\":\"RUNTIMEPARSEJSONINPUTREQUEST\"}";
 
 
     @Test
@@ -35,10 +35,10 @@ public class EfestoKafkaRuntimeParseJsonInputRequestMessageTest {
         LocalUri parsed = LocalUri.parse(path);
         ModelLocalUriId modelLocalUriIdExpected = new ModelLocalUriId(parsed);
         assertThat(modelLocalUriIdRetrieved).isEqualTo(modelLocalUriIdExpected);
-        String inputDataStringRetrieved = ((EfestoKafkaRuntimeParseJsonInputRequestMessage) retrieved).getInputDataString();
-        assertThat(inputDataStringRetrieved).isNotNull().isNotEmpty();
+        Object inputDataRetrieved = ((EfestoKafkaRuntimeParseJsonInputRequestMessage) retrieved).getInputData();
+        assertThat(inputDataRetrieved).isNotNull().isExactlyInstanceOf(String.class);
         String inputDataStringExpected = "inputDataString";
-        assertThat(inputDataStringRetrieved).isEqualTo(inputDataStringExpected);
+        assertThat(inputDataRetrieved).isEqualTo(inputDataStringExpected);
         long messageId = ((EfestoKafkaRuntimeParseJsonInputRequestMessage) retrieved).getMessageId();
         assertThat(messageId).isEqualTo(10L);
     }

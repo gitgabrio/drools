@@ -17,6 +17,7 @@ import org.kie.efesto.runtimemanager.api.service.KieRuntimeService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Serializable;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -108,15 +109,15 @@ public class KafkaKieRuntimeServiceGateway implements KieRuntimeService {
     }
 
     @Override
-    public EfestoInput parseJsonInput(String modelLocalUriIdString, String inputDataString) {
+    public EfestoInput parseJsonInput(String modelLocalUriIdString, Serializable inputData) {
         logger.info("parseJsonInput");
-        logger.trace("{} {}", modelLocalUriIdString, inputDataString);
+        logger.trace("{} {}", modelLocalUriIdString, inputData);
         CompletableFuture<EfestoInput> completableFuture = CompletableFuture.supplyAsync(() -> {
             EfestoKafkaRuntimeParseJsonInputResponseMessageListener listener = new EfestoKafkaRuntimeParseJsonInputResponseMessageListener();
             logger.info("Starting ParseJsonInputResponseConsumer...");
             ParseJsonInputResponseConsumer.startEvaluateConsumer(listener);
             logger.info("Sending EfestoKafkaRuntimeParseJsonInputRequestMessage...");
-            long messageId = ParseJsonInputRequestProducer.runProducer(modelLocalUriIdString, inputDataString);
+            long messageId = ParseJsonInputRequestProducer.runProducer(modelLocalUriIdString, inputData);
             logger.info("messageId {}", messageId);
             EfestoInput received = listener.getEfestoInput(messageId);
             while (received == null) {
@@ -132,7 +133,7 @@ public class KafkaKieRuntimeServiceGateway implements KieRuntimeService {
         try {
             return completableFuture.get(30, TimeUnit.SECONDS);
         } catch (Exception e) {
-            logger.warn("Failed to retrieve EfestoInput for {} {}", modelLocalUriIdString, inputDataString);
+            logger.warn("Failed to retrieve EfestoInput for {} {}", modelLocalUriIdString, inputData);
             return null;
         }
     }

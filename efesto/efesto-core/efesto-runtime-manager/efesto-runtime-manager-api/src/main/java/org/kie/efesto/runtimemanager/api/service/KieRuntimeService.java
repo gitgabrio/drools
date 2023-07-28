@@ -21,6 +21,7 @@ import org.kie.efesto.runtimemanager.api.model.EfestoInput;
 import org.kie.efesto.runtimemanager.api.model.EfestoOutput;
 import org.kie.efesto.runtimemanager.api.model.EfestoRuntimeContext;
 
+import java.io.Serializable;
 import java.util.Optional;
 
 /**
@@ -28,7 +29,7 @@ import java.util.Optional;
  * It will be looked for with SPI, so each engine should declare that implementation inside
  * <code>src/main/resources/META-INF/services/org.kie.efesto.runtimemanager.api.service.KieRuntimeService</code> file
  */
-public interface KieRuntimeService<S, U, T extends EfestoInput<S>, E extends EfestoOutput<U>, K extends EfestoRuntimeContext> {
+public interface KieRuntimeService<S extends Serializable, U, T extends EfestoInput<S>, E extends EfestoOutput<U>, K extends EfestoRuntimeContext> {
 
     /**
      * Every <code>KieRuntimeService</code> is responsible to provide the <code>EfestoClassKey</code> that is supposed to manage.
@@ -73,9 +74,9 @@ public interface KieRuntimeService<S, U, T extends EfestoInput<S>, E extends Efe
      *
      *
      * @param modelLocalUriIdString
-     * @param inputDataString
+     * @param inputData
      * @return
      */
-    EfestoInput parseJsonInput(String modelLocalUriIdString, String inputDataString);
+    EfestoInput parseJsonInput(String modelLocalUriIdString, Serializable inputData);
 
 }

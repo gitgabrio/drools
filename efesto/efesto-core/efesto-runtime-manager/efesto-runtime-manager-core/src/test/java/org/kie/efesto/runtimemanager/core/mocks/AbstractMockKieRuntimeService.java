@@ -22,6 +22,7 @@ import org.kie.efesto.runtimemanager.api.model.EfestoInput;
 import org.kie.efesto.runtimemanager.api.model.EfestoRuntimeContext;
 import org.kie.efesto.runtimemanager.api.service.KieRuntimeService;
 
+import java.io.Serializable;
 import java.util.Optional;
 
 import static org.kie.efesto.common.core.utils.JSONUtils.getObjectMapper;
@@ -51,7 +52,7 @@ public abstract class AbstractMockKieRuntimeService<T extends AbstractMockEfesto
     }
 
     @Override
-    public EfestoInput parseJsonInput(String modelLocalUriIdString, String inputDataString) {
+    public EfestoInput parseJsonInput(String modelLocalUriIdString, Serializable inputData) {
         try {
             ModelLocalUriId requested = getObjectMapper().readValue(modelLocalUriIdString, ModelLocalUriId.class);
             return requested.equals(modelLocalUriId) ? getMockedEfestoInput() : null;

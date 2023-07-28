@@ -20,6 +20,7 @@ import org.kie.efesto.runtimemanager.core.model.EfestoRuntimeContextUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Serializable;
 import java.util.Optional;
 
 /**
@@ -80,14 +81,14 @@ public class KafkaKieRuntimeService implements KieRuntimeService, EfestoKafkaMes
     }
 
     @Override
-    public EfestoInput parseJsonInput(String modelLocalUriIdString, String inputDataString) {
-        return wrappedService.parseJsonInput(modelLocalUriIdString, inputDataString);
+    public EfestoInput parseJsonInput(String modelLocalUriIdString, Serializable inputData) {
+        return wrappedService.parseJsonInput(modelLocalUriIdString, inputData);
     }
 
     private void manageEfestoKafkaRuntimeParseJsonInputRequestMessage(EfestoKafkaRuntimeParseJsonInputRequestMessage toManage) {
         logger.info("{}- manageEfestoKafkaRuntimeParseJsonInputRequestMessage", wrappedServiceName);
         logger.debug("{}", toManage);
-        EfestoInput efestoInput = parseJsonInput(toManage.getModelLocalUriIdString(), toManage.getInputDataString());
+        EfestoInput efestoInput = parseJsonInput(toManage.getModelLocalUriIdString(), toManage.getInputData());
         if (efestoInput != null) {
             logger.info("{}- Going to send EfestoKafkaRuntimeParseJsonInputResponseMessage with {} {}", wrappedServiceName, efestoInput, toManage.getMessageId());
             ParseJsonInputResponseProducer.runProducer(efestoInput, toManage.getMessageId());

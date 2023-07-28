@@ -21,6 +21,7 @@ import org.kie.efesto.runtimemanager.api.model.EfestoOutput;
 import org.kie.efesto.runtimemanager.api.model.EfestoRuntimeContext;
 import org.kie.efesto.runtimemanager.api.service.RuntimeManager;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -46,8 +47,8 @@ public class RuntimeManagerImpl implements RuntimeManager {
     }
 
     @Override
-    public EfestoInput parseJsonInput(String modelLocalUriIdString, String inputDataString) {
-        return getOptionalBaseEfestoInput(modelLocalUriIdString, inputDataString)
-                .orElseThrow(() -> new KieRuntimeServiceException(String.format("Failed to retrieve a BaseEfestoInput from %s and %s", modelLocalUriIdString, inputDataString)));
+    public EfestoInput parseJsonInput(String modelLocalUriIdString, Serializable inputData) {
+        return getOptionalBaseEfestoInput(modelLocalUriIdString, inputData)
+                .orElseThrow(() -> new KieRuntimeServiceException(String.format("Failed to retrieve a BaseEfestoInput from %s and %s", modelLocalUriIdString, inputData)));
     }
 }

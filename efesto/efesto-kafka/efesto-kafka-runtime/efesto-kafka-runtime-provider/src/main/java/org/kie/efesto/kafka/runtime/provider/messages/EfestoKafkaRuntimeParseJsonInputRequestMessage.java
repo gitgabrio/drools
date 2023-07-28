@@ -2,6 +2,8 @@ package org.kie.efesto.kafka.runtime.provider.messages;
 
 import org.kie.efesto.kafka.api.messages.EfestoKafkaMessagingType;
 
+import java.io.Serializable;
+
 /**
  * Message published by
  * {@link org.kie.efesto.kafka.runtime.provider.service.KafkaKieRuntimeServiceGateway#parseJsonInput(String, String)}
@@ -13,17 +15,17 @@ public class EfestoKafkaRuntimeParseJsonInputRequestMessage extends AbstractEfes
 
 
     protected String modelLocalUriIdString;
-    protected String inputDataString;
+    protected Serializable inputData;
     protected long messageId;
 
     public EfestoKafkaRuntimeParseJsonInputRequestMessage() {
         super(EfestoKafkaMessagingType.RUNTIMEPARSEJSONINPUTREQUEST);
     }
 
-    public EfestoKafkaRuntimeParseJsonInputRequestMessage(String modelLocalUriIdString, String inputDataString, long messageId) {
+    public EfestoKafkaRuntimeParseJsonInputRequestMessage(String modelLocalUriIdString, Serializable inputData, long messageId) {
         this();
         this.modelLocalUriIdString = modelLocalUriIdString;
-        this.inputDataString = inputDataString;
+        this.inputData = inputData;
         this.messageId = messageId;
     }
 
@@ -31,8 +33,8 @@ public class EfestoKafkaRuntimeParseJsonInputRequestMessage extends AbstractEfes
         return modelLocalUriIdString;
     }
 
-    public String getInputDataString() {
-        return inputDataString;
+    public Serializable getInputData() {
+        return inputData;
     }
 
     public long getMessageId() {

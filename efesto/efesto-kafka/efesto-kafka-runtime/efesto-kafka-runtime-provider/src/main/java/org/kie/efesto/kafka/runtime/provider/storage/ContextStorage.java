@@ -13,29 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.kie.efesto.runtimemanager.api.model;
+package org.kie.efesto.kafka.runtime.provider.storage;
 
 import org.kie.efesto.common.api.identifiers.ModelLocalUriId;
+import org.kie.efesto.runtimemanager.core.model.EfestoLocalRuntimeContextImpl;
 
-import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 
-public class BaseEfestoInput<T extends Serializable> implements EfestoInput<T> {
+public class ContextStorage {
 
-    private final ModelLocalUriId modelLocalUriId;
-    private final T inputData;
+    private static final Map<ModelLocalUriId, EfestoLocalRuntimeContextImpl> RUNTIME_CONTEXT_MAP = new HashMap<>();
 
-    public BaseEfestoInput(ModelLocalUriId modelLocalUriId, T inputData) {
-        this.modelLocalUriId = modelLocalUriId;
-        this.inputData = inputData;
+    public static void putEfestoRuntimeContext(ModelLocalUriId modelLocalUriId, EfestoLocalRuntimeContextImpl runtimeContext) {
+        RUNTIME_CONTEXT_MAP.put(modelLocalUriId, runtimeContext);
     }
 
-    @Override
-    public ModelLocalUriId getModelLocalUriId() {
-        return modelLocalUriId;
+    public static EfestoLocalRuntimeContextImpl getEfestoRuntimeContext(ModelLocalUriId modelLocalUriId) {
+        return RUNTIME_CONTEXT_MAP.get(modelLocalUriId);
     }
 
-    @Override
-    public T getInputData() {
-        return inputData;
-    }
 }
