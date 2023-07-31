@@ -16,7 +16,6 @@
 package org.kie.pmml.api.runtime;
 
 import org.kie.api.pmml.PMMLRequestData;
-import org.kie.efesto.runtimemanager.api.model.EfestoLocalRuntimeContext;
 import org.kie.efesto.runtimemanager.api.model.EfestoRuntimeContext;
 import org.kie.pmml.api.PMMLContext;
 

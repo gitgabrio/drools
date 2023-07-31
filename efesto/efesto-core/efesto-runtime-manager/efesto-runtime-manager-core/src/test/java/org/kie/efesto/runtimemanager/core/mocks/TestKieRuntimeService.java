@@ -15,13 +15,13 @@
  */
 package org.kie.efesto.runtimemanager.core.mocks;
 
+import java.util.Optional;
+
 import org.kie.efesto.common.api.cache.EfestoClassKey;
 import org.kie.efesto.runtimemanager.api.model.BaseEfestoInput;
 import org.kie.efesto.runtimemanager.api.model.EfestoInput;
 import org.kie.efesto.runtimemanager.api.model.EfestoRuntimeContext;
 import org.kie.efesto.runtimemanager.api.service.KieRuntimeService;
-
-import java.util.Optional;
 
 // This service is required to find IndexFile "test" in classpath
 public class TestKieRuntimeService<T extends AbstractMockEfestoInput> implements KieRuntimeService<String, String, T,
@@ -49,7 +49,7 @@ public class TestKieRuntimeService<T extends AbstractMockEfestoInput> implements
     }
 
     @Override
-    public BaseEfestoInput parseJsonInput(String modelLocalUriIdString, String inputData) {
+    public BaseEfestoInput parseJsonInput(String modelLocalUriIdString, String inputDataString) {
         return null;
     }
 }

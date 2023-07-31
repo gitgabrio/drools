@@ -23,6 +23,8 @@ import org.slf4j.LoggerFactory;
 import java.io.Serializable;
 import java.util.Optional;
 
+import static org.kie.efesto.common.core.utils.JSONUtils.getObjectMapper;
+
 /**
  * This represents the <b>Kafka-embedded</b> <code>KieRuntimeService</code>
  * that executes methods asynchronously over kafka-topic
@@ -81,17 +83,22 @@ public class KafkaKieRuntimeService implements KieRuntimeService, EfestoKafkaMes
     }
 
     @Override
-    public EfestoInput parseJsonInput(String modelLocalUriIdString, Serializable inputData) {
-        return wrappedService.parseJsonInput(modelLocalUriIdString, inputData);
+    public EfestoInput parseJsonInput(String modelLocalUriIdString, String inputDataString) {
+        return wrappedService.parseJsonInput(modelLocalUriIdString, inputDataString);
     }
 
     private void manageEfestoKafkaRuntimeParseJsonInputRequestMessage(EfestoKafkaRuntimeParseJsonInputRequestMessage toManage) {
         logger.info("{}- manageEfestoKafkaRuntimeParseJsonInputRequestMessage", wrappedServiceName);
         logger.debug("{}", toManage);
-        EfestoInput efestoInput = parseJsonInput(toManage.getModelLocalUriIdString(), toManage.getInputData());
-        if (efestoInput != null) {
-            logger.info("{}- Going to send EfestoKafkaRuntimeParseJsonInputResponseMessage with {} {}", wrappedServiceName, efestoInput, toManage.getMessageId());
-            ParseJsonInputResponseProducer.runProducer(efestoInput, toManage.getMessageId());
+        try {
+            String inputDataString = getObjectMapper().writeValueAsString(toManage.getInputData());
+            EfestoInput efestoInput = parseJsonInput(toManage.getModelLocalUriIdString(), inputDataString);
+            if (efestoInput != null) {
+                logger.info("{}- Going to send EfestoKafkaRuntimeParseJsonInputResponseMessage with {} {}", wrappedServiceName, efestoInput, toManage.getMessageId());
+                ParseJsonInputResponseProducer.runProducer(efestoInput, toManage.getMessageId());
+            }
+        } catch (Exception e) {
+            logger.error("{}- Failed to get EfestoInput out of {}", wrappedServiceName, toManage);
         }
     }
 

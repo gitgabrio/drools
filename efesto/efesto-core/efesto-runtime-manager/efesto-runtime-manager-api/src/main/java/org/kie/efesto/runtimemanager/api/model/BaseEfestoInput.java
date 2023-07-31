@@ -17,9 +17,7 @@ package org.kie.efesto.runtimemanager.api.model;
 
 import org.kie.efesto.common.api.identifiers.ModelLocalUriId;
 
-import java.io.Serializable;
-
-public class BaseEfestoInput<T extends Serializable> implements EfestoInput<T> {
+public class BaseEfestoInput<T> implements EfestoInput<T> {
 
     private final ModelLocalUriId modelLocalUriId;
     private final T inputData;

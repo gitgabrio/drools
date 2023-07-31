@@ -27,7 +27,6 @@ import org.kie.efesto.runtimemanager.api.model.EfestoInput;
 import org.kie.efesto.runtimemanager.api.model.EfestoRuntimeContext;
 import org.kie.efesto.runtimemanager.api.service.KieRuntimeService;
 import org.kie.pmml.api.identifiers.AbstractModelLocalUriIdPmml;
-import org.kie.pmml.evaluator.core.model.EfestoInputPMML;
 import org.kie.pmml.evaluator.core.model.EfestoOutputPMML;
 import org.kie.pmml.evaluator.core.serialization.AbstractModelLocalUriIdPmmlDeSerializer;
 import org.kie.pmml.evaluator.core.serialization.AbstractModelLocalUriIdPmmlSerializer;

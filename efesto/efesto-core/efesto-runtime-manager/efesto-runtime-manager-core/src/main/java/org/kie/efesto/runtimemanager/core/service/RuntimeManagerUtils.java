@@ -29,7 +29,6 @@ import org.kie.efesto.runtimemanager.api.service.RuntimeServiceProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.Serializable;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -174,7 +173,7 @@ public class RuntimeManagerUtils {
                 context)) : Optional.empty();
     }
 
-    static Optional<EfestoInput> getOptionalBaseEfestoInput(String modelLocalUriIdString, Serializable inputData) {
+    static Optional<EfestoInput> getOptionalBaseEfestoInput(String modelLocalUriIdString, String inputDataString) {
         List<KieRuntimeService> discoveredServices = firstLevelCache.values().stream().flatMap((Function<List<KieRuntimeService>, Stream<KieRuntimeService>>) kieRuntimeServices -> kieRuntimeServices.stream()).collect(Collectors.toList());
         ModelLocalUriId modelLocalUriId;
         try {
@@ -184,12 +183,12 @@ public class RuntimeManagerUtils {
         }
         return findAtMostOne(discoveredServices.stream()
                 .filter(kieRuntimeService -> kieRuntimeService.getModelType().equals(modelLocalUriId.model()))
-                .map(kieRuntimeService -> kieRuntimeService.parseJsonInput(modelLocalUriIdString, inputData))
+                .map(kieRuntimeService -> kieRuntimeService.parseJsonInput(modelLocalUriIdString, inputDataString))
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList()),
                 (s1, s2) -> new KieRuntimeServiceException(String.format("Found more than one runtime services for %s - %s: %s and %s",
                         modelLocalUriIdString,
-                        inputData,
+                        inputDataString,
                         s1,
                         s2)));
     }
@@ -197,7 +196,7 @@ public class RuntimeManagerUtils {
     /**
      * This is only for testing purpose.
      * Currently (To be fixed) only one service is expected for a given <b>modelLocalUri/input data</b> pair, otherwise an exception is thrown
-     * {@link RuntimeManagerUtils#getOptionalBaseEfestoInput(String, Serializable)}
+     * {@link RuntimeManagerUtils#getOptionalBaseEfestoInput(String, String)}
      * @param discoveredKieRuntimeServices
      */
     public static void rePopulateFirstLevelCache(final List<KieRuntimeService> discoveredKieRuntimeServices) {

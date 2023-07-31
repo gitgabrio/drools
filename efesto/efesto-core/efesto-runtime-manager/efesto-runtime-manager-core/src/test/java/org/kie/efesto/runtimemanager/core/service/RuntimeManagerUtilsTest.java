@@ -36,7 +36,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.*;
@@ -257,14 +256,14 @@ class RuntimeManagerUtilsTest {
         assertThat(retrieved).isNotNull().isNotPresent();
     }
 
-    static class BaseEfestoInputExtender extends BaseEfestoInput<Serializable> {
+    static class BaseEfestoInputExtender extends BaseEfestoInput<String> {
 
-        public BaseEfestoInputExtender(ModelLocalUriId modelLocalUriId, Serializable inputData) {
+        public BaseEfestoInputExtender(ModelLocalUriId modelLocalUriId, String inputData) {
             super(modelLocalUriId, inputData);
         }
     }
 
-    static class BaseInputService implements KieRuntimeService<Serializable, String, BaseEfestoInput<Serializable>,
+    static class BaseInputService implements KieRuntimeService<String, String, BaseEfestoInput<String>,
             MockEfestoOutput, EfestoRuntimeContext> {
 
         @Override
@@ -289,17 +288,17 @@ class RuntimeManagerUtilsTest {
         }
 
         @Override
-        public BaseEfestoInput<Serializable> parseJsonInput(String modelLocalUriIdString, Serializable inputData) {
+        public BaseEfestoInput<String> parseJsonInput(String modelLocalUriIdString, String inputDataString) {
             try {
                 ModelLocalUriId modelLocalUriId = JSONUtils.getModelLocalUriIdObject(modelLocalUriIdString);
-                return new BaseEfestoInput<>(modelLocalUriId, inputData);
+                return new BaseEfestoInput<>(modelLocalUriId, inputDataString);
             } catch (Exception e) {
                 return null;
             }
         }
     }
 
-    static class BaseInputExtenderService implements KieRuntimeService<Serializable, String, BaseEfestoInputExtender,
+    static class BaseInputExtenderService implements KieRuntimeService<String, String, BaseEfestoInputExtender,
             MockEfestoOutput, EfestoRuntimeContext> {
 
         @Override
@@ -325,10 +324,10 @@ class RuntimeManagerUtilsTest {
         }
 
         @Override
-        public BaseEfestoInput<Serializable> parseJsonInput(String modelLocalUriIdString, Serializable inputData) {
+        public BaseEfestoInput<String> parseJsonInput(String modelLocalUriIdString, String inputDataString) {
             try {
                 ModelLocalUriId modelLocalUriId = JSONUtils.getModelLocalUriIdObject(modelLocalUriIdString);
-                return new BaseEfestoInputExtender(modelLocalUriId, inputData);
+                return new BaseEfestoInputExtender(modelLocalUriId, inputDataString);
             } catch (Exception e) {
                 return null;
             }

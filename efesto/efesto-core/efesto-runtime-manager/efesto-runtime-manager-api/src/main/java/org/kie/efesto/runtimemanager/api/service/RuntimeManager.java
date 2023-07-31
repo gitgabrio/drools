@@ -19,7 +19,6 @@ import org.kie.efesto.runtimemanager.api.model.EfestoInput;
 import org.kie.efesto.runtimemanager.api.model.EfestoOutput;
 import org.kie.efesto.runtimemanager.api.model.EfestoRuntimeContext;
 
-import java.io.Serializable;
 import java.util.Collection;
 
 /**
@@ -41,8 +40,8 @@ public interface RuntimeManager {
      * Return the model-specific <code>BaseEfestoInput</code>
      *
      * @param modelLocalUriIdString
-     * @param inputData
+     * @param inputDataString
      * @return
      */
-    EfestoInput parseJsonInput(String modelLocalUriIdString, Serializable inputData);
+    EfestoInput parseJsonInput(String modelLocalUriIdString, String inputDataString);
 }
