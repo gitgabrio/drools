@@ -77,6 +77,6 @@ public interface KieRuntimeService<S extends Serializable, U, T extends EfestoIn
      * @param inputData
      * @return
      */
-    EfestoInput parseJsonInput(String modelLocalUriIdString, Serializable inputData);
+    EfestoInput parseJsonInput(String modelLocalUriIdString, S inputData);
 
 }

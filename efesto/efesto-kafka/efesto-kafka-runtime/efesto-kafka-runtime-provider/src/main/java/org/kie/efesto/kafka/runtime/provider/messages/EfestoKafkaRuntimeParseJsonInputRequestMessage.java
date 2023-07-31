@@ -6,7 +6,7 @@ import java.io.Serializable;
 
 /**
  * Message published by
- * {@link org.kie.efesto.kafka.runtime.provider.service.KafkaKieRuntimeServiceGateway#parseJsonInput(String, String)}
+ * {@link org.kie.efesto.kafka.runtime.provider.service.KafkaKieRuntimeServiceGateway#parseJsonInput(String, Serializable)}
  * to eventually retrieve a <code>EfestoInput</code>
  */
 public class EfestoKafkaRuntimeParseJsonInputRequestMessage extends AbstractEfestoKafkaRuntimeMessage {

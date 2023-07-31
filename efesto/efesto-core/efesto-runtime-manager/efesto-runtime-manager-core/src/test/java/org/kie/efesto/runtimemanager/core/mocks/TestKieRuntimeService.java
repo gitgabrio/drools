@@ -21,7 +21,6 @@ import org.kie.efesto.runtimemanager.api.model.EfestoInput;
 import org.kie.efesto.runtimemanager.api.model.EfestoRuntimeContext;
 import org.kie.efesto.runtimemanager.api.service.KieRuntimeService;
 
-import java.io.Serializable;
 import java.util.Optional;
 
 // This service is required to find IndexFile "test" in classpath
@@ -50,7 +49,7 @@ public class TestKieRuntimeService<T extends AbstractMockEfestoInput> implements
     }
 
     @Override
-    public BaseEfestoInput parseJsonInput(String modelLocalUriIdString, Serializable inputData) {
+    public BaseEfestoInput parseJsonInput(String modelLocalUriIdString, String inputData) {
         return null;
     }
 }
