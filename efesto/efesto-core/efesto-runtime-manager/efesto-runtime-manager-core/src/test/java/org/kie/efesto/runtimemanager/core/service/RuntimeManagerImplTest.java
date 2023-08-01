@@ -38,7 +38,6 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
-import static org.kie.efesto.common.core.utils.JSONUtils.getObjectMapper;
 
 class RuntimeManagerImplTest {
 
@@ -111,23 +110,4 @@ class RuntimeManagerImplTest {
                 toProcess.toArray(new EfestoInput[0]));
         assertThat(retrieved).isNotNull().hasSize(MANAGED_Efesto_INPUTS.size());
     }
-
-    @ParameterizedTest(name = "evaluateInput{0}")
-    @ValueSource(classes = {MockEfestoInputA.class,
-            MockEfestoInputB.class,
-            MockEfestoInputC.class})
-    void getOptionalBaseEfestoInputPresent(Class<? extends EfestoInput> managedInput) {
-        RuntimeManagerUtils.init();
-        try {
-            EfestoInput originalInput = managedInput.getDeclaredConstructor().newInstance();
-            String modelLocalUriIdString = getObjectMapper().writeValueAsString(originalInput.getModelLocalUriId());
-            String inputDataString = originalInput.getInputData().toString();
-            EfestoInput retrieved = runtimeManager.parseJsonInput(modelLocalUriIdString,
-                    inputDataString);
-            assertThat(retrieved).isNotNull().isExactlyInstanceOf(originalInput.getClass()).isEqualTo(originalInput);
-        } catch (Exception e) {
-            fail("Failed assertion on evaluateInput", e);
-        }
-    }
-
 }

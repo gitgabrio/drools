@@ -22,10 +22,6 @@ import org.kie.efesto.kafka.api.messages.EfestoKafkaMessagingType;
 @JsonSubTypes({
         @JsonSubTypes.Type(value = EfestoKafkaRuntimeServiceDiscoverMessage.class, name = "RUNTIMESERVICEDISCOVER"),
         @JsonSubTypes.Type(value = EfestoKafkaRuntimeServiceNotificationMessage.class, name = "RUNTIMESERVICENOTIFICATION"),
-        @JsonSubTypes.Type(value = EfestoKafkaRuntimeParseJsonInputRequestMessage.class, name = "RUNTIMEPARSEJSONINPUTREQUEST"),
-        @JsonSubTypes.Type(value = EfestoKafkaRuntimeParseJsonInputResponseMessage.class, name = "RUNTIMEPARSEJSONINPUTRESPONSE"),
-        @JsonSubTypes.Type(value = EfestoKafkaRuntimeCanManageInputRequestMessage.class, name = "RUNTIMECANMANAGEINPUTREQUEST"),
-        @JsonSubTypes.Type(value = EfestoKafkaRuntimeCanManageInputResponseMessage.class, name = "RUNTIMECANMANAGEINPUTRESPONSE"),
         @JsonSubTypes.Type(value = EfestoKafkaRuntimeEvaluateInputRequestMessage.class, name = "RUNTIMEEVALUATEINPUTREQUEST"),
         @JsonSubTypes.Type(value = EfestoKafkaRuntimeEvaluateInputResponseMessage.class, name = "RUNTIMEEVALUATEINPUTRESPONSE")
 })

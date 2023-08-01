@@ -25,8 +25,8 @@ import org.kie.efesto.runtimemanager.api.model.EfestoRuntimeContext;
 import org.kie.efesto.runtimemanager.core.model.EfestoRuntimeContextUtils;
 import org.kie.memorycompiler.KieMemoryCompiler;
 import org.kie.pmml.api.runtime.PMMLRuntimeContext;
-import org.kie.pmml.evaluator.core.model.EfestoInputPMML;
-import org.kie.pmml.evaluator.core.model.EfestoOutputPMML;
+import org.kie.pmml.evaluator.api.model.EfestoInputPMML;
+import org.kie.pmml.evaluator.api.model.EfestoOutputPMML;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.kie.pmml.TestingHelper.commonEvaluateEfestoOutputPMML;

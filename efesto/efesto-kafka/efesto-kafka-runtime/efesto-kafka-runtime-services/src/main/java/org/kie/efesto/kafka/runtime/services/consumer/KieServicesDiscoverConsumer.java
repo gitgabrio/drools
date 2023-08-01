@@ -23,11 +23,11 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.connect.json.JsonDeserializer;
 import org.kie.efesto.kafka.api.serialization.EfestoLongDeserializer;
+import org.kie.efesto.kafka.api.service.KafkaKieRuntimeService;
 import org.kie.efesto.kafka.runtime.provider.messages.EfestoKafkaRuntimeServiceDiscoverMessage;
 import org.kie.efesto.kafka.runtime.services.producer.KieServiceNotificationProducer;
-import org.kie.efesto.kafka.runtime.services.service.KafkaRuntimeLocalServiceProvider;
+import org.kie.efesto.kafka.runtime.services.service.KafkaRuntimeServiceLocalProvider;
 import org.kie.efesto.runtimemanager.api.exceptions.EfestoRuntimeManagerException;
-import org.kie.efesto.runtimemanager.api.service.KieRuntimeService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,7 +45,7 @@ public class KieServicesDiscoverConsumer {
 
     private static final Logger logger = LoggerFactory.getLogger(KieServicesDiscoverConsumer.class);
 
-    private static final KafkaRuntimeLocalServiceProvider localServiceProvider = new KafkaRuntimeLocalServiceProvider();
+    private static final KafkaRuntimeServiceLocalProvider localServiceProvider = new KafkaRuntimeServiceLocalProvider();
 
     private static final List<EfestoKafkaRuntimeServiceDiscoverMessage> receivedMessages = new ArrayList<>();
 
@@ -92,12 +92,12 @@ public class KieServicesDiscoverConsumer {
 
     static int notifyServices() {
         logger.info("notifyServices");
-        List<KieRuntimeService> kieRuntimeServices = localServiceProvider.getKieRuntimeServices();
+        List<KafkaKieRuntimeService> kieRuntimeServices = localServiceProvider.getKieRuntimeServices();
         kieRuntimeServices.forEach(KieServicesDiscoverConsumer::notifyService);
         return kieRuntimeServices.size();
     }
 
-    static void notifyService(KieRuntimeService toPublish) {
+    static void notifyService(KafkaKieRuntimeService toPublish) {
         logger.info("notifyServices {}", toPublish);
         KieServiceNotificationProducer.runProducer(toPublish);
     }

@@ -1,0 +1,52 @@
+{
+  "correlationId": "CORRELATION_ID",
+  "modelName": "LoanApprovalRegression",
+  "source": "null",
+  "requestParams": [
+    {
+      "correlationId": "CORRELATION_ID",
+      "name": "approved",
+      "capitalizedName": "Approved",
+      "type": "java.lang.Boolean",
+      "value": true
+    },
+    {
+      "correlationId": "CORRELATION_ID",
+      "name": "applicantName",
+      "capitalizedName": "ApplicantName",
+      "type": "java.lang.String",
+      "value": "John"
+    },
+    {
+      "correlationId": "CORRELATION_ID",
+      "name": "_pmml_file_name_",
+      "capitalizedName": "_pmml_file_name_",
+      "type": "java.lang.String",
+      "value": "LoanApprovalRegression"
+    }
+  ],
+  "compactCapitalizedModelName": "LoanApprovalRegression",
+  "mappedRequestParams": {
+    "approved": {
+      "correlationId": "CORRELATION_ID",
+      "name": "approved",
+      "capitalizedName": "Approved",
+      "type": "java.lang.Boolean",
+      "value": true
+    },
+    "applicantName": {
+      "correlationId": "CORRELATION_ID",
+      "name": "applicantName",
+      "capitalizedName": "ApplicantName",
+      "type": "java.lang.String",
+      "value": "John"
+    },
+    "_pmml_file_name_": {
+      "correlationId": "CORRELATION_ID",
+      "name": "_pmml_file_name_",
+      "capitalizedName": "_pmml_file_name_",
+      "type": "java.lang.String",
+      "value": "LoanApprovalRegression"
+    }
+  }
+}

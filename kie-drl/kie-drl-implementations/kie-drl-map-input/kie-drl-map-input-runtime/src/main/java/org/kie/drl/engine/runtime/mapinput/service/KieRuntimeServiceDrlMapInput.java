@@ -15,8 +15,6 @@
  */
 package org.kie.drl.engine.runtime.mapinput.service;
 
-import java.util.*;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.kie.drl.engine.runtime.mapinput.model.EfestoOutputDrlMap;
 import org.kie.drl.engine.runtime.mapinput.utils.DrlRuntimeHelper;
@@ -26,6 +24,8 @@ import org.kie.efesto.common.api.identifiers.ModelLocalUriId;
 import org.kie.efesto.common.core.utils.JSONUtils;
 import org.kie.efesto.runtimemanager.api.model.*;
 import org.kie.efesto.runtimemanager.api.service.KieRuntimeService;
+
+import java.util.*;
 
 import static org.kie.efesto.common.core.utils.JSONUtils.getInputData;
 import static org.kie.efesto.runtimemanager.core.model.EfestoRuntimeContextUtils.buildWithParentClassLoader;
@@ -61,7 +61,7 @@ public class KieRuntimeServiceDrlMapInput implements KieRuntimeService<EfestoMap
     }
 
     @Override
-    public BaseEfestoInput<EfestoMapInputDTO> parseJsonInput(String modelLocalUriIdString, String inputDataString) {
+    public Optional<BaseEfestoInput<EfestoMapInputDTO>> parseJsonInput(String modelLocalUriIdString, String inputDataString) {
         ModelLocalUriId modelLocalUriId;
         try {
             modelLocalUriId = objectMapper.readValue(modelLocalUriIdString, ModelLocalUriId.class);
@@ -71,10 +71,10 @@ public class KieRuntimeServiceDrlMapInput implements KieRuntimeService<EfestoMap
         Map<String, Object> inputData;
         try {
             inputData = getInputData(inputDataString);
+            return Optional.of(new BaseEfestoInput<>(modelLocalUriId, getDrlMapInput(inputData)));
         } catch (Exception e) {
             throw new KieEfestoCommonException(String.format("Failed to parse %s as Map<String, Object>", inputDataString));
         }
-        return new BaseEfestoInput<>(modelLocalUriId, getDrlMapInput(inputData));
     }
 
     private static EfestoMapInputDTO getDrlMapInput(Map<String, Object> inputData) {

@@ -35,13 +35,4 @@ public interface RuntimeManager {
      */
     Collection<EfestoOutput> evaluateInput(EfestoRuntimeContext context,
                                            EfestoInput... toEvaluate);
-
-    /**
-     * Return the model-specific <code>BaseEfestoInput</code>
-     *
-     * @param modelLocalUriIdString
-     * @param inputDataString
-     * @return
-     */
-    EfestoInput parseJsonInput(String modelLocalUriIdString, String inputDataString);
 }

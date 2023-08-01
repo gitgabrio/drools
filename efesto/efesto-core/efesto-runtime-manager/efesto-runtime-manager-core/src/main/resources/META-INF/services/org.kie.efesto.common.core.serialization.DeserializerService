@@ -1,3 +1,2 @@
 # SPI implementations
-org.kie.efesto.runtimemanager.core.serialization.EfestoInputDeserializerService
 org.kie.efesto.runtimemanager.core.serialization.EfestoOutputDeserializerService

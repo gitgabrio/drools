@@ -19,6 +19,7 @@ import org.junit.jupiter.api.Test;
 import org.kie.pmml.api.identifiers.LocalComponentIdPmml;
 import org.kie.pmml.api.runtime.PMMLRuntimeContext;
 import org.kie.pmml.commons.testingutility.PMMLRuntimeContextTest;
+import org.kie.pmml.evaluator.api.model.EfestoInputPMML;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.kie.pmml.commons.CommonTestingUtility.getModelLocalUriIdFromPmmlIdFactory;

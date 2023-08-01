@@ -49,7 +49,7 @@ public class TestKieRuntimeService<T extends AbstractMockEfestoInput> implements
     }
 
     @Override
-    public BaseEfestoInput parseJsonInput(String modelLocalUriIdString, String inputDataString) {
-        return null;
+    public Optional<T> parseJsonInput(String modelLocalUriIdString, String inputDataString) {
+        return Optional.empty();
     }
 }

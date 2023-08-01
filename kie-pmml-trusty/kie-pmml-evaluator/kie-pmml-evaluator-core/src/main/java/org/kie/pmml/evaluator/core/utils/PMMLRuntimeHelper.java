@@ -39,8 +39,8 @@ import org.kie.pmml.evaluator.core.executor.PMMLModelEvaluator;
 import org.kie.pmml.evaluator.core.executor.PMMLModelEvaluatorFinder;
 import org.kie.pmml.evaluator.core.executor.PMMLModelEvaluatorFinderImpl;
 import org.kie.pmml.evaluator.core.implementations.PMMLRuntimeStep;
-import org.kie.pmml.evaluator.core.model.EfestoInputPMML;
-import org.kie.pmml.evaluator.core.model.EfestoOutputPMML;
+import org.kie.pmml.evaluator.api.model.EfestoInputPMML;
+import org.kie.pmml.evaluator.api.model.EfestoOutputPMML;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

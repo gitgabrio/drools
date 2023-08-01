@@ -13,21 +13,27 @@ public class EfestoKafkaRuntimeEvaluateInputRequestMessage extends AbstractEfest
 
 
     private static final long serialVersionUID = -3245575207429193772L;
-    protected EfestoInput efestoInput;
+    protected String modelLocalUriIdString;
+    protected String inputDataString;
     protected long messageId;
 
     public EfestoKafkaRuntimeEvaluateInputRequestMessage() {
         super(EfestoKafkaMessagingType.RUNTIMEEVALUATEINPUTREQUEST);
     }
 
-    public EfestoKafkaRuntimeEvaluateInputRequestMessage(EfestoInput efestoInput, long messageId) {
+    public EfestoKafkaRuntimeEvaluateInputRequestMessage(String modelLocalUriIdString, String inputData, long messageId) {
         this();
-        this.efestoInput = efestoInput;
+        this.modelLocalUriIdString = modelLocalUriIdString;
+        this.inputDataString = inputData;
         this.messageId = messageId;
     }
 
-    public EfestoInput getEfestoInput() {
-        return efestoInput;
+    public String getModelLocalUriIdString() {
+        return modelLocalUriIdString;
+    }
+
+    public String getInputDataString() {
+        return inputDataString;
     }
 
     public long getMessageId() {

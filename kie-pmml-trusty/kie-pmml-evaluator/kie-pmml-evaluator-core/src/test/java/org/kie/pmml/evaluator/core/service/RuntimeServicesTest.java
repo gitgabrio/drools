@@ -29,7 +29,7 @@ import org.kie.efesto.runtimemanager.api.service.RuntimeManager;
 import org.kie.efesto.runtimemanager.api.utils.SPIUtils;
 import org.kie.memorycompiler.KieMemoryCompiler;
 import org.kie.pmml.api.runtime.PMMLRuntimeContext;
-import org.kie.pmml.evaluator.core.model.EfestoInputPMML;
+import org.kie.pmml.evaluator.api.model.EfestoInputPMML;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.kie.pmml.TestingHelper.getEfestoContext;

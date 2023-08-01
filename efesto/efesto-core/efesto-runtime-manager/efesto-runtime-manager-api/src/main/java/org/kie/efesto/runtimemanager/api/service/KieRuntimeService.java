@@ -70,12 +70,13 @@ public interface KieRuntimeService<S, U, T extends EfestoInput<S>, E extends Efe
      * It has to return the same type as received in the KieRuntimeService#evaluateInput.
      * The implementation is guaranteed that the received strings are related to the model returned by
      * KieRuntimeService#getModel
+     * This method is used in distribute, serialized environments
      *
      *
      * @param modelLocalUriIdString
      * @param inputDataString
      * @return
      */
-    EfestoInput parseJsonInput(String modelLocalUriIdString, String inputDataString);
+    Optional<T> parseJsonInput(String modelLocalUriIdString, String inputDataString);
 
 }

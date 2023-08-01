@@ -64,13 +64,13 @@ public class KieRuntimeServiceDrlKieSessionLocal implements KieRuntimeService<St
     }
 
     @Override
-    public BaseEfestoInput<String> parseJsonInput(String modelLocalUriIdString, String inputDataString) {
+    public Optional<EfestoInputDrlKieSessionLocal> parseJsonInput(String modelLocalUriIdString, String inputDataString) {
         ModelLocalUriId modelLocalUriId;
         try {
             modelLocalUriId = objectMapper.readValue(modelLocalUriIdString, ModelLocalUriId.class);
+            return Optional.of(new EfestoInputDrlKieSessionLocal(modelLocalUriId, inputDataString));
         } catch (Exception e) {
             throw new KieEfestoCommonException(String.format("Failed to parse %s as ModelLocalUriId", modelLocalUriIdString));
         }
-        return new EfestoInputDrlKieSessionLocal(modelLocalUriId, inputDataString);
     }
 }

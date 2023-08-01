@@ -17,27 +17,19 @@ package org.kie.pmml.evaluator.core.serialization;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.NullNode;
-import com.fasterxml.jackson.databind.node.TextNode;
 import org.kie.api.pmml.PMMLRequestData;
-import org.kie.efesto.common.api.identifiers.LocalUri;
-import org.kie.efesto.common.api.identifiers.ModelLocalUriId;
-import org.kie.pmml.api.identifiers.AbstractModelLocalUriIdPmml;
-import org.kie.pmml.api.identifiers.LocalComponentIdPmml;
-import org.kie.pmml.api.identifiers.LocalComponentIdRedirectPmml;
+import org.kie.pmml.api.exceptions.KiePMMLInternalException;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
 import java.util.function.Consumer;
 
-import static org.kie.efesto.common.api.identifiers.LocalUri.SLASH;
+import static org.kie.efesto.common.core.utils.JSONUtils.getObjectMapper;
 
 public class PMMLRequestDataDeserializer extends StdDeserializer<PMMLRequestData> {
 
@@ -58,10 +50,29 @@ public class PMMLRequestDataDeserializer extends StdDeserializer<PMMLRequestData
 
     @Override
     public PMMLRequestData deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.configure(JsonParser.Feature.IGNORE_UNDEFINED, true);
-        mapper.configure(JsonGenerator.Feature.IGNORE_UNKNOWN, true);
-        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        return mapper.readValue(p, PMMLRequestData.class);
+        JsonNode node = p.getCodec().readTree(p);
+        if (node.get("correlationId") == null || node.get("modelName") == null) {
+            throw new KiePMMLInternalException(String.format("The given node %s does not contains the required `correlationId` or `modelName` tags", node));
+        }
+        String correlationId = node.get("correlationId").asText();
+        String modelName = node.get("modelName").asText();
+        PMMLRequestData toReturn = new PMMLRequestData(correlationId, modelName);
+        if (node.get("source") != null) {
+            toReturn.setSource(node.get("source").asText());
+        }
+        if (node.get("requestParams") != null) {
+            ArrayNode requestParamNode = (ArrayNode) node.get("requestParams");
+            requestParamNode.elements().forEachRemaining(jsonNode -> {
+                try {
+                    String name = jsonNode.get("name").asText();
+                    Object value = getObjectMapper().readValue(jsonNode.get("value").toString(), Object.class);
+                    toReturn.addRequestParam(name, value);
+                } catch (JsonProcessingException e) {
+                    throw new KiePMMLInternalException(String.format("Failed to deserialize the node %s", jsonNode), e);
+
+                }
+            });
+        }
+        return toReturn;
     }
 }

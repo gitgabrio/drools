@@ -34,8 +34,8 @@ import org.kie.pmml.api.runtime.PMMLRuntimeContext;
 import org.kie.pmml.commons.model.KiePMMLModel;
 import org.kie.pmml.evaluator.core.PMMLRuntimeContextImpl;
 import org.kie.pmml.evaluator.core.implementations.PMMLRuntimeStep;
-import org.kie.pmml.evaluator.core.model.EfestoInputPMML;
-import org.kie.pmml.evaluator.core.model.EfestoOutputPMML;
+import org.kie.pmml.evaluator.api.model.EfestoInputPMML;
+import org.kie.pmml.evaluator.api.model.EfestoOutputPMML;
 import org.kie.pmml.evaluator.core.utils.PMMLRequestDataBuilder;
 
 import static org.assertj.core.api.Assertions.assertThat;

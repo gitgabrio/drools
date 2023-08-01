@@ -36,18 +36,9 @@ public class KafkaConstants {
 
     public final static String RUNTIMESERVICE_NOTIFICATION_TOPIC = "runtimeservice_notification_topic";
 
-    public final static String RUNTIMESERVICE_PARSEJSONINPUTREQUEST_TOPIC = "runtimeservice_parsejsoninputrequest_topic";
-
-    public final static String RUNTIMESERVICE_PARSEJSONINPUTRESPONSE_TOPIC = "runtimeservice_parsejsoninputresponse_topic";
-
-    public final static String RUNTIMESERVICE_CANMANAGEINPUTREQUEST_TOPIC = "runtimeservice_canmanageinputrequest_topic";
-
-    public final static String RUNTIMESERVICE_CANMANAGEINPUTRESPONSE_TOPIC = "runtimeservice_canmanageinputresponse_topic";
-
     public final static String RUNTIMESERVICE_EVALUATEINPUTREQUEST_TOPIC = "runtimeservice_evaluateinputrequest_topic";
 
     public final static String RUNTIMESERVICE_EVALUATEINPUTRESPONSE_TOPIC = "runtimeservice_evaluateinputresponse_topic";
-
 
 
 }

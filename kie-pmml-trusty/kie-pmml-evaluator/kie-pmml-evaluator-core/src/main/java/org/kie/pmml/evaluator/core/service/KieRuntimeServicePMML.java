@@ -21,9 +21,8 @@ import org.kie.efesto.runtimemanager.api.model.EfestoInput;
 import org.kie.efesto.runtimemanager.api.model.EfestoRuntimeContext;
 import org.kie.efesto.runtimemanager.api.service.KieRuntimeService;
 import org.kie.pmml.api.runtime.PMMLRuntimeContext;
-import org.kie.pmml.evaluator.core.PMMLRuntimeContextImpl;
-import org.kie.pmml.evaluator.core.model.EfestoInputPMML;
-import org.kie.pmml.evaluator.core.model.EfestoOutputPMML;
+import org.kie.pmml.evaluator.api.model.EfestoInputPMML;
+import org.kie.pmml.evaluator.api.model.EfestoOutputPMML;
 
 import java.util.Optional;
 
@@ -37,7 +36,7 @@ public class KieRuntimeServicePMML implements KieRuntimeService<PMMLRuntimeConte
 
     @Override
     public EfestoClassKey getEfestoClassKeyIdentifier() {
-        return new EfestoClassKey(EfestoInputPMML.class, PMMLRuntimeContextImpl.class);
+        return new EfestoClassKey(EfestoInputPMML.class, PMMLRuntimeContext.class);
     }
 
     @Override
@@ -56,8 +55,8 @@ public class KieRuntimeServicePMML implements KieRuntimeService<PMMLRuntimeConte
     }
 
     @Override
-    public EfestoInputPMML parseJsonInput(String modelLocalUriIdString, String inputDataString) {
+    public Optional<EfestoInputPMML> parseJsonInput(String modelLocalUriIdString, String inputDataString) {
         // This implementation is not meant to be executed from a different JVM
-        return null;
+        return Optional.empty();
     }
 }

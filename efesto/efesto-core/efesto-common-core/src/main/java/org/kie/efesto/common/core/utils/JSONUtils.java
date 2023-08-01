@@ -99,6 +99,11 @@ public class JSONUtils {
         TypeReference<HashMap<String, Object>> typeRef
                 = new TypeReference<>() {
         };
-        return objectMapper.readValue(inputDataString, typeRef);
+        String toRead = cleanupMapString(inputDataString);
+        return objectMapper.readValue(toRead, typeRef);
+    }
+
+   static String cleanupMapString(String toClean) {
+        return toClean.replaceAll("^\"|\"$", "").replaceAll("\\\\", "");
     }
 }

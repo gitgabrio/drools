@@ -1,5 +1,6 @@
 package org.kie.efesto.kafka.runtime.services.consumer;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.MockConsumer;
@@ -8,9 +9,12 @@ import org.apache.kafka.common.TopicPartition;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.kie.efesto.kafka.api.listeners.EfestoKafkaMessageListener;
+import org.kie.efesto.kafka.api.service.KafkaKieRuntimeService;
+import org.kie.efesto.kafka.api.service.KafkaRuntimeServiceProvider;
+import org.kie.efesto.kafka.api.utils.KafkaSPIUtils;
 import org.kie.efesto.kafka.runtime.provider.messages.EfestoKafkaRuntimeEvaluateInputRequestMessage;
-import org.kie.efesto.runtimemanager.api.service.KieRuntimeService;
-import org.kie.efesto.runtimemanager.api.utils.SPIUtils;
+import org.kie.efesto.kafka.runtime.services.service.KafkaRuntimeServiceLocalProvider;
+import org.kie.efesto.runtimemanager.api.model.EfestoInput;
 import org.kie.efesto.runtimemanager.core.mocks.MockEfestoInputA;
 
 import java.util.Collections;
@@ -21,24 +25,25 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 import static org.kie.efesto.common.core.utils.JSONUtils.getObjectMapper;
 import static org.kie.efesto.kafka.api.KafkaConstants.RUNTIMESERVICE_EVALUATEINPUTREQUEST_TOPIC;
+import static org.kie.efesto.kafka.runtime.provider.service.KafkaRuntimeManagerUtils.rePopulateFirstLevelCache;
 import static org.kie.efesto.kafka.runtime.services.consumer.EvaluateInputRequestConsumer.receivedMessages;
-import static org.kie.efesto.runtimemanager.core.service.RuntimeManagerUtils.rePopulateFirstLevelCache;
 import static org.mockito.Mockito.*;
 
 
 class EvaluateInputRequestConsumerTest {
 
-    private static List<KieRuntimeService> KIERUNTIMESERVICES;
+    private static List<KafkaKieRuntimeService> KIERUNTIMESERVICES;
 
     @BeforeAll
     public static void setup() {
-        KIERUNTIMESERVICES = SPIUtils.getKieRuntimeServices(true);
+        KafkaRuntimeServiceProvider runtimeServiceLocal = KafkaSPIUtils.getRuntimeServiceProviders(true).stream().filter(KafkaRuntimeServiceLocalProvider.class::isInstance).findFirst().orElseThrow(() -> new RuntimeException("Failed to retrieve KafkaKieRuntimeServiceLocal"));
+        KIERUNTIMESERVICES = runtimeServiceLocal.getKieRuntimeServices();
         assertThat(KIERUNTIMESERVICES).isNotNull().isNotEmpty();
         rePopulateFirstLevelCache(KIERUNTIMESERVICES);
     }
 
     @Test
-    public void evaluateInputRequestConsumerTest() {
+    public void evaluateInputRequestConsumerTest() throws JsonProcessingException {
         TopicPartition topicPartition = new TopicPartition(RUNTIMESERVICE_EVALUATEINPUTREQUEST_TOPIC, 0);
         HashMap<TopicPartition, Long> startOffsets = new HashMap<>();
         startOffsets.put(topicPartition, 0L);
@@ -64,12 +69,15 @@ class EvaluateInputRequestConsumerTest {
         }
     }
 
-    private ConsumerRecord<Long, JsonNode> getConsumerRecordWithoutModelLocalUriId(TopicPartition topicPartition) {
+    private ConsumerRecord<Long, JsonNode> getConsumerRecordWithoutModelLocalUriId(TopicPartition topicPartition) throws JsonProcessingException {
         return new ConsumerRecord<>(topicPartition.topic(), topicPartition.partition(), 0L, 1L, getJsonNodeWithoutModelLocalUriId());
     }
 
-    private static JsonNode getJsonNodeWithoutModelLocalUriId() {
-        EfestoKafkaRuntimeEvaluateInputRequestMessage message = new EfestoKafkaRuntimeEvaluateInputRequestMessage(new MockEfestoInputA(), 10L);
+    private static JsonNode getJsonNodeWithoutModelLocalUriId() throws JsonProcessingException {
+        EfestoInput template = new MockEfestoInputA();
+        String modelLocalUriIdString = getObjectMapper().writeValueAsString(template.getModelLocalUriId());
+        String inputDataString = getObjectMapper().writeValueAsString(template.getInputData());
+        EfestoKafkaRuntimeEvaluateInputRequestMessage message = new EfestoKafkaRuntimeEvaluateInputRequestMessage(modelLocalUriIdString, inputDataString, 10L);
         return getObjectMapper().valueToTree(message);
     }
 

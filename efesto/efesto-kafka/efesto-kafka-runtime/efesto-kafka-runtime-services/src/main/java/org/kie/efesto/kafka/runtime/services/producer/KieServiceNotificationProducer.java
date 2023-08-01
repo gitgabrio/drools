@@ -5,8 +5,8 @@ import org.apache.kafka.clients.producer.*;
 import org.apache.kafka.common.serialization.LongSerializer;
 import org.apache.kafka.connect.json.JsonSerializer;
 import org.kie.efesto.common.api.exceptions.KieEfestoCommonException;
+import org.kie.efesto.kafka.api.service.KafkaKieRuntimeService;
 import org.kie.efesto.kafka.runtime.provider.messages.EfestoKafkaRuntimeServiceNotificationMessage;
-import org.kie.efesto.runtimemanager.api.service.KieRuntimeService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,7 +14,8 @@ import java.util.Properties;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static org.kie.efesto.common.core.utils.JSONUtils.getObjectMapper;
-import static org.kie.efesto.kafka.api.KafkaConstants.*;
+import static org.kie.efesto.kafka.api.KafkaConstants.BOOTSTRAP_SERVERS;
+import static org.kie.efesto.kafka.api.KafkaConstants.RUNTIMESERVICE_NOTIFICATION_TOPIC;
 
 public class KieServiceNotificationProducer {
 
@@ -23,13 +24,13 @@ public class KieServiceNotificationProducer {
     private static final AtomicLong COUNTER = new AtomicLong();
 
 
-    public static void runProducer(KieRuntimeService toPublish) {
+    public static void runProducer(KafkaKieRuntimeService toPublish) {
         logger.info("runProducer");
         final Producer<Long, JsonNode> producer = createProducer();
         runProducer(producer, toPublish);
     }
 
-    public static void runProducer(final Producer<Long, JsonNode> producer, KieRuntimeService toPublish) {
+    public static void runProducer(final Producer<Long, JsonNode> producer, KafkaKieRuntimeService toPublish) {
         logger.info("runProducer {}", producer);
         long time = System.currentTimeMillis();
 
@@ -53,7 +54,7 @@ public class KieServiceNotificationProducer {
         }
     }
 
-    static JsonNode getJsonNode(KieRuntimeService toPublish) {
+    static JsonNode getJsonNode(KafkaKieRuntimeService toPublish) {
         EfestoKafkaRuntimeServiceNotificationMessage notificationMessage = new EfestoKafkaRuntimeServiceNotificationMessage(toPublish.getModelType(), toPublish.getEfestoClassKeyIdentifier());
         return getObjectMapper().valueToTree(notificationMessage);
     }

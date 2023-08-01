@@ -50,10 +50,10 @@ public abstract class AbstractMockKieRuntimeService<T extends AbstractMockEfesto
     }
 
     @Override
-    public EfestoInput parseJsonInput(String modelLocalUriIdString, String inputDataString) {
+    public Optional<T> parseJsonInput(String modelLocalUriIdString, String inputDataString) {
         try {
             ModelLocalUriId requested = getObjectMapper().readValue(modelLocalUriIdString, ModelLocalUriId.class);
-            return requested.equals(modelLocalUriId) ? getMockedEfestoInput() : null;
+            return requested.equals(modelLocalUriId) ? Optional.of((T) getMockedEfestoInput()) : Optional.empty();
         } catch (Exception e) {
             throw new KieEfestoCommonException(String.format("Failed to parse %s as ModelLocalUriId", modelLocalUriIdString));
         }

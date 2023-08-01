@@ -6,7 +6,6 @@ import org.apache.kafka.common.serialization.LongSerializer;
 import org.apache.kafka.connect.json.JsonSerializer;
 import org.kie.efesto.common.api.exceptions.KieEfestoCommonException;
 import org.kie.efesto.kafka.runtime.provider.messages.EfestoKafkaRuntimeEvaluateInputRequestMessage;
-import org.kie.efesto.runtimemanager.api.model.EfestoInput;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,19 +23,19 @@ public class EvaluateInputRequestProducer {
     private static final AtomicLong COUNTER = new AtomicLong();
 
 
-    public static long runProducer(EfestoInput efestoInput) {
+    public static long runProducer(String modelLocalUriIdString, String inputDataString) {
         logger.info("runProducer");
         final Producer<Long, JsonNode> producer = createProducer();
-        return runProducer(producer, efestoInput);
+        return runProducer(producer, modelLocalUriIdString, inputDataString);
     }
 
-    public static long runProducer(final Producer<Long, JsonNode> producer, EfestoInput efestoInput) {
+    public static long runProducer(final Producer<Long, JsonNode> producer, String modelLocalUriIdString, String inputDataString) {
         logger.info("runProducer {}", producer);
         long time = System.currentTimeMillis();
 
         try {
             long messageId = COUNTER.incrementAndGet();
-            JsonNode jsonNode = getJsonNode(efestoInput, messageId);
+            JsonNode jsonNode = getJsonNode(modelLocalUriIdString, inputDataString, messageId);
             final ProducerRecord<Long, JsonNode> record =
                     new ProducerRecord<>(RUNTIMESERVICE_EVALUATEINPUTREQUEST_TOPIC, messageId, jsonNode);
 
@@ -56,8 +55,8 @@ public class EvaluateInputRequestProducer {
         }
     }
 
-    static JsonNode getJsonNode(EfestoInput efestoInput, long messageId) {
-        EfestoKafkaRuntimeEvaluateInputRequestMessage requestMessage = new EfestoKafkaRuntimeEvaluateInputRequestMessage(efestoInput, messageId);
+    static JsonNode getJsonNode(String modelLocalUriIdString, String inputDataString, long messageId) {
+        EfestoKafkaRuntimeEvaluateInputRequestMessage requestMessage = new EfestoKafkaRuntimeEvaluateInputRequestMessage(modelLocalUriIdString, inputDataString, messageId);
         return getObjectMapper().valueToTree(requestMessage);
     }
 

@@ -52,8 +52,8 @@ import org.kie.pmml.commons.testingutility.KiePMMLTestingModel;
 import org.kie.pmml.commons.testingutility.PMMLRuntimeContextTest;
 import org.kie.pmml.commons.utils.PMMLLoaderUtils;
 import org.kie.pmml.evaluator.core.implementations.PMMLRuntimeStep;
-import org.kie.pmml.evaluator.core.model.EfestoInputPMML;
-import org.kie.pmml.evaluator.core.model.EfestoOutputPMML;
+import org.kie.pmml.evaluator.api.model.EfestoInputPMML;
+import org.kie.pmml.evaluator.api.model.EfestoOutputPMML;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.kie.pmml.TestingHelper.commonEvaluateEfestoOutputPMML;

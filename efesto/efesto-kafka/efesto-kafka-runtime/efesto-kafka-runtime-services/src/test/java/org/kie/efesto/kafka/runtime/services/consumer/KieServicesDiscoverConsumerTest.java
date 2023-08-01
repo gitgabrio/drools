@@ -10,10 +10,12 @@ import org.apache.kafka.common.serialization.LongSerializer;
 import org.apache.kafka.connect.json.JsonSerializer;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.kie.efesto.kafka.api.service.KafkaKieRuntimeService;
+import org.kie.efesto.kafka.api.service.KafkaRuntimeServiceProvider;
+import org.kie.efesto.kafka.api.utils.KafkaSPIUtils;
 import org.kie.efesto.kafka.runtime.provider.messages.EfestoKafkaRuntimeServiceDiscoverMessage;
 import org.kie.efesto.kafka.runtime.services.producer.KieServiceNotificationProducer;
-import org.kie.efesto.runtimemanager.api.service.KieRuntimeService;
-import org.kie.efesto.runtimemanager.api.utils.SPIUtils;
+import org.kie.efesto.kafka.runtime.services.service.KafkaRuntimeServiceLocalProvider;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -31,14 +33,14 @@ import static org.kie.efesto.kafka.runtime.services.consumer.KieServicesDiscover
 
 class KieServicesDiscoverConsumerTest {
 
-    private static List<KieRuntimeService> KIERUNTIMESERVICES;
+    private static List<KafkaKieRuntimeService> KIERUNTIMESERVICES;
 
     @BeforeAll
     public static void setup() {
-        KIERUNTIMESERVICES = SPIUtils.getKieRuntimeServices(true);
+        KafkaRuntimeServiceProvider runtimeServiceLocal = KafkaSPIUtils.getRuntimeServiceProviders(true).stream().filter(KafkaRuntimeServiceLocalProvider.class::isInstance).findFirst().orElseThrow(() -> new RuntimeException("Failed to retrieve KafkaKieRuntimeServiceLocal"));
+        KIERUNTIMESERVICES = runtimeServiceLocal.getKieRuntimeServices();
         assertThat(KIERUNTIMESERVICES).isNotNull().isNotEmpty();
     }
-
 
     @Test
     public void notificationConsumerTest() {
@@ -47,7 +49,7 @@ class KieServicesDiscoverConsumerTest {
         startOffsets.put(topicPartition, 0L);
         ConsumerRecord<Long, JsonNode> consumerRecord = getConsumerRecordWithoutModelLocalUriId(topicPartition);
         MockConsumer<Long, JsonNode> kieServicesDiscoverConsumer = new MockConsumer<Long, JsonNode>(OffsetResetStrategy.EARLIEST);
-        Map<KieRuntimeService, MockProducer<Long, JsonNode>> serviceMockProducerMap = KIERUNTIMESERVICES.stream().collect(Collectors.toMap(kieRuntimeService -> kieRuntimeService,
+        Map<KafkaKieRuntimeService, MockProducer<Long, JsonNode>> serviceMockProducerMap = KIERUNTIMESERVICES.stream().collect(Collectors.toMap(kieRuntimeService -> kieRuntimeService,
                 kieRuntimeService -> new MockProducer<>(true, new LongSerializer(), new JsonSerializer())));
         Supplier kieServiceNotificationSupplier = () -> {
             serviceMockProducerMap.forEach((kieRuntimeService, longJsonNodeMockProducer) -> KieServiceNotificationProducer.runProducer(longJsonNodeMockProducer, kieRuntimeService));

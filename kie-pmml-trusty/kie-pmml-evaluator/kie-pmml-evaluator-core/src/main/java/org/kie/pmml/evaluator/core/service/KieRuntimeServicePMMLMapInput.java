@@ -16,10 +16,8 @@
 package org.kie.pmml.evaluator.core.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.kie.api.pmml.PMML4Result;
 import org.kie.efesto.common.api.cache.EfestoClassKey;
-import org.kie.efesto.common.api.exceptions.KieEfestoCommonException;
 import org.kie.efesto.common.api.identifiers.ModelLocalUriId;
 import org.kie.efesto.common.core.utils.JSONUtils;
 import org.kie.efesto.runtimemanager.api.model.BaseEfestoInput;
@@ -27,9 +25,9 @@ import org.kie.efesto.runtimemanager.api.model.EfestoInput;
 import org.kie.efesto.runtimemanager.api.model.EfestoRuntimeContext;
 import org.kie.efesto.runtimemanager.api.service.KieRuntimeService;
 import org.kie.pmml.api.identifiers.AbstractModelLocalUriIdPmml;
-import org.kie.pmml.evaluator.core.model.EfestoOutputPMML;
-import org.kie.pmml.evaluator.core.serialization.AbstractModelLocalUriIdPmmlDeSerializer;
-import org.kie.pmml.evaluator.core.serialization.AbstractModelLocalUriIdPmmlSerializer;
+import org.kie.pmml.evaluator.api.model.EfestoOutputPMML;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -43,15 +41,9 @@ import static org.kie.pmml.evaluator.core.utils.PMMLRuntimeHelper.executeEfestoI
 public class KieRuntimeServicePMMLMapInput implements KieRuntimeService<Map<String, Object>, PMML4Result,
         EfestoInput<Map<String, Object>>, EfestoOutputPMML, EfestoRuntimeContext> {
 
-    private static final ObjectMapper objectMapper;
+    private static final ObjectMapper objectMapper = JSONUtils.getObjectMapper();
+    private static final Logger logger = LoggerFactory.getLogger(KieRuntimeServicePMMLMapInput.class);
 
-    static {
-        objectMapper = JSONUtils.getObjectMapper();
-        SimpleModule toRegister = new SimpleModule();
-        toRegister.addDeserializer(AbstractModelLocalUriIdPmml.class, new AbstractModelLocalUriIdPmmlDeSerializer());
-        toRegister.addSerializer(AbstractModelLocalUriIdPmml.class, new AbstractModelLocalUriIdPmmlSerializer());
-        objectMapper.registerModule(toRegister);
-    }
 
     @Override
     public EfestoClassKey getEfestoClassKeyIdentifier() {
@@ -75,20 +67,22 @@ public class KieRuntimeServicePMMLMapInput implements KieRuntimeService<Map<Stri
     }
 
     @Override
-    public BaseEfestoInput<Map<String, Object>> parseJsonInput(String modelLocalUriIdString, String inputDataString) {
+    public Optional<EfestoInput<Map<String, Object>>> parseJsonInput(String modelLocalUriIdString, String inputDataString) {
         ModelLocalUriId modelLocalUriId;
         try {
             modelLocalUriId = objectMapper.readValue(modelLocalUriIdString, AbstractModelLocalUriIdPmml.class);
         } catch (Exception e) {
-            throw new KieEfestoCommonException(String.format("Failed to parse %s as AbstractModelLocalUriIdPmml", modelLocalUriIdString));
+            logger.warn("Failed to parse {} as AbstractModelLocalUriIdPmml", modelLocalUriIdString);
+            return Optional.empty();
         }
         Map<String, Object> inputData;
         try {
             inputData = getInputData(inputDataString);
         } catch (Exception e) {
-            throw new KieEfestoCommonException(String.format("Failed to parse %s as Map<String, Object>", inputDataString));
+            logger.warn("Failed to parse {} as Map<String, Object>", inputDataString);
+            return Optional.empty();
         }
-        return new BaseEfestoInput<>(modelLocalUriId, inputData);
+        return Optional.of(new BaseEfestoInput<>(modelLocalUriId, inputData));
     }
 
 }

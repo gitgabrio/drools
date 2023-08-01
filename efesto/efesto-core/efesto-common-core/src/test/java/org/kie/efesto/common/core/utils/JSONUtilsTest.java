@@ -15,6 +15,18 @@
  */
 package org.kie.efesto.common.core.utils;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import org.junit.jupiter.api.Test;
+import org.kie.efesto.common.api.identifiers.LocalUri;
+import org.kie.efesto.common.api.identifiers.ModelLocalUriId;
+import org.kie.efesto.common.api.identifiers.ReflectiveAppRoot;
+import org.kie.efesto.common.api.io.IndexFile;
+import org.kie.efesto.common.api.io.MemoryFile;
+import org.kie.efesto.common.api.model.*;
+import org.kie.efesto.common.core.identifiers.componentroots.ComponentFoo;
+import org.kie.efesto.common.core.identifiers.componentroots.ComponentRootB;
+import org.kie.efesto.common.core.identifiers.componentroots.LocalComponentIdFoo;
+
 import java.io.File;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -23,24 +35,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import org.junit.jupiter.api.Test;
-import org.kie.efesto.common.api.identifiers.LocalUri;
-import org.kie.efesto.common.api.identifiers.ModelLocalUriId;
-import org.kie.efesto.common.api.identifiers.ReflectiveAppRoot;
-import org.kie.efesto.common.core.identifiers.componentroots.ComponentFoo;
-import org.kie.efesto.common.core.identifiers.componentroots.ComponentRootB;
-import org.kie.efesto.common.core.identifiers.componentroots.LocalComponentIdFoo;
-import org.kie.efesto.common.api.io.IndexFile;
-import org.kie.efesto.common.api.io.MemoryFile;
-import org.kie.efesto.common.api.model.GeneratedClassResource;
-import org.kie.efesto.common.api.model.GeneratedExecutableResource;
-import org.kie.efesto.common.api.model.GeneratedRedirectResource;
-import org.kie.efesto.common.api.model.GeneratedResource;
-import org.kie.efesto.common.api.model.GeneratedResources;
-
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.kie.efesto.common.api.utils.MemoryFileUtils.getFileFromFileName;
+import static org.kie.efesto.common.core.utils.JSONUtils.cleanupMapString;
 
 class JSONUtilsTest {
 
@@ -208,6 +206,19 @@ class JSONUtilsTest {
         expected.put("approved", true);
         expected.put("applicantName", "John");
         assertThat(retrieved).isNotNull().containsExactlyEntriesOf(expected);
+        inputDataString = "\"{\\\"approved\\\": true,\\\"applicantName\\\": \\\"John\\\"}\"";
+        retrieved = JSONUtils.getInputData(inputDataString);
+        assertThat(retrieved).isNotNull().containsExactlyEntriesOf(expected);
+    }
+
+    @Test
+    void cleanupMapStringTest() {
+        String toTest = "\"{\\\"approved\\\": true,\\\"applicantName\\\": \\\"John\\\"}\"";
+        String inputDataString = "{\"approved\": true,\"applicantName\": \"John\"}";
+        String retrieved = cleanupMapString(toTest);
+        assertEquals(retrieved, inputDataString);
+        retrieved = cleanupMapString(inputDataString);
+        assertEquals(retrieved, inputDataString);
     }
 
     private ClassLoader addJarToClassLoader() {

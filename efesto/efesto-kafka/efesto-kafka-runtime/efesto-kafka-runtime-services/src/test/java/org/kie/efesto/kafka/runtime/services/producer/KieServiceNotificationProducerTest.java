@@ -9,10 +9,12 @@ import org.apache.kafka.connect.json.JsonSerializer;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.kie.efesto.kafka.api.messages.EfestoKafkaMessagingType;
+import org.kie.efesto.kafka.api.service.KafkaKieRuntimeService;
+import org.kie.efesto.kafka.api.service.KafkaRuntimeServiceProvider;
+import org.kie.efesto.kafka.api.utils.KafkaSPIUtils;
 import org.kie.efesto.kafka.runtime.provider.messages.AbstractEfestoKafkaRuntimeMessage;
 import org.kie.efesto.kafka.runtime.provider.messages.EfestoKafkaRuntimeServiceNotificationMessage;
-import org.kie.efesto.runtimemanager.api.service.KieRuntimeService;
-import org.kie.efesto.runtimemanager.api.utils.SPIUtils;
+import org.kie.efesto.kafka.runtime.services.service.KafkaRuntimeServiceLocalProvider;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
@@ -21,11 +23,12 @@ import static org.kie.efesto.common.core.utils.JSONUtils.getObjectMapper;
 
 class KieServiceNotificationProducerTest {
 
-    private static KieRuntimeService KIERUNTIMESERVICE;
+    private static KafkaKieRuntimeService KIERUNTIMESERVICE;
 
     @BeforeAll
     public static void setup() {
-        KIERUNTIMESERVICE = SPIUtils.getKieRuntimeServices(true).get(0);
+        KafkaRuntimeServiceProvider runtimeServiceLocal = KafkaSPIUtils.getRuntimeServiceProviders(true).stream().filter(KafkaRuntimeServiceLocalProvider.class::isInstance).findFirst().orElseThrow(() -> new RuntimeException("Failed to retrieve KafkaKieRuntimeServiceLocal"));
+        KIERUNTIMESERVICE = runtimeServiceLocal.getKieRuntimeServices().get(0);
         assertNotNull(KIERUNTIMESERVICE);
     }
 

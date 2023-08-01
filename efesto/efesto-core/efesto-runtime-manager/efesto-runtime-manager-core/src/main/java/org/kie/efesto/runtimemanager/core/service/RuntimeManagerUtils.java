@@ -15,12 +15,8 @@
  */
 package org.kie.efesto.runtimemanager.core.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import org.kie.efesto.common.api.cache.EfestoClassKey;
 import org.kie.efesto.common.api.cache.EfestoIdentifierClassKey;
-import org.kie.efesto.common.api.exceptions.KieEfestoCommonException;
-import org.kie.efesto.common.api.identifiers.ModelLocalUriId;
-import org.kie.efesto.runtimemanager.api.exceptions.KieRuntimeServiceException;
 import org.kie.efesto.runtimemanager.api.model.EfestoInput;
 import org.kie.efesto.runtimemanager.api.model.EfestoOutput;
 import org.kie.efesto.runtimemanager.api.model.EfestoRuntimeContext;
@@ -34,8 +30,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.kie.efesto.common.api.utils.CollectionUtils.findAtMostOne;
-import static org.kie.efesto.common.core.utils.JSONUtils.getModelLocalUriIdObject;
 import static org.kie.efesto.runtimemanager.api.utils.SPIUtils.getKieRuntimeService;
 import static org.kie.efesto.runtimemanager.api.utils.SPIUtils.getRuntimeServiceProviders;
 
@@ -172,39 +166,5 @@ public class RuntimeManagerUtils {
         return retrieved.isPresent() ? retrieved.flatMap(kieRuntimeService -> kieRuntimeService.evaluateInput(input,
                 context)) : Optional.empty();
     }
-
-    static Optional<EfestoInput> getOptionalBaseEfestoInput(String modelLocalUriIdString, String inputDataString) {
-        List<KieRuntimeService> discoveredServices = firstLevelCache.values().stream().flatMap((Function<List<KieRuntimeService>, Stream<KieRuntimeService>>) kieRuntimeServices -> kieRuntimeServices.stream()).collect(Collectors.toList());
-        ModelLocalUriId modelLocalUriId;
-        try {
-             modelLocalUriId = getModelLocalUriIdObject(modelLocalUriIdString);
-        } catch (JsonProcessingException e) {
-            throw new KieEfestoCommonException(String.format("Failed to parse %s as ModelLocalUriId", modelLocalUriIdString));
-        }
-        return findAtMostOne(discoveredServices.stream()
-                .filter(kieRuntimeService -> kieRuntimeService.getModelType().equals(modelLocalUriId.model()))
-                .map(kieRuntimeService -> kieRuntimeService.parseJsonInput(modelLocalUriIdString, inputDataString))
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList()),
-                (s1, s2) -> new KieRuntimeServiceException(String.format("Found more than one runtime services for %s - %s: %s and %s",
-                        modelLocalUriIdString,
-                        inputDataString,
-                        s1,
-                        s2)));
-    }
-
-    /**
-     * This is only for testing purpose.
-     * Currently (To be fixed) only one service is expected for a given <b>modelLocalUri/input data</b> pair, otherwise an exception is thrown
-     * {@link RuntimeManagerUtils#getOptionalBaseEfestoInput(String, String)}
-     * @param discoveredKieRuntimeServices
-     */
-    public static void rePopulateFirstLevelCache(final List<KieRuntimeService> discoveredKieRuntimeServices) {
-        logger.info("rePopulateFirstLevelCache");
-        logger.debug("{}", discoveredKieRuntimeServices);
-        firstLevelCache.clear();
-        populateFirstLevelCache(discoveredKieRuntimeServices, firstLevelCache);
-    }
-
 
 }

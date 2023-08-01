@@ -24,6 +24,10 @@
             <artifactId>logback-classic</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.kie</groupId>
+            <artifactId>efesto-runtime-manager-api</artifactId>
+        </dependency>
     </dependencies>
 
 
