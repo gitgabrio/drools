@@ -19,7 +19,7 @@ import org.kie.efesto.common.api.cache.EfestoClassKey;
 import org.kie.efesto.common.api.cache.EfestoIdentifierClassKey;
 import org.kie.efesto.runtimemanager.api.model.EfestoInput;
 import org.kie.efesto.runtimemanager.api.model.EfestoOutput;
-import org.kie.efesto.runtimemanager.api.model.EfestoRuntimeContext;
+import org.kie.efesto.common.api.model.EfestoRuntimeContext;
 import org.kie.efesto.runtimemanager.api.service.KieRuntimeService;
 import org.kie.efesto.runtimemanager.api.service.RuntimeServiceProvider;
 import org.slf4j.Logger;

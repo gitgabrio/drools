@@ -26,7 +26,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.kie.api.pmml.PMMLRequestData;
-import org.kie.efesto.runtimemanager.api.model.EfestoRuntimeContext;
+import org.kie.efesto.common.api.model.EfestoRuntimeContext;
 import org.kie.efesto.runtimemanager.core.model.EfestoLocalRuntimeContextImpl;
 import org.kie.memorycompiler.KieMemoryCompiler;
 import org.kie.pmml.api.runtime.PMMLListener;

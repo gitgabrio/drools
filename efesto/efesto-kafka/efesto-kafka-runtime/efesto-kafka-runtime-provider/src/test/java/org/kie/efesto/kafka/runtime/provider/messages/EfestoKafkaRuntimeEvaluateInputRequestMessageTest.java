@@ -5,12 +5,15 @@ import org.junit.jupiter.api.Test;
 import org.kie.efesto.common.api.identifiers.LocalUri;
 import org.kie.efesto.common.api.identifiers.ModelLocalUriId;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.kie.efesto.common.core.utils.JSONUtils.getObjectMapper;
 
 public class EfestoKafkaRuntimeEvaluateInputRequestMessageTest {
 
-    private static final String template = "{\"modelLocalUriIdString\":\"{\\\"model\\\":\\\"example\\\",\\\"basePath\\\":\\\"/some-id/instances/some-instance-id\\\",\\\"fullPath\\\":\\\"/example/some-id/instances/some-instance-id\\\"}\",\"inputDataString\":\"inputDataString\",\"messageId\":10,\"kind\":\"RUNTIMEEVALUATEINPUTREQUEST\"}";
+    private static final String template = "{\"modelLocalUriIdString\":\"{\\\"model\\\":\\\"example\\\",\\\"basePath\\\":\\\"/some-id/instances/some-instance-id\\\",\\\"fullPath\\\":\\\"/example/some-id/instances/some-instance-id\\\"}\",\"inputDataString\":\"{\\\"approved\\\":true,\\\"applicantName\\\":\\\"John\\\"}\",\"messageId\":10,\"kind\":\"RUNTIMEEVALUATEINPUTREQUEST\"}";
 
 
     @Test
@@ -19,7 +22,11 @@ public class EfestoKafkaRuntimeEvaluateInputRequestMessageTest {
         LocalUri parsed = LocalUri.parse(path);
         ModelLocalUriId modelLocalUriId = new ModelLocalUriId(parsed);
         String modelLocalUriIDString = getObjectMapper().writeValueAsString(modelLocalUriId);
-        EfestoKafkaRuntimeEvaluateInputRequestMessage toSerialize = new EfestoKafkaRuntimeEvaluateInputRequestMessage(modelLocalUriIDString, "inputDataString", 10L);
+        Map<String, Object> inputData = new HashMap<>();
+        inputData.put("approved", true);
+        inputData.put("applicantName", "John");
+        String inputDataString = getObjectMapper().writeValueAsString(inputData);
+        EfestoKafkaRuntimeEvaluateInputRequestMessage toSerialize = new EfestoKafkaRuntimeEvaluateInputRequestMessage(modelLocalUriIDString, inputDataString, 10L);
         String retrieved = getObjectMapper().writeValueAsString(toSerialize);
         assertThat(retrieved).isNotNull().isEqualTo(template);
     }
@@ -36,7 +43,7 @@ public class EfestoKafkaRuntimeEvaluateInputRequestMessageTest {
         ModelLocalUriId modelLocalUriIdExpected = new ModelLocalUriId(parsed);
         assertThat(modelLocalUriIdRetrieved).isEqualTo(modelLocalUriIdExpected);
         String inputDataRetrieved = ((EfestoKafkaRuntimeEvaluateInputRequestMessage) retrieved).getInputDataString();
-        String inputDataStringExpected = "inputDataString";
+        String inputDataStringExpected = "{\"approved\":true,\"applicantName\":\"John\"}";
         assertThat(inputDataRetrieved).isEqualTo(inputDataStringExpected);
         long messageId = ((EfestoKafkaRuntimeEvaluateInputRequestMessage) retrieved).getMessageId();
         assertThat(messageId).isEqualTo(10L);

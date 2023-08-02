@@ -15,7 +15,7 @@
  */
 package org.kie.efesto.compilationmanager.api.service;
 
-import org.kie.efesto.compilationmanager.api.model.EfestoCompilationContext;
+import org.kie.efesto.common.api.model.EfestoCompilationContext;
 import org.kie.efesto.compilationmanager.api.model.EfestoResource;
 
 public interface CompilationManager {

@@ -24,6 +24,10 @@ import org.kie.efesto.runtimemanager.api.model.AbstractEfestoOutput;
  */
 public class EfestoOutputDrl<T> extends AbstractEfestoOutput<T> {
 
+    public EfestoOutputDrl() {
+        // serialization
+    }
+
     public EfestoOutputDrl(ModelLocalUriId modelLocalUriId, T outputData) {
         super(modelLocalUriId, outputData);
     }

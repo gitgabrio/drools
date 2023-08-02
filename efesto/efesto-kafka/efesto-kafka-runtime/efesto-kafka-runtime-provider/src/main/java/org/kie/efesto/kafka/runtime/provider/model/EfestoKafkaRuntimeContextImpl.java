@@ -3,7 +3,7 @@ package org.kie.efesto.kafka.runtime.provider.model;
 import org.kie.efesto.common.api.identifiers.ModelLocalUriId;
 import org.kie.efesto.common.api.listener.EfestoListener;
 import org.kie.efesto.common.api.model.GeneratedResources;
-import org.kie.efesto.runtimemanager.api.model.EfestoRuntimeContext;
+import org.kie.efesto.common.api.model.EfestoRuntimeContext;
 
 import java.util.Collections;
 import java.util.Map;

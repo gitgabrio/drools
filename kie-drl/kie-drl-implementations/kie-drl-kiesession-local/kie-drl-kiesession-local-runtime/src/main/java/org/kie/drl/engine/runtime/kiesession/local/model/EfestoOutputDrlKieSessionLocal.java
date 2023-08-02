@@ -27,6 +27,10 @@ import org.kie.efesto.common.api.identifiers.ModelLocalUriId;
  */
 public class EfestoOutputDrlKieSessionLocal extends EfestoOutputDrl<KieSession> {
 
+    public EfestoOutputDrlKieSessionLocal() {
+        // serialization
+    }
+
     public EfestoOutputDrlKieSessionLocal(ModelLocalUriId modelLocalUriId, KieSession kieSession) {
         super(modelLocalUriId, kieSession);
     }

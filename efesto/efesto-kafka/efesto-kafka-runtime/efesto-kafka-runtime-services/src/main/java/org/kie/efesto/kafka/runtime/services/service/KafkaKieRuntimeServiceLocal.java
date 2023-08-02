@@ -1,6 +1,9 @@
 package org.kie.efesto.kafka.runtime.services.service;
 
 import org.kie.efesto.common.api.cache.EfestoClassKey;
+import org.kie.efesto.common.api.identifiers.ModelLocalUriId;
+import org.kie.efesto.common.api.model.EfestoCompilationContext;
+import org.kie.efesto.common.core.storage.ContextStorage;
 import org.kie.efesto.kafka.api.listeners.EfestoKafkaMessageListener;
 import org.kie.efesto.kafka.api.messages.AbstractEfestoKafkaMessage;
 import org.kie.efesto.kafka.api.service.KafkaKieRuntimeService;
@@ -9,7 +12,7 @@ import org.kie.efesto.kafka.runtime.services.consumer.EvaluateInputRequestConsum
 import org.kie.efesto.kafka.runtime.services.producer.EvaluateInputResponseProducer;
 import org.kie.efesto.runtimemanager.api.model.EfestoInput;
 import org.kie.efesto.runtimemanager.api.model.EfestoOutput;
-import org.kie.efesto.runtimemanager.api.model.EfestoRuntimeContext;
+import org.kie.efesto.common.api.model.EfestoRuntimeContext;
 import org.kie.efesto.runtimemanager.api.service.KieRuntimeService;
 import org.kie.efesto.runtimemanager.core.model.EfestoRuntimeContextUtils;
 import org.slf4j.Logger;
@@ -53,7 +56,7 @@ public class KafkaKieRuntimeServiceLocal implements KafkaKieRuntimeService, Efes
     public Optional<EfestoOutput> evaluateInput(String modelLocalUriIdString, String inputDataString) {
         Optional<EfestoInput> input = wrappedService.parseJsonInput(modelLocalUriIdString, inputDataString);
         if (input.isPresent()) {
-            EfestoRuntimeContext runtimeContext = EfestoRuntimeContextUtils.buildWithParentClassLoader(Thread.currentThread().getContextClassLoader());
+            EfestoRuntimeContext runtimeContext = retrieveEfestoRuntimeContext(input.get());
             return wrappedService.evaluateInput(input.get(), runtimeContext);
         } else {
             return Optional.empty();
@@ -63,6 +66,23 @@ public class KafkaKieRuntimeServiceLocal implements KafkaKieRuntimeService, Efes
     @Override
     public String getModelType() {
         return wrappedService.getModelType();
+    }
+
+    private EfestoRuntimeContext retrieveEfestoRuntimeContext(EfestoInput input) {
+        ModelLocalUriId modelLocalUriId = input.getModelLocalUriId();
+        EfestoRuntimeContext runtimeContext = ContextStorage.getEfestoRuntimeContext(modelLocalUriId);
+        return runtimeContext != null ? runtimeContext : createNewEfestoRuntimeContext(modelLocalUriId);
+    }
+
+    private EfestoRuntimeContext createNewEfestoRuntimeContext(ModelLocalUriId modelLocalUriId) {
+        EfestoRuntimeContext toReturn = EfestoRuntimeContextUtils.buildWithParentClassLoader(Thread.currentThread().getContextClassLoader());
+        EfestoCompilationContext compilationContext =  ContextStorage.getEfestoCompilationContext(modelLocalUriId);
+        if (compilationContext != null) {
+            toReturn.addGeneratedClasses(modelLocalUriId, compilationContext.getGeneratedClasses(modelLocalUriId));
+            toReturn.getGeneratedResourcesMap().putAll(compilationContext.getGeneratedResourcesMap());
+        }
+        ContextStorage.putEfestoRuntimeContext(modelLocalUriId, toReturn);
+        return toReturn;
     }
 
     private void manageEfestoKafkaRuntimeEvaluateInputRequestMessage(EfestoKafkaRuntimeEvaluateInputRequestMessage toManage) {

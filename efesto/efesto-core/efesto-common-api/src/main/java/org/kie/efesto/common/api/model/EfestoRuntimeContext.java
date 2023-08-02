@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.kie.efesto.runtimemanager.api.model;
+package org.kie.efesto.common.api.model;
 
 import org.kie.efesto.common.api.listener.EfestoListener;
 import org.kie.efesto.common.api.model.EfestoContext;

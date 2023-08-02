@@ -16,10 +16,9 @@
 package org.kie.efesto.runtimemanager.api.service;
 
 import org.kie.efesto.common.api.cache.EfestoClassKey;
-import org.kie.efesto.runtimemanager.api.model.BaseEfestoInput;
 import org.kie.efesto.runtimemanager.api.model.EfestoInput;
 import org.kie.efesto.runtimemanager.api.model.EfestoOutput;
-import org.kie.efesto.runtimemanager.api.model.EfestoRuntimeContext;
+import org.kie.efesto.common.api.model.EfestoRuntimeContext;
 
 import java.util.Optional;
 

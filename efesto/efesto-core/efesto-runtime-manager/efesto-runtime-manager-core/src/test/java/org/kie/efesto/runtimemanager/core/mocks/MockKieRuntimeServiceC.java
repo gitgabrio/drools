@@ -16,13 +16,9 @@
 package org.kie.efesto.runtimemanager.core.mocks;
 
 import org.kie.efesto.common.api.cache.EfestoClassKey;
-import org.kie.efesto.common.api.exceptions.KieEfestoCommonException;
 import org.kie.efesto.common.api.identifiers.LocalUri;
 import org.kie.efesto.common.api.identifiers.ModelLocalUriId;
 import org.kie.efesto.runtimemanager.api.model.EfestoInput;
-import org.kie.efesto.runtimemanager.api.model.EfestoRuntimeContext;
-
-import static org.kie.efesto.common.core.utils.JSONUtils.getObjectMapper;
 
 public class MockKieRuntimeServiceC extends AbstractMockKieRuntimeService {
 

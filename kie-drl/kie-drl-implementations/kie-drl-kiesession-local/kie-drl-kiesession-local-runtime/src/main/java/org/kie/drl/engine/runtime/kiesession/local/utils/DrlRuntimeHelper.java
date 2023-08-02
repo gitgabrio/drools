@@ -27,7 +27,7 @@ import org.kie.efesto.common.api.identifiers.EfestoAppRoot;
 import org.kie.efesto.runtimemanager.api.exceptions.KieRuntimeServiceException;
 import org.kie.efesto.runtimemanager.api.model.EfestoInput;
 import org.kie.efesto.runtimemanager.api.model.EfestoLocalRuntimeContext;
-import org.kie.efesto.runtimemanager.api.model.EfestoRuntimeContext;
+import org.kie.efesto.common.api.model.EfestoRuntimeContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

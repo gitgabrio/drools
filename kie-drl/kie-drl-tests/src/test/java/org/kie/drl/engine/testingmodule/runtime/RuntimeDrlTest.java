@@ -28,7 +28,7 @@ import org.kie.drl.engine.testingmodule.utils.DrlTestUtils;
 import org.kie.efesto.common.api.identifiers.EfestoAppRoot;
 import org.kie.efesto.common.api.identifiers.ModelLocalUriId;
 import org.kie.efesto.runtimemanager.api.model.EfestoOutput;
-import org.kie.efesto.runtimemanager.api.model.EfestoRuntimeContext;
+import org.kie.efesto.common.api.model.EfestoRuntimeContext;
 import org.kie.efesto.runtimemanager.api.service.RuntimeManager;
 import org.kie.efesto.runtimemanager.core.model.EfestoRuntimeContextUtils;
 import org.kie.efesto.runtimemanager.core.service.RuntimeManagerImpl;

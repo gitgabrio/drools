@@ -27,6 +27,10 @@ import org.kie.efesto.common.api.identifiers.ModelLocalUriId;
  */
 public class EfestoOutputDrlMap extends EfestoOutputDrl<Map<String, Object>> {
 
+    public EfestoOutputDrlMap() {
+        // serialization
+    }
+
     public EfestoOutputDrlMap(ModelLocalUriId modelLocalUriId, Map<String, Object> inputData) {
         super(modelLocalUriId, inputData);
     }

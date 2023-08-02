@@ -21,8 +21,13 @@ import java.util.Objects;
 
 public abstract class AbstractEfestoOutput<T> implements EfestoOutput<T> {
 
-    private final ModelLocalUriId modelLocalUriId;
-    private final T outputData;
+    private ModelLocalUriId modelLocalUriId;
+    private T outputData;
+
+    protected AbstractEfestoOutput() {
+        // Serialization
+
+    }
 
     protected AbstractEfestoOutput(ModelLocalUriId modelLocalUriId, T outputData) {
         this.modelLocalUriId = modelLocalUriId;
@@ -50,5 +55,13 @@ public abstract class AbstractEfestoOutput<T> implements EfestoOutput<T> {
     @Override
     public int hashCode() {
         return Objects.hash(modelLocalUriId, outputData);
+    }
+
+    @Override
+    public String toString() {
+        return this.getClass().getSimpleName() + "{" +
+                "modelLocalUriId=" + modelLocalUriId +
+                ", outputData=" + outputData +
+                '}';
     }
 }

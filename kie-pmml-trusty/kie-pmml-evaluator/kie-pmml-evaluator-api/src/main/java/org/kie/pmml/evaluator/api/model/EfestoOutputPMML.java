@@ -21,7 +21,12 @@ import org.kie.efesto.runtimemanager.api.model.AbstractEfestoOutput;
 
 public class EfestoOutputPMML extends AbstractEfestoOutput<PMML4Result> {
 
+    public EfestoOutputPMML() {
+        // serialization
+    }
+
     public EfestoOutputPMML(ModelLocalUriId modelLocalUriId, PMML4Result outputData) {
         super(modelLocalUriId, outputData);
     }
+
 }

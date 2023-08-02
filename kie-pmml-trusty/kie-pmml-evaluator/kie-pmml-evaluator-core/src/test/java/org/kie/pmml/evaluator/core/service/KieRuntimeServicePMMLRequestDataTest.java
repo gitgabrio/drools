@@ -22,7 +22,7 @@ import org.kie.api.pmml.PMMLRequestData;
 import org.kie.efesto.common.api.identifiers.ModelLocalUriId;
 import org.kie.efesto.runtimemanager.api.model.BaseEfestoInput;
 import org.kie.efesto.runtimemanager.api.model.EfestoInput;
-import org.kie.efesto.runtimemanager.api.model.EfestoRuntimeContext;
+import org.kie.efesto.common.api.model.EfestoRuntimeContext;
 import org.kie.memorycompiler.KieMemoryCompiler;
 import org.kie.pmml.api.identifiers.AbstractModelLocalUriIdPmml;
 import org.kie.pmml.evaluator.api.model.EfestoOutputPMML;
@@ -30,8 +30,6 @@ import org.kie.pmml.evaluator.api.model.EfestoOutputPMML;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.BiConsumer;
-import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.kie.efesto.common.core.utils.JSONUtils.getObjectMapper;

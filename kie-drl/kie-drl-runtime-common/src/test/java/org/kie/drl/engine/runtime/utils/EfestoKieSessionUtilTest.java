@@ -22,7 +22,6 @@ import org.kie.api.runtime.KieSession;
 import org.kie.efesto.common.api.identifiers.LocalUri;
 import org.kie.efesto.common.api.identifiers.ModelLocalUriId;
 import org.kie.efesto.runtimemanager.api.model.EfestoLocalRuntimeContext;
-import org.kie.efesto.runtimemanager.api.model.EfestoRuntimeContext;
 import org.kie.efesto.runtimemanager.core.model.EfestoRuntimeContextUtils;
 
 import static org.assertj.core.api.Assertions.assertThat;

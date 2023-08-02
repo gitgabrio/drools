@@ -13,16 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.kie.efesto.compilationmanager.api.model;
+package org.kie.efesto.common.api.model;
+
+import org.kie.efesto.common.api.io.IndexFile;
+import org.kie.efesto.common.api.listener.EfestoListener;
 
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.ServiceLoader;
-
-import org.kie.efesto.common.api.io.IndexFile;
-import org.kie.efesto.common.api.listener.EfestoListener;
-import org.kie.efesto.common.api.model.EfestoContext;
-import org.kie.efesto.compilationmanager.api.service.KieCompilerService;
 
 /**
  *
@@ -34,7 +32,7 @@ public interface EfestoCompilationContext<T extends EfestoListener> extends Efes
     Map<String, byte[]> compileClasses(Map<String, String> sourcesMap);
 
     void loadClasses(Map<String, byte[]> compiledClassesMap);
-    ServiceLoader<KieCompilerService> getKieCompilerServiceLoader();
+    ServiceLoader getKieCompilerServiceLoader();
 
     byte[] getCode(String name);
 

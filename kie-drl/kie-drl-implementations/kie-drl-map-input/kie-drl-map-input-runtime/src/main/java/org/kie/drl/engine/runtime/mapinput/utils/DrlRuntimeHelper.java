@@ -21,6 +21,7 @@ import org.kie.drl.api.identifiers.KieDrlComponentRoot;
 import org.kie.drl.api.identifiers.LocalComponentIdDrlSession;
 import org.kie.drl.engine.runtime.mapinput.model.EfestoOutputDrlMap;
 import org.kie.efesto.common.api.identifiers.EfestoAppRoot;
+import org.kie.efesto.common.api.model.EfestoRuntimeContext;
 import org.kie.efesto.runtimemanager.api.exceptions.KieRuntimeServiceException;
 import org.kie.efesto.runtimemanager.api.model.*;
 import org.slf4j.Logger;

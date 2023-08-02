@@ -2,11 +2,11 @@ package org.kie.efesto.kafka.runtime.provider.messages;
 
 import org.kie.efesto.kafka.api.messages.EfestoKafkaMessagingType;
 import org.kie.efesto.runtimemanager.api.model.EfestoInput;
-import org.kie.efesto.runtimemanager.api.model.EfestoRuntimeContext;
+import org.kie.efesto.common.api.model.EfestoRuntimeContext;
 
 /**
  * Message published by
- * {@link org.kie.efesto.kafka.runtime.provider.service.KafkaKieRuntimeServiceGateway#evaluateInput(EfestoInput, EfestoRuntimeContext)}
+ * {@link org.kie.efesto.kafka.runtime.provider.service.KafkaKieRuntimeServiceGateway#evaluateInput(String, String)}
  * to eventually retrieve an <code>EfestoOutput</code>
  */
 public class EfestoKafkaRuntimeEvaluateInputRequestMessage extends AbstractEfestoKafkaRuntimeMessage {

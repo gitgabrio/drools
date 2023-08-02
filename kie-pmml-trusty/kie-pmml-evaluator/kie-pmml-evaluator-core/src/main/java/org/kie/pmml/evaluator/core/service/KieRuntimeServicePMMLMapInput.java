@@ -22,7 +22,7 @@ import org.kie.efesto.common.api.identifiers.ModelLocalUriId;
 import org.kie.efesto.common.core.utils.JSONUtils;
 import org.kie.efesto.runtimemanager.api.model.BaseEfestoInput;
 import org.kie.efesto.runtimemanager.api.model.EfestoInput;
-import org.kie.efesto.runtimemanager.api.model.EfestoRuntimeContext;
+import org.kie.efesto.common.api.model.EfestoRuntimeContext;
 import org.kie.efesto.runtimemanager.api.service.KieRuntimeService;
 import org.kie.pmml.api.identifiers.AbstractModelLocalUriIdPmml;
 import org.kie.pmml.evaluator.api.model.EfestoOutputPMML;
@@ -71,6 +71,9 @@ public class KieRuntimeServicePMMLMapInput implements KieRuntimeService<Map<Stri
         ModelLocalUriId modelLocalUriId;
         try {
             modelLocalUriId = objectMapper.readValue(modelLocalUriIdString, AbstractModelLocalUriIdPmml.class);
+            if (!modelLocalUriId.model().equals(getModelType())) {
+                return Optional.empty();
+            }
         } catch (Exception e) {
             logger.warn("Failed to parse {} as AbstractModelLocalUriIdPmml", modelLocalUriIdString);
             return Optional.empty();

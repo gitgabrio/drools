@@ -21,6 +21,7 @@ import org.kie.drl.engine.runtime.mapinput.utils.DrlRuntimeHelper;
 import org.kie.efesto.common.api.cache.EfestoClassKey;
 import org.kie.efesto.common.api.exceptions.KieEfestoCommonException;
 import org.kie.efesto.common.api.identifiers.ModelLocalUriId;
+import org.kie.efesto.common.api.model.EfestoRuntimeContext;
 import org.kie.efesto.common.core.utils.JSONUtils;
 import org.kie.efesto.runtimemanager.api.model.*;
 import org.kie.efesto.runtimemanager.api.service.KieRuntimeService;
@@ -65,6 +66,9 @@ public class KieRuntimeServiceDrlMapInput implements KieRuntimeService<EfestoMap
         ModelLocalUriId modelLocalUriId;
         try {
             modelLocalUriId = objectMapper.readValue(modelLocalUriIdString, ModelLocalUriId.class);
+            if (!modelLocalUriId.model().equals(getModelType())) {
+                return Optional.empty();
+            }
         } catch (Exception e) {
             throw new KieEfestoCommonException(String.format("Failed to parse %s as ModelLocalUriId", modelLocalUriIdString));
         }

@@ -17,6 +17,7 @@
 package org.kie.efesto.runtimemanager.api.model;
 
 import org.kie.efesto.common.api.listener.EfestoListener;
+import org.kie.efesto.common.api.model.EfestoRuntimeContext;
 import org.kie.efesto.runtimemanager.api.service.KieRuntimeService;
 
 import java.util.ServiceLoader;

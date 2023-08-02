@@ -49,7 +49,7 @@ public class EfestoOutputDeserializer extends StdDeserializer<EfestoOutput> {
             String cleanedNode = node.toString();
             return (EfestoOutput) getObjectMapper().readValue(cleanedNode, actualClass);
         } catch (Exception e) {
-            throw new KieEfestoCommonException(String.format("Failed to deserialize %s as EfestoIdentifierClassKey", node), e);
+            throw new KieEfestoCommonException(String.format("Failed to deserialize %s as EfestoOutput", node), e);
         }
     }
 
