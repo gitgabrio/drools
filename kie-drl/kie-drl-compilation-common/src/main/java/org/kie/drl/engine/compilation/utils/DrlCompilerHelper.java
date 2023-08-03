@@ -15,17 +15,6 @@
  */
 package org.kie.drl.engine.compilation.utils;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.drools.compiler.builder.impl.BuildResultCollector;
 import org.drools.compiler.builder.impl.KnowledgeBuilderConfigurationImpl;
 import org.drools.compiler.builder.impl.resources.DrlResourceHandler;
@@ -42,11 +31,7 @@ import org.kie.api.io.Resource;
 import org.kie.drl.api.identifiers.DrlIdFactory;
 import org.kie.drl.api.identifiers.KieDrlComponentRoot;
 import org.kie.drl.api.identifiers.LocalComponentIdDrl;
-import org.kie.drl.engine.compilation.model.DecisionTableFileSetResource;
-import org.kie.drl.engine.compilation.model.DrlCompilationContext;
-import org.kie.drl.engine.compilation.model.DrlFileSetResource;
-import org.kie.drl.engine.compilation.model.DrlPackageDescrSetResource;
-import org.kie.drl.engine.compilation.model.ExecutableModelClassesContainer;
+import org.kie.drl.engine.compilation.model.*;
 import org.kie.efesto.common.api.identifiers.EfestoAppRoot;
 import org.kie.efesto.compilationmanager.api.exceptions.KieCompilerServiceException;
 import org.kie.efesto.compilationmanager.api.model.EfestoSetResource;
@@ -54,6 +39,11 @@ import org.kie.internal.builder.KnowledgeBuilderFactory;
 import org.kie.internal.builder.KnowledgeBuilderResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
 
 public class DrlCompilerHelper {
 

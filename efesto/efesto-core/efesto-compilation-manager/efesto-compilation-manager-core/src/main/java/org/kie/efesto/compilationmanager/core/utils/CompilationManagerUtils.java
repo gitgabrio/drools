@@ -15,28 +15,18 @@
  */
 package org.kie.efesto.compilationmanager.core.utils;
 
+import org.kie.efesto.common.api.io.IndexFile;
+import org.kie.efesto.common.api.model.*;
+import org.kie.efesto.compilationmanager.api.exceptions.KieCompilerServiceException;
+import org.kie.efesto.compilationmanager.api.model.*;
+import org.kie.efesto.compilationmanager.api.service.KieCompilerService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
-import org.kie.efesto.common.api.io.IndexFile;
-import org.kie.efesto.common.api.model.GeneratedClassResource;
-import org.kie.efesto.common.api.model.GeneratedExecutableResource;
-import org.kie.efesto.common.api.model.GeneratedRedirectResource;
-import org.kie.efesto.common.api.model.GeneratedResource;
-import org.kie.efesto.common.api.model.GeneratedResources;
-import org.kie.efesto.compilationmanager.api.exceptions.KieCompilerServiceException;
-import org.kie.efesto.compilationmanager.api.model.EfestoCallableOutput;
-import org.kie.efesto.compilationmanager.api.model.EfestoCallableOutputClassesContainer;
-import org.kie.efesto.compilationmanager.api.model.EfestoClassesContainer;
-import org.kie.efesto.common.api.model.EfestoCompilationContext;
-import org.kie.efesto.compilationmanager.api.model.EfestoCompilationOutput;
-import org.kie.efesto.compilationmanager.api.model.EfestoRedirectOutput;
-import org.kie.efesto.compilationmanager.api.model.EfestoResource;
-import org.kie.efesto.compilationmanager.api.service.KieCompilerService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import static org.kie.efesto.common.api.constants.Constants.INDEXFILE_DIRECTORY_PROPERTY;
 import static org.kie.efesto.common.api.utils.MemoryFileUtils.getFileFromFileNameOrFilePath;
@@ -88,7 +78,8 @@ public class CompilationManagerUtils {
                     context.addGeneratedClasses(classesContainer.getModelLocalUriId().asModelLocalUriId(),
                                                 classesContainer.getCompiledClassesMap());
                 }
-            } else if (compilationOutput instanceof EfestoResource) {
+            }
+            if (compilationOutput instanceof EfestoResource) {
                 processResourceWithContext((EfestoResource) compilationOutput, context);
             }
         }

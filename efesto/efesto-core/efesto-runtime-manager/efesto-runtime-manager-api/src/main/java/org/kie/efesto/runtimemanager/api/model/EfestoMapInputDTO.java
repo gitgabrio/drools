@@ -17,6 +17,7 @@ package org.kie.efesto.runtimemanager.api.model;
 
 import java.io.Serializable;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -70,5 +71,14 @@ public class EfestoMapInputDTO implements Serializable {
 
     public String getPackageName() {
         return packageName;
+    }
+
+    public Map<String, Object> asMap() {
+        Map<String, Object> toReturn = new HashMap<>();
+        toReturn.put("inserts", getInserts());
+        toReturn.put("globals", getGlobals());
+        toReturn.put("package", packageName);
+        toReturn.put("modelName", modelName);
+        return toReturn;
     }
 }

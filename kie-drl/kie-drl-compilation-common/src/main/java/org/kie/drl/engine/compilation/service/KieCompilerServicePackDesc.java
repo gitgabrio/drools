@@ -15,19 +15,21 @@
  */
 package org.kie.drl.engine.compilation.service;
 
-import java.util.Collections;
-import java.util.List;
-
 import org.drools.drl.ast.descr.PackageDescr;
 import org.kie.drl.engine.compilation.model.DrlCompilationContext;
 import org.kie.drl.engine.compilation.model.DrlPackageDescrSetResource;
-import org.kie.efesto.compilationmanager.api.exceptions.KieCompilerServiceException;
 import org.kie.efesto.common.api.model.EfestoCompilationContext;
+import org.kie.efesto.compilationmanager.api.exceptions.KieCompilerServiceException;
 import org.kie.efesto.compilationmanager.api.model.EfestoCompilationOutput;
+import org.kie.efesto.compilationmanager.api.model.EfestoRedirectOutput;
 import org.kie.efesto.compilationmanager.api.model.EfestoResource;
 import org.kie.efesto.compilationmanager.api.model.EfestoSetResource;
 import org.kie.efesto.compilationmanager.api.service.KieCompilerService;
 import org.kie.efesto.compilationmanager.core.model.EfestoCompilationContextImpl;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 
 import static org.kie.drl.engine.compilation.utils.DrlCompilerHelper.pkgDescrToExecModel;
 
@@ -35,7 +37,9 @@ public class KieCompilerServicePackDesc implements KieCompilerService<EfestoComp
 
     @Override
     public boolean canManageResource(EfestoResource toProcess) {
-        return toProcess instanceof DrlPackageDescrSetResource || (toProcess instanceof EfestoSetResource  && ((EfestoSetResource)toProcess).getContent().iterator().next() instanceof PackageDescr);
+        return toProcess instanceof DrlPackageDescrSetResource
+                || toProcess instanceof EfestoSetResource  && ((EfestoSetResource)toProcess).getContent().iterator().next() instanceof PackageDescr
+                || toProcess instanceof EfestoRedirectOutput && toProcess.getContent() instanceof Set && ((Set)toProcess.getContent()).iterator().next() instanceof PackageDescr ;
     }
 
     @Override
@@ -47,6 +51,11 @@ public class KieCompilerServicePackDesc implements KieCompilerService<EfestoComp
         }
         if (!(context instanceof DrlCompilationContext)) {
             context =  getDrlCompilationContext(context);
+        }
+        if (toProcess instanceof EfestoRedirectOutput) {
+            toProcess = new EfestoSetResource<>((Set<PackageDescr>) toProcess.getContent(), ((EfestoRedirectOutput)toProcess).getModelLocalUriId()) {
+
+            };
         }
         return Collections.singletonList( pkgDescrToExecModel((EfestoSetResource<PackageDescr>) toProcess, (DrlCompilationContext) context) );
     }

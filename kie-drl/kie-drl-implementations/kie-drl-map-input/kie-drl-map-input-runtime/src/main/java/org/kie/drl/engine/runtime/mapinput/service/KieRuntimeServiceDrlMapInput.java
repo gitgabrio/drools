@@ -94,12 +94,14 @@ public class KieRuntimeServiceDrlMapInput implements KieRuntimeService<EfestoMap
         }
         String packageName = (String) inputData.get("package");
         inputData.remove("package");
+        String modelName = (String) inputData.get("modelName");
+        inputData.remove("modelName");
         final Map<String, EfestoOriginalTypeGeneratedType> fieldTypeMap = new HashMap<>();
         inputData.forEach((s, o) -> {
             String objectType = o.getClass().getCanonicalName();
             EfestoOriginalTypeGeneratedType toPut = new EfestoOriginalTypeGeneratedType(objectType, objectType);
             fieldTypeMap.put(s, toPut);
         });
-        return new EfestoMapInputDTO(inserts, globals, inputData, fieldTypeMap, "modl", packageName);
+        return new EfestoMapInputDTO(inserts, globals, inputData, fieldTypeMap, modelName, packageName);
     }
 }
