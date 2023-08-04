@@ -49,42 +49,6 @@
                 <version>${kafka-clients.version}</version>
                 <scope>test</scope>
             </dependency>
-<!--            <dependency>-->
-<!--                <groupId>net.mguenther.kafka</groupId>-->
-<!--                <artifactId>kafka-junit</artifactId>-->
-<!--                <version>${kafka-junit.version}</version>-->
-<!--                <scope>test</scope>-->
-<!--                <exclusions>-->
-<!--                    <exclusion>-->
-<!--                        <groupId>io.netty</groupId>-->
-<!--                        <artifactId>netty-codec</artifactId>-->
-<!--                    </exclusion>-->
-<!--                    <exclusion>-->
-<!--                        <groupId>io.netty</groupId>-->
-<!--                        <artifactId>netty-common</artifactId>-->
-<!--                    </exclusion>-->
-<!--                    <exclusion>-->
-<!--                        <groupId>io.netty</groupId>-->
-<!--                        <artifactId>netty-handler</artifactId>-->
-<!--                    </exclusion>-->
-<!--                    <exclusion>-->
-<!--                        <groupId>log4j</groupId>-->
-<!--                        <artifactId>log4j</artifactId>-->
-<!--                    </exclusion>-->
-<!--                    <exclusion>-->
-<!--                        <groupId>org.eclipse.jetty</groupId>-->
-<!--                        <artifactId>jetty-http</artifactId>-->
-<!--                    </exclusion>-->
-<!--                    <exclusion>-->
-<!--                        <groupId>org.eclipse.jetty</groupId>-->
-<!--                        <artifactId>jetty-server</artifactId>-->
-<!--                    </exclusion>-->
-<!--                    <exclusion>-->
-<!--                        <groupId>org.eclipse.jetty</groupId>-->
-<!--                        <artifactId>jetty-util</artifactId>-->
-<!--                    </exclusion>-->
-<!--                </exclusions>-->
-<!--            </dependency>-->
         </dependencies>
     </dependencyManagement>
 

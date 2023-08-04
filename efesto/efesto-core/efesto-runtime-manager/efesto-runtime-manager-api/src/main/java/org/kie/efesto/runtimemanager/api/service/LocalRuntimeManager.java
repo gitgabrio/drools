@@ -15,17 +15,16 @@
  */
 package org.kie.efesto.runtimemanager.api.service;
 
+import org.kie.efesto.common.api.model.EfestoRuntimeContext;
 import org.kie.efesto.runtimemanager.api.model.EfestoInput;
 import org.kie.efesto.runtimemanager.api.model.EfestoOutput;
-import org.kie.efesto.common.api.model.EfestoRuntimeContext;
 
 import java.util.Collection;
-import java.util.Optional;
 
 /**
- * This is the publicly available API, to be invoked by external, consumer code
+ * This is the type that run on local JVM
  */
-public interface RuntimeManager {
+public interface LocalRuntimeManager {
 
     /**
      * Produce a <code>Collection&lt;EfestoOutput&gt;</code> from the given <code>EfestoInput</code>
@@ -37,12 +36,4 @@ public interface RuntimeManager {
     Collection<EfestoOutput> evaluateInput(EfestoRuntimeContext context,
                                            EfestoInput... toEvaluate);
 
-    /**
-     * Return an <code>Optional&lt;EfestoOutput&gt;</code> from the given <b>modelLocalUriIdString</b> and <b>inputDataString</b>
-     *
-     * @param modelLocalUriIdString
-     * @param inputDataString
-     * @return
-     */
-    Optional<EfestoOutput> evaluateInput(String modelLocalUriIdString, String inputDataString);
 }

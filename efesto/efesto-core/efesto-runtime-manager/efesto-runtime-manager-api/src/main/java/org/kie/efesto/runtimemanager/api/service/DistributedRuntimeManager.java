@@ -13,13 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.kie.efesto.kafka.api.service;
+package org.kie.efesto.runtimemanager.api.service;
 
-import org.kie.efesto.runtimemanager.api.service.DistributedRuntimeManager;
+import org.kie.efesto.runtimemanager.api.model.EfestoOutput;
+
+import java.util.Optional;
 
 /**
- * This is the publicly available API, to be invoked by external, consumer code
+ * This is the implementation that run on different JVMs
  */
-public interface KafkaRuntimeManager extends DistributedRuntimeManager {
+public interface DistributedRuntimeManager {
 
+    /**
+     * Return an <code>Optional&lt;EfestoOutput&gt;</code> from the given <b>modelLocalUriIdString</b> and <b>inputDataString</b>
+     *
+     * @param modelLocalUriIdString
+     * @param inputDataString
+     * @return
+     */
+    Optional<EfestoOutput> evaluateInput(String modelLocalUriIdString, String inputDataString);
 }

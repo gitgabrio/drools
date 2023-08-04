@@ -15,14 +15,12 @@
  */
 package org.kie.efesto.kafka.api.utils;
 
-import org.kie.efesto.kafka.api.service.KafkaRuntimeManager;
 import org.kie.efesto.kafka.api.service.KafkaRuntimeServiceProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.ServiceLoader;
 
 public class KafkaSPIUtils {
@@ -33,7 +31,6 @@ public class KafkaSPIUtils {
     private static final Logger logger = LoggerFactory.getLogger(KafkaSPIUtils.class.getName());
 
     private static final ServiceLoader<KafkaRuntimeServiceProvider> runtimeServiceProvidersLoader = ServiceLoader.load(KafkaRuntimeServiceProvider.class);
-    private static final ServiceLoader<KafkaRuntimeManager> runtimeManagerLoader = ServiceLoader.load(KafkaRuntimeManager.class);
 
     private static List<KafkaRuntimeServiceProvider> runtimeServiceProviders = getRuntimeServiceProviders(runtimeServiceProvidersLoader);
 
@@ -47,12 +44,6 @@ public class KafkaSPIUtils {
         return runtimeServiceProviders = getRuntimeServiceProviders(getProviders(refresh));
     }
 
-    public static Optional<KafkaRuntimeManager> getRuntimeManager(boolean refresh) {
-        logger.debug("getRuntimeManager {}", refresh);
-        Iterable<KafkaRuntimeManager> managers = getManagers(refresh);
-        return managers.iterator().hasNext() ? Optional.of(managers.iterator().next()) : Optional.empty();
-    }
-
     private static List<KafkaRuntimeServiceProvider> getRuntimeServiceProviders(Iterable<KafkaRuntimeServiceProvider> serviceIterable) {
         List<KafkaRuntimeServiceProvider> toReturn = new ArrayList<>();
         serviceIterable.forEach(toReturn::add);
@@ -62,14 +53,6 @@ public class KafkaSPIUtils {
         }
         return toReturn;
     }
-
-    private static Iterable<KafkaRuntimeManager> getManagers(boolean refresh) {
-        if (refresh) {
-            runtimeManagerLoader.reload();
-        }
-        return runtimeManagerLoader;
-    }
-
 
     private static Iterable<KafkaRuntimeServiceProvider> getProviders(boolean refresh) {
         if (refresh) {

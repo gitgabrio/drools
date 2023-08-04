@@ -15,11 +15,6 @@
  */
 package org.kie.drl.engine.testingmodule;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Collection;
-import java.util.Set;
-
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.kie.api.runtime.KieSession;
@@ -32,14 +27,19 @@ import org.kie.drl.engine.runtime.kiesession.local.model.EfestoOutputDrlKieSessi
 import org.kie.drl.engine.testingmodule.utils.DrlTestUtils;
 import org.kie.efesto.common.api.identifiers.EfestoAppRoot;
 import org.kie.efesto.common.api.identifiers.ModelLocalUriId;
+import org.kie.efesto.common.api.model.EfestoRuntimeContext;
 import org.kie.efesto.compilationmanager.api.model.EfestoResource;
 import org.kie.efesto.compilationmanager.api.service.CompilationManager;
 import org.kie.efesto.compilationmanager.core.service.CompilationManagerImpl;
 import org.kie.efesto.runtimemanager.api.model.EfestoOutput;
-import org.kie.efesto.common.api.model.EfestoRuntimeContext;
 import org.kie.efesto.runtimemanager.api.service.RuntimeManager;
 import org.kie.efesto.runtimemanager.core.model.EfestoRuntimeContextUtils;
 import org.kie.efesto.runtimemanager.core.service.RuntimeManagerImpl;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -65,7 +65,7 @@ class OnTheFlyDrlTest {
         // Suppose we cannot access the previous compilationContext
         EfestoRuntimeContext runtimeContext =
                 EfestoRuntimeContextUtils.buildWithParentClassLoader(Thread.currentThread().getContextClassLoader(),
-                                                                     compilationContext.getGeneratedResourcesMap());
+                        compilationContext.getGeneratedResourcesMap());
         ModelLocalUriId modelLocalUriId = new EfestoAppRoot()
                 .get(KieDrlComponentRoot.class)
                 .get(DrlIdFactory.class)

@@ -39,12 +39,12 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
-class RuntimeManagerImplTest {
+class LocalRuntimeManagerImplTest {
 
-    private static final Logger logger = LoggerFactory.getLogger(RuntimeManagerImplTest.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(LocalRuntimeManagerImplTest.class.getName());
 
 
-    private static RuntimeManagerImpl runtimeManager;
+    private static LocalRuntimeManagerImpl runtimeManager;
     private static EfestoRuntimeContext context;
 
     private static final List<Class<? extends EfestoInput>> MANAGED_Efesto_INPUTS =
@@ -54,7 +54,7 @@ class RuntimeManagerImplTest {
 
     @BeforeAll
     static void setUp() {
-        runtimeManager = new RuntimeManagerImpl();
+        runtimeManager = new LocalRuntimeManagerImpl();
         context = EfestoRuntimeContextUtils.buildWithParentClassLoader(Thread.currentThread().getContextClassLoader());
     }
 

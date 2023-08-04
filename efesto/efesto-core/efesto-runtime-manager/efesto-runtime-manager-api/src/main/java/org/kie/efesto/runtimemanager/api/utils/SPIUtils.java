@@ -19,13 +19,13 @@ import org.kie.efesto.runtimemanager.api.exceptions.KieRuntimeServiceException;
 import org.kie.efesto.runtimemanager.api.model.EfestoInput;
 import org.kie.efesto.runtimemanager.api.model.EfestoLocalRuntimeContext;
 import org.kie.efesto.common.api.model.EfestoRuntimeContext;
-import org.kie.efesto.runtimemanager.api.service.KieRuntimeService;
-import org.kie.efesto.runtimemanager.api.service.RuntimeManager;
-import org.kie.efesto.runtimemanager.api.service.RuntimeServiceProvider;
+import org.kie.efesto.runtimemanager.api.service.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import static org.kie.efesto.common.api.utils.CollectionUtils.findAtMostOne;
 
@@ -37,6 +37,9 @@ public class SPIUtils {
     private static final Logger logger = LoggerFactory.getLogger(SPIUtils.class.getName());
 
     private static final ServiceLoader<RuntimeManager> runtimeManagerLoader = ServiceLoader.load(RuntimeManager.class);
+
+    private static final ServiceLoader<LocalRuntimeManager> localRuntimeManagerLoader = ServiceLoader.load(LocalRuntimeManager.class);
+    private static final ServiceLoader<DistributedRuntimeManager> distributedRuntimeManagerLoader = ServiceLoader.load(DistributedRuntimeManager.class);
 
     private static final ServiceLoader<RuntimeServiceProvider> runtimeServiceProvidersLoader = ServiceLoader.load(RuntimeServiceProvider.class);
 
@@ -84,6 +87,20 @@ public class SPIUtils {
         return managers.iterator().hasNext() ? Optional.of(managers.iterator().next()) : Optional.empty();
     }
 
+    public static Optional<LocalRuntimeManager> getLocalRuntimeManager(boolean refresh) {
+        logger.debug("getLocalRuntimeManager {}", refresh);
+        Iterable<LocalRuntimeManager> managers = getLocalManagers(refresh);
+        return managers.iterator().hasNext() ? Optional.of(managers.iterator().next()) : Optional.empty();
+    }
+
+    public static List<DistributedRuntimeManager> getDistributedRuntimeManagers(boolean refresh) {
+        logger.debug("getDistributedRuntimeManagers {}", refresh);
+        Iterable<DistributedRuntimeManager> managers = getDistributedManagers(refresh);
+        return StreamSupport
+                .stream(managers.spliterator(), false)
+                .collect(Collectors.toList());
+    }
+
     private static List<RuntimeServiceProvider> getRuntimeServiceProviders(Iterable<RuntimeServiceProvider> serviceIterable) {
         List<RuntimeServiceProvider> toReturn = new ArrayList<>();
         serviceIterable.forEach(toReturn::add);
@@ -116,6 +133,20 @@ public class SPIUtils {
             runtimeManagerLoader.reload();
         }
         return runtimeManagerLoader;
+    }
+
+    private static Iterable<LocalRuntimeManager> getLocalManagers(boolean refresh) {
+        if (refresh) {
+            localRuntimeManagerLoader.reload();
+        }
+        return localRuntimeManagerLoader;
+    }
+
+    private static Iterable<DistributedRuntimeManager> getDistributedManagers(boolean refresh) {
+        if (refresh) {
+            distributedRuntimeManagerLoader.reload();
+        }
+        return distributedRuntimeManagerLoader;
     }
 
     private static Iterable<RuntimeServiceProvider> getProviders(boolean refresh) {

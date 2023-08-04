@@ -15,37 +15,40 @@
  */
 package org.kie.efesto.kafka.runtime.provider.service;
 
-import org.junit.jupiter.api.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.kie.efesto.common.api.cache.EfestoClassKey;
+import org.kie.efesto.kafka.api.service.KafkaKieRuntimeService;
 import org.kie.efesto.runtimemanager.api.model.EfestoInput;
 import org.kie.efesto.runtimemanager.api.model.EfestoOutput;
-import org.kie.efesto.common.api.model.EfestoRuntimeContext;
-import org.kie.efesto.runtimemanager.core.mocks.MockEfestoInputA;
-import org.kie.efesto.runtimemanager.core.mocks.MockEfestoInputB;
-import org.kie.efesto.runtimemanager.core.mocks.MockEfestoInputC;
-import org.kie.efesto.runtimemanager.core.mocks.MockEfestoInputD;
-import org.kie.efesto.runtimemanager.core.model.EfestoRuntimeContextUtils;
+import org.kie.efesto.runtimemanager.api.service.KieRuntimeService;
+import org.kie.efesto.runtimemanager.core.mocks.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
+import static org.kie.efesto.common.core.utils.JSONUtils.getObjectMapper;
 
 class KafkaRuntimeManagerImplTest {
 
     private static final Logger logger = LoggerFactory.getLogger(KafkaRuntimeManagerImplTest.class.getName());
-
+    private static final ObjectMapper mapper = getObjectMapper();
 
     private static KafkaRuntimeManagerImpl runtimeManager;
-    private static EfestoRuntimeContext context;
+    // private static EfestoRuntimeContext context;
 
     private static final List<Class<? extends EfestoInput>> MANAGED_Efesto_INPUTS =
             Arrays.asList(MockEfestoInputA.class,
@@ -55,7 +58,7 @@ class KafkaRuntimeManagerImplTest {
     @BeforeAll
     static void setUp() {
         runtimeManager = new KafkaRuntimeManagerImpl();
-        context = EfestoRuntimeContextUtils.buildWithParentClassLoader(Thread.currentThread().getContextClassLoader());
+        //   context = EfestoRuntimeContextUtils.buildWithParentClassLoader(Thread.currentThread().getContextClassLoader());
     }
 
     @BeforeEach
@@ -72,43 +75,62 @@ class KafkaRuntimeManagerImplTest {
             content = String.format("%s %s", methodName, parameters);
         }
         logger.info(String.format("About to execute  %s ", content));
+
     }
 
     @ParameterizedTest(name = "evaluateInput{0}")
-    @ValueSource(classes = {MockEfestoInputA.class,
-            MockEfestoInputB.class,
-            MockEfestoInputC.class})
-    void evaluateInput(Class<? extends EfestoInput> managedInput) {
+    @MethodSource("hashMapProvider")
+    void evaluateInput(Map<EfestoInput, KafkaKieRuntimeService> inputServiceMap) {
         KafkaRuntimeManagerUtils.init();
-        try {
-            EfestoInput toProcess = managedInput.getDeclaredConstructor().newInstance();
-            Collection<EfestoOutput> retrieved = runtimeManager.evaluateInput(context, toProcess);
-            assertThat(retrieved).isNotNull().hasSize(1);
-        } catch (Exception e) {
-            fail("Failed assertion on evaluateInput", e);
-        }
-        Collection<EfestoOutput> retrieved = runtimeManager.evaluateInput(context,
-                new MockEfestoInputD());
-        assertThat(retrieved).isNotNull().isEmpty();
-    }
-
-    @Test
-    @DisplayName("evaluateInputs")
-    void evaluateInputs() {
-        KafkaRuntimeManagerUtils.init();
-        List<EfestoInput> toProcess = new ArrayList<>();
-        MANAGED_Efesto_INPUTS.forEach(managedInput -> {
+        KafkaRuntimeManagerUtils.rePopulateFirstLevelCache(List.copyOf(inputServiceMap.values()));
+        inputServiceMap.forEach((efestoInput, kafkaKieRuntimeService) -> {
             try {
-                EfestoInput toAdd = managedInput.getDeclaredConstructor().newInstance();
-                toProcess.add(toAdd);
+                String modelLocalUriIdString = mapper.writeValueAsString(efestoInput.getModelLocalUriId());
+                String inputDataString = mapper.writeValueAsString(efestoInput.getInputData());
+                Optional<EfestoOutput> retrieved = runtimeManager.evaluateInput(modelLocalUriIdString, inputDataString);
+                assertThat(retrieved).isNotNull().isPresent();
             } catch (Exception e) {
                 fail("Failed assertion on evaluateInput", e);
             }
         });
-        toProcess.add(new MockEfestoInputD());
-        Collection<EfestoOutput> retrieved = runtimeManager.evaluateInput(context,
-                toProcess.toArray(new EfestoInput[0]));
-        assertThat(retrieved).isNotNull().hasSize(MANAGED_Efesto_INPUTS.size());
+        try {
+            EfestoInput toProcess = new MockEfestoInputD();
+            String modelLocalUriIdString = mapper.writeValueAsString(toProcess.getModelLocalUriId());
+            String inputDataString = mapper.writeValueAsString(toProcess.getInputData());
+            Optional<EfestoOutput> retrieved = runtimeManager.evaluateInput(modelLocalUriIdString, inputDataString);
+            assertThat(retrieved).isNotNull().isNotPresent();
+        } catch (Exception e) {
+            fail("Failed assertion on evaluateInput", e);
+        }
     }
+
+    static Stream<Map<EfestoInput, KafkaKieRuntimeService>> hashMapProvider() {
+        return Stream.of(
+                Map.of(new MockEfestoInputA(), getKafkaKieRuntimeService(new MockKieRuntimeServiceA()),
+                        new MockEfestoInputB(), getKafkaKieRuntimeService(new MockKieRuntimeServiceB()),
+                        new MockEfestoInputC(), getKafkaKieRuntimeService(new MockKieRuntimeServiceC()))
+        );
+    }
+
+    private static KafkaKieRuntimeService getKafkaKieRuntimeService(KieRuntimeService kieRuntimeService) {
+        return new KafkaKieRuntimeService() {
+
+            @Override
+            public EfestoClassKey getEfestoClassKeyIdentifier() {
+                return kieRuntimeService.getEfestoClassKeyIdentifier();
+            }
+
+            @Override
+            public String getModelType() {
+                return kieRuntimeService.getModelType();
+            }
+
+            @Override
+            public Optional evaluateInput(String modelLocalUriIdString, String inputDataString) {
+                return Optional.of(new MockEfestoOutput());
+            }
+        };
+    }
+
 
 }

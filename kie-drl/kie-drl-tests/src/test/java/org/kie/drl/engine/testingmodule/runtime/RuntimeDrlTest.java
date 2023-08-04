@@ -15,8 +15,6 @@
  */
 package org.kie.drl.engine.testingmodule.runtime;
 
-import java.util.Collection;
-
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.kie.api.runtime.KieSession;
@@ -27,11 +25,13 @@ import org.kie.drl.engine.runtime.kiesession.local.model.EfestoOutputDrlKieSessi
 import org.kie.drl.engine.testingmodule.utils.DrlTestUtils;
 import org.kie.efesto.common.api.identifiers.EfestoAppRoot;
 import org.kie.efesto.common.api.identifiers.ModelLocalUriId;
-import org.kie.efesto.runtimemanager.api.model.EfestoOutput;
 import org.kie.efesto.common.api.model.EfestoRuntimeContext;
+import org.kie.efesto.runtimemanager.api.model.EfestoOutput;
 import org.kie.efesto.runtimemanager.api.service.RuntimeManager;
 import org.kie.efesto.runtimemanager.core.model.EfestoRuntimeContextUtils;
 import org.kie.efesto.runtimemanager.core.service.RuntimeManagerImpl;
+
+import java.util.Collection;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
