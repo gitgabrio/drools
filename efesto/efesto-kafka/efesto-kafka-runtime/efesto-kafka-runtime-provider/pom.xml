@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.kie</groupId>
         <artifactId>efesto-kafka-runtime</artifactId>
-        <version>8.43.0-SNAPSHOT</version>
+        <version>8.45.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>efesto-kafka-runtime-provider</artifactId>
@@ -14,6 +14,8 @@
     <description>Provider of Runtime implementation of the Kafka-based communication layer</description>
 
     <properties>
+        <java.module.name>org.drools.efesto.core.kafka.runtime.provider</java.module.name>
+        <skip.jdepend>true</skip.jdepend>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
