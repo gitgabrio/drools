@@ -1,20 +1,40 @@
-/*
- * Copyright 2010 Red Hat, Inc. and/or its affiliates.
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.drools.core.impl;
+
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Queue;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.Future;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.drools.base.base.ClassObjectType;
 import org.drools.base.common.PartitionsManager;
@@ -77,31 +97,15 @@ import org.kie.internal.conf.CompositeBaseConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Queue;
-import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.Future;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-
 import static org.drools.core.phreak.PhreakBuilder.isEagerSegmentCreation;
-import static org.drools.util.BitMaskUtil.isSet;
 import static org.drools.util.ClassUtils.convertClassToResourcePath;
+import static org.drools.util.bitmask.BitMaskUtil.isSet;
 
 public class KnowledgeBaseImpl implements InternalRuleBase {
 
     protected static final Logger logger = LoggerFactory.getLogger(KnowledgeBaseImpl.class);
+
+    private static final KieWeavers WEAVERS = KieService.load( KieWeavers.class );
 
     private Set<EntryPointNode> addedEntryNodeCache;
     private Set<EntryPointNode> removedEntryNodeCache;
@@ -151,6 +155,8 @@ public class KnowledgeBaseImpl implements InternalRuleBase {
     private boolean hasMultipleAgendaGroups = false;
 
     private final PartitionsManager partitionsManager = new PartitionsManager();
+
+    private boolean partitioned;
 
     public KnowledgeBaseImpl() { }
 
@@ -441,29 +447,33 @@ public class KnowledgeBaseImpl implements InternalRuleBase {
             }
 
             if ( ! newPkg.getResourceTypePackages().isEmpty() ) {
-                KieWeavers weavers = KieService.load( KieWeavers.class );
                 for ( ResourceTypePackage rtkKpg : newPkg.getResourceTypePackages().values() ) {
-                    weavers.weave( newPkg, rtkKpg );
+                    WEAVERS.weave( newPkg, rtkKpg );
                 }
             }
 
             ruleUnitDescriptionRegistry.add(newPkg.getRuleUnitDescriptionLoader());
         }
 
-        if (ruleBaseConfig.isMultithreadEvaluation()) {
+        if (ruleBaseConfig.isParallelEvaluation()) {
             setupParallelEvaluation();
         }
     }
 
     private void setupParallelEvaluation() {
-        if (!hasParallelEvaluation()) {
-            disableMultithreadEvaluation("The rete network cannot be partitioned: disabling multithread evaluation");
+        if (!partitionsManager.hasParallelEvaluation()) {
+            disableParallelEvaluation("The rete network cannot be partitioned: disabling multithread evaluation");
+            return;
         }
         partitionsManager.init();
-        for (EntryPointNode epn : rete.getEntryPointNodes().values()) {
-            epn.setupParallelEvaluation(this);
-            for ( ObjectTypeNode otn : epn.getObjectTypeNodes().values() ) {
-                otn.setupParallelEvaluation(this);
+        this.partitioned = true;
+
+        if (ruleBaseConfig.isParallelExecution()) {
+            for (EntryPointNode epn : rete.getEntryPointNodes().values()) {
+                epn.setupParallelExecution(this);
+                for (ObjectTypeNode otn : epn.getObjectTypeNodes().values()) {
+                    otn.setupParallelExecution(this);
+                }
             }
         }
     }
@@ -492,16 +502,16 @@ public class KnowledgeBaseImpl implements InternalRuleBase {
         }
     }
 
-    private void checkMultithreadedEvaluation( RuleImpl rule ) {
-        if (ruleBaseConfig.isMultithreadEvaluation()) {
+    private void checkParallelEvaluation(RuleImpl rule) {
+        if (ruleBaseConfig.isParallelEvaluation()) {
             if (!rule.isMainAgendaGroup()) {
-                disableMultithreadEvaluation( "Agenda-groups are not supported with multithread evaluation: disabling it" );
+                disableParallelEvaluation( "Agenda-groups are not supported with parallel execution: disabling it" );
             } else if (rule.getActivationGroup() != null) {
-                disableMultithreadEvaluation( "Activation-groups are not supported with multithread evaluation: disabling it" );
-            } else if (!rule.getSalience().isDefault()) {
-                disableMultithreadEvaluation( "Salience is not supported with multithread evaluation: disabling it" );
+                disableParallelEvaluation( "Activation-groups are not supported with parallel execution: disabling it" );
+            } else if (!rule.getSalience().isDefault() && ruleBaseConfig.isParallelExecution()) {
+                disableParallelEvaluation( "Salience is not supported with parallel execution: disabling it" );
             } else if (rule.isQuery()) {
-                disableMultithreadEvaluation( "Queries are not supported with multithread evaluation: disabling it" );
+                disableParallelEvaluation( "Queries are not supported with parallel execution: disabling it" );
             }
         }
     }
@@ -510,7 +520,7 @@ public class KnowledgeBaseImpl implements InternalRuleBase {
         return hasMultipleAgendaGroups;
     }
 
-    private void disableMultithreadEvaluation(String warningMessage) {
+    private void disableParallelEvaluation(String warningMessage) {
         ruleBaseConfig.enforceSingleThreadEvaluation();
         logger.warn( warningMessage );
         for (EntryPointNode entryPointNode : rete.getEntryPointNodes().values()) {
@@ -808,12 +818,11 @@ public class KnowledgeBaseImpl implements InternalRuleBase {
         }
 
         if ( ! newPkg.getResourceTypePackages().isEmpty() ) {
-            KieWeavers weavers = KieService.load(KieWeavers.class);
-            if (weavers == null) {
+            if (WEAVERS == null) {
                 throw new IllegalStateException("Unable to find KieWeavers implementation");
             }
             for ( ResourceTypePackage rtkKpg : newPkg.getResourceTypePackages().values() ) {
-                weavers.merge( pkg, rtkKpg );
+                WEAVERS.merge( pkg, rtkKpg );
             }
         }
     }
@@ -871,7 +880,9 @@ public class KnowledgeBaseImpl implements InternalRuleBase {
     }
 
     public void registeRremovedEntryNodeCache(EntryPointNode node) {
-        if (removedEntryNodeCache == null) removedEntryNodeCache = new HashSet<>();
+        if (removedEntryNodeCache == null) {
+            removedEntryNodeCache = new HashSet<>();
+        }
         removedEntryNodeCache.add(node);
     }
 
@@ -1029,7 +1040,7 @@ public class KnowledgeBaseImpl implements InternalRuleBase {
 
         for (Rule r : rules) {
             RuleImpl rule = (RuleImpl) r;
-            checkMultithreadedEvaluation( rule );
+            checkParallelEvaluation( rule );
             this.hasMultipleAgendaGroups |= !rule.isMainAgendaGroup();
             terminalNodes.addAll(this.reteooBuilder.addRule(rule, wms));
         }
@@ -1184,8 +1195,8 @@ public class KnowledgeBaseImpl implements InternalRuleBase {
     }
 
     @Override
-    public boolean hasParallelEvaluation() {
-        return getRuleBaseConfiguration().isMultithreadEvaluation() && partitionsManager.hasParallelEvaluation();
+    public boolean isPartitioned() {
+        return partitioned;
     }
 
     @Override

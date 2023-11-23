@@ -1,24 +1,22 @@
-/*
- * Copyright 2015 Red Hat, Inc. and/or its affiliates.
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * 
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
-*/
-
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 package org.drools.mvel.integrationtests;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.drools.core.common.InternalAgenda;
 import org.drools.core.common.InternalAgendaGroup;
@@ -48,6 +46,11 @@ import org.kie.api.event.rule.MatchCancelledEvent;
 import org.kie.api.event.rule.MatchCreatedEvent;
 import org.kie.api.runtime.KieSession;
 import org.kie.api.runtime.rule.FactHandle;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -470,11 +473,11 @@ public class ExecutionFlowControlTest {
         final InternalAgendaGroup group1 = agenda.getAgendaGroupsManager().getAgendaGroup( "group1" );
         agenda.getAgendaGroupsManager().setFocus( group1 );
         assertThat(group1.size()).isEqualTo(1);
-        RuleAgendaItem ruleItem1 = (RuleAgendaItem) group1.getActivations().iterator().next();
+        RuleAgendaItem ruleItem1 = group1.getActivations().iterator().next();
         ruleItem1.getRuleExecutor().evaluateNetwork(wm.getAgenda());
         assertThat(ruleItem1.getRuleExecutor().getLeftTupleList().size()).isEqualTo(3);
 
-        agenda.fireNextItem( null, 0, 0 );
+        ruleItem1.getRuleExecutor().fire(agenda);
         assertThat(group1.size()).isEqualTo(1);
         assertThat(ruleItem1.getRuleExecutor().getLeftTupleList().size()).isEqualTo(2);
 
@@ -486,11 +489,11 @@ public class ExecutionFlowControlTest {
         InternalAgendaGroup group2 = agenda.getAgendaGroupsManager().getAgendaGroup( "group2" );
         agenda.getAgendaGroupsManager().setFocus( group2);
         assertThat(group2.size()).isEqualTo(1);
-        RuleAgendaItem ruleItem2 = (RuleAgendaItem) group2.getActivations().iterator().next();
+        RuleAgendaItem ruleItem2 = group2.getActivations().iterator().next();
         ruleItem2.getRuleExecutor().evaluateNetwork(wm.getAgenda());
         assertThat(ruleItem2.getRuleExecutor().getLeftTupleList().size()).isEqualTo(3);
 
-        agenda.fireNextItem( null, 0, 0 );
+        ruleItem2.getRuleExecutor().fire(agenda);
         assertThat(group2.size()).isEqualTo(1);
         assertThat(ruleItem2.getRuleExecutor().getLeftTupleList().size()).isEqualTo(2);
 

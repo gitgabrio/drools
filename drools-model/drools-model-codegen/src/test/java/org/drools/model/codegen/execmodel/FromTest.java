@@ -1,32 +1,22 @@
-/*
- * Copyright 2005 JBoss Inc
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.drools.model.codegen.execmodel;
-
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
 
 import org.drools.model.codegen.execmodel.FunctionsTest.Pojo;
 import org.drools.model.codegen.execmodel.domain.Address;
@@ -45,6 +35,20 @@ import org.kie.api.builder.model.KieModuleModel;
 import org.kie.api.runtime.KieSession;
 import org.kie.api.runtime.rule.FactHandle;
 import org.kie.internal.builder.conf.PropertySpecificOption;
+
+import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -255,7 +259,7 @@ public class FromTest extends BaseModelTest {
                            "rule \"set a value\" when\n" +
                            "  $s : Setting( $rn: rowNo, $cn: colNo, $v: value )\n" +
                            "  $c : Cell( rowNo == $rn, colNo == $cn, value == null)\n" +
-                           "  $ctr : Counter( $count: count )\n" +
+                           "  $ctr : Counter( $count: count != 0 )\n" +
                            "then\n" +
                            "  System.out.println(\"set a value [\" + $v + \"] to $c = \" + $c);\n" +
                            "  modify( $c ){ setValue( $v ) }\n" +
@@ -265,6 +269,7 @@ public class FromTest extends BaseModelTest {
                            "  $s: Setting( $rn: rowNo, $cn: colNo, $v: value )\n" +
                            "  Cell( rowNo == $rn, colNo == $cn, value == $v, $exCells: exCells )\n" +
                            "  $c: Cell( free contains $v ) from $exCells\n" +
+                           "  Counter( $count: count != 0 )\n" +
                            "then\n" +
                            "  System.out.println(\"eliminate a value [\" + $v + \"] from Cell : $c = \" + $c);\n" +
                            "  modify( $c ){ blockValue( $v ) }\n" +
@@ -276,6 +281,7 @@ public class FromTest extends BaseModelTest {
                            "    not( $x: Cell( free contains $v )\n" +
                            "         and\n" +
                            "         Cell( this == $c, exCells contains $x ) )\n" +
+                           "    Counter( $count: count != 0 )\n" +
                            "then\n" +
                            "    System.out.println( \"done setting cell \" + $c.toString() ); \n" +
                            "    delete( $s );\n" +
@@ -284,6 +290,7 @@ public class FromTest extends BaseModelTest {
                            "when\n" +
                            "    not Setting()\n" +
                            "    $c: Cell( $rn: rowNo, $cn: colNo, freeCount == 1 )\n" +
+                           "    Counter( $count: count != 0 )\n" +
                            "then\n" +
                            "    Integer i = $c.getFreeValue();\n" +
                            "    System.out.println( \"single \" + i + \" at \" + $c.toString() );\n" +
@@ -708,6 +715,47 @@ public class FromTest extends BaseModelTest {
         ksession.insert(p3);
 
         assertThat(ksession.fireAllRules()).isEqualTo(1);
+    }
+
+    @Test
+    public void testFromCollectCustomSet() {
+        // DROOLS-7534
+        String str =
+                "package org.drools.compiler.test  \n" +
+                     "import " + Person.class.getCanonicalName() + "\n" +
+                     "import " + MyHashSet.class.getCanonicalName() + "\n" +
+                     "import " + FromTest.class.getCanonicalName() + "\n" +
+                     "rule R\n" +
+                     "when\n" +
+                     "    $set : MyHashSet (size == 2) from collect (Person (age >= 30))\n" +
+                     "then\n" +
+                     "    FromTest.printPersons($set);" +
+                     "end \n";
+
+        KieSession ksession = getKieSession(str);
+
+        Person p1 = new Person("John", 32);
+        Person p1a = new Person("John", 32);
+        Person p2 = new Person("Paul", 30);
+        Person p3 = new Person("George", 29);
+
+        ksession.insert(p1);
+        ksession.insert(p1a);
+        ksession.insert(p2);
+        ksession.insert(p3);
+
+        assertThat(ksession.fireAllRules()).isEqualTo(1);
+    }
+
+    public static void printPersons(MyHashSet<Person> persons) {
+        System.out.println("persons found: " + persons);
+    }
+
+    public static class MyHashSet<T> extends HashSet<T> {
+
+        public MyHashSet() {
+            super();
+        }
     }
 
     @Test
@@ -1494,5 +1542,62 @@ public class FromTest extends BaseModelTest {
             this.strValue = strValue;
         }
 
+    }
+
+    @Test
+    public void testFromGlobalWithDuplicates() {
+        String str =
+                "import java.util.concurrent.atomic.AtomicInteger;\n" +
+                        "import " + NamedPerson.class.getCanonicalName() + ";\n" +
+                        "global java.util.List list         \n" +
+                        "rule R when                        \n" +
+                        "  $i : AtomicInteger()\n" +
+                        "  $o : NamedPerson(age > $i.get()) from list\n" +
+                        "then                               \n" +
+                        "  insert($o);                      \n" +
+                        "end                                ";
+
+        KieSession ksession = getKieSession(str);
+
+        List<NamedPerson> strings = Arrays.asList(new NamedPerson("Mario", 1), new NamedPerson("Mario", 2));
+
+        ksession.setGlobal("list", strings);
+
+        AtomicInteger i = new AtomicInteger(0);
+        FactHandle fh = ksession.insert(i);
+
+        assertThat(ksession.fireAllRules()).isEqualTo(2);
+
+        i.incrementAndGet();
+        ksession.update(fh, i);
+
+        assertThat(ksession.fireAllRules()).isEqualTo(1);
+    }
+
+    public static class NamedPerson {
+        private final String name;
+        private final int age;
+
+        public NamedPerson(String name, int age) {
+            this.name = name;
+            this.age = age;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            NamedPerson myPerson = (NamedPerson) o;
+            return Objects.equals(name, myPerson.name);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(name);
+        }
+
+        public int getAge() {
+            return age;
+        }
     }
 }

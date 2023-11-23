@@ -1,21 +1,26 @@
-/*
- * Copyright 2015 Red Hat, Inc. and/or its affiliates.
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * 
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
-*/
-
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 package org.drools.core.phreak;
 
+import org.drools.base.rule.ContextEntry;
 import org.drools.core.common.BetaConstraints;
+import org.drools.core.common.PropagationContext;
 import org.drools.core.common.ReteEvaluator;
 import org.drools.core.common.TupleSets;
 import org.drools.core.reteoo.BetaMemory;
@@ -24,8 +29,6 @@ import org.drools.core.reteoo.LeftTupleSink;
 import org.drools.core.reteoo.NotNode;
 import org.drools.core.reteoo.RightTuple;
 import org.drools.core.reteoo.TupleMemory;
-import org.drools.base.rule.ContextEntry;
-import org.drools.core.common.PropagationContext;
 import org.drools.core.util.FastIterator;
 
 import static org.drools.core.phreak.PhreakJoinNode.updateChildLeftTuple;
@@ -163,9 +166,9 @@ public class PhreakNotNode {
                 constraints.updateFromFactHandle( contextEntry,
                                                   reteEvaluator,
                                                   rightTuple.getFactHandleForEvaluation() );
-                for ( LeftTuple leftTuple = notNode.getFirstLeftTuple( rightTuple, ltm, it ); leftTuple != null; ) {
+                for ( LeftTuple leftTuple = notNode.getFirstLeftTuple(rightTuple, ltm, it ); leftTuple != null; ) {
                     // preserve next now, in case we remove this leftTuple
-                    LeftTuple temp = (LeftTuple) it.next( leftTuple );
+                    LeftTuple temp = (LeftTuple) it.next(leftTuple );
 
                     if ( leftTuple.getStagedType() == LeftTuple.UPDATE ) {
                         // ignore, as it will get processed via left iteration. Children cannot be processed twice
@@ -327,13 +330,13 @@ public class PhreakNotNode {
                                                   rightTuple.getFactHandleForEvaluation() );
 
                 FastIterator leftIt = notNode.getLeftIterator( ltm );
-                LeftTuple firstLeftTuple = notNode.getFirstLeftTuple( rightTuple, ltm, leftIt );
+                LeftTuple firstLeftTuple = notNode.getFirstLeftTuple(rightTuple, ltm, leftIt );
 
 
                 // first process non-blocked tuples, as we know only those ones are in the left memory.
                 for ( LeftTuple leftTuple = firstLeftTuple; leftTuple != null; ) {
                     // preserve next now, in case we remove this leftTuple
-                    LeftTuple temp = (LeftTuple) leftIt.next( leftTuple );
+                    LeftTuple temp = (LeftTuple) leftIt.next(leftTuple );
 
                     if ( leftTuple.getStagedType() == LeftTuple.UPDATE ) {
                         // ignore, as it will get processed via left iteration. Children cannot be processed twice
@@ -519,7 +522,7 @@ public class PhreakNotNode {
         constraints.resetTuple(contextEntry);
     }
 
-    private static void insertChildLeftTuple( LeftTupleSink sink, TupleSets<LeftTuple> trgLeftTuples, TupleMemory ltm, LeftTuple leftTuple, PropagationContext pctx, boolean useLeftMemory ) {
+    private static void insertChildLeftTuple(LeftTupleSink sink, TupleSets<LeftTuple> trgLeftTuples, TupleMemory ltm, LeftTuple leftTuple, PropagationContext pctx, boolean useLeftMemory ) {
         if (!leftTuple.isExpired()) {
             if (useLeftMemory) {
                 ltm.add(leftTuple);

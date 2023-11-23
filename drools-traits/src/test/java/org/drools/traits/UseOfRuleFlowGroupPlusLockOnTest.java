@@ -1,3 +1,21 @@
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 package org.drools.traits;
 
 import org.drools.kiesession.agenda.DefaultAgenda;
@@ -8,10 +26,14 @@ import org.kie.api.event.rule.DebugAgendaEventListener;
 import org.kie.api.io.ResourceType;
 import org.kie.api.runtime.KieSession;
 import org.kie.internal.utils.KieHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class UseOfRuleFlowGroupPlusLockOnTest {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(UseOfRuleFlowGroupPlusLockOnTest.class);
 
     private static final String drl = "package com.sample\n"
             + "import " + Person.class.getCanonicalName() + " ;\n"
@@ -39,7 +61,9 @@ public class UseOfRuleFlowGroupPlusLockOnTest {
         KieHelper kieHelper = new KieHelper().addContent(drl, ResourceType.DRL);
         KieBase kbase = kieHelper.build();
         KieSession ksession = kbase.newKieSession();
-        ReteDumper.dumpRete(ksession);
+        if (LOGGER.isDebugEnabled()) {
+            ReteDumper.dumpRete(ksession);
+        }
         ksession.addEventListener( new DebugAgendaEventListener() );
         try {
             ksession.insert(new Person());
@@ -47,8 +71,6 @@ public class UseOfRuleFlowGroupPlusLockOnTest {
             ((DefaultAgenda) ksession.getAgenda()).activateRuleFlowGroup("group1");
             int rulesFired = ksession.fireAllRules();
             assertThat(rulesFired).isEqualTo(1);
-
-
         } finally {
             ksession.dispose();
         }

@@ -1,24 +1,26 @@
-/*
- * Copyright 2015 Red Hat, Inc. and/or its affiliates.
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.drools.core.reteoo;
 
+import org.drools.base.rule.Declaration;
 import org.drools.core.common.DefaultEventHandle;
 import org.drools.core.common.InternalFactHandle;
-import org.drools.base.rule.Declaration;
 import org.drools.core.common.PropagationContext;
 import org.kie.api.runtime.rule.FactHandle;
 
@@ -35,9 +37,9 @@ public abstract class AbstractTuple implements Tuple {
     protected Tuple stagedPrevious;
 
     private Tuple   previous;
-    private Tuple   next;
+    private AbstractTuple   next;
 
-    protected Sink sink;
+    private Sink sink;
 
     protected Tuple handlePrevious;
     protected Tuple handleNext;
@@ -112,11 +114,11 @@ public abstract class AbstractTuple implements Tuple {
         this.previous = previous;
     }
 
-    public Tuple getNext() {
+    public AbstractTuple getNext() {
         return next;
     }
 
-    public void setNext(Tuple next) {
+    public void setNext(AbstractTuple next) {
         this.next = next;
     }
 
@@ -129,26 +131,6 @@ public abstract class AbstractTuple implements Tuple {
     @Override
     public FactHandle get(Declaration declaration) {
         return get(declaration.getTupleIndex());
-    }
-
-    @Override
-    public void increaseActivationCountForEvents() {
-        for ( Tuple entry = skipEmptyHandles(); entry != null; entry = entry.getParent() ) {
-            if(entry.getFactHandle().isEvent()) {
-                // can be null for eval, not and exists that have no right input
-                ((DefaultEventHandle)entry.getFactHandle()).increaseActivationsCount();
-            }
-        }
-    }
-
-    @Override
-    public void decreaseActivationCountForEvents() {
-        for ( Tuple entry = skipEmptyHandles(); entry != null; entry = entry.getParent() ) {
-            if(entry.getFactHandle().isEvent()) {
-                // can be null for eval, not and exists that have no right input
-                ((DefaultEventHandle)entry.getFactHandle()).decreaseActivationsCount();
-            }
-        }
     }
 
     @Override
@@ -199,5 +181,13 @@ public abstract class AbstractTuple implements Tuple {
 
     public void setExpired() {
         this.expired = true;
+    }
+
+    protected Sink getSink() {
+        return sink;
+    }
+
+    protected void setSink(Sink sink) {
+        this.sink = sink;
     }
 }

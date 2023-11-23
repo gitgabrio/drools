@@ -1,30 +1,34 @@
-/*
- * Copyright (c) 2020. Red Hat, Inc. and/or its affiliates.
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *       http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.drools.core.phreak;
 
+import org.drools.base.reteoo.AccumulateContextEntry;
+import org.drools.base.rule.Accumulate;
+import org.drools.core.common.PropagationContext;
 import org.drools.core.common.ReteEvaluator;
 import org.drools.core.common.TupleSets;
 import org.drools.core.reteoo.AccumulateNode;
-import org.drools.base.reteoo.AccumulateContextEntry;
 import org.drools.core.reteoo.AccumulateNode.AccumulateMemory;
 import org.drools.core.reteoo.AccumulateNode.GroupByContext;
 import org.drools.core.reteoo.LeftTuple;
 import org.drools.core.reteoo.LeftTupleSink;
 import org.drools.core.reteoo.RightTuple;
-import org.drools.base.rule.Accumulate;
-import org.drools.core.common.PropagationContext;
 import org.drools.core.util.index.TupleList;
 import org.kie.api.runtime.rule.FactHandle;
 
@@ -104,7 +108,7 @@ public class PhreakGroupByNode extends PhreakAccumulateNode {
                 for (LeftTuple childMatch = (LeftTuple) tupleList.getFirst(); childMatch != null; childMatch = (LeftTuple) childMatch.getNext()) {
                     RightTuple         rightTuple  = childMatch.getRightParent();
                     FactHandle childHandle = rightTuple.getFactHandle();
-                    LeftTuple          tuple       = leftTuple;
+                    LeftTuple tuple       = leftTuple;
                     if (accNode.isRightInputIsRiaNode()) {
                         // if there is a subnetwork, handle must be unwrapped
                         tuple = (LeftTuple) rightTuple;
@@ -133,7 +137,7 @@ public class PhreakGroupByNode extends PhreakAccumulateNode {
     }
 
     @Override
-    protected void propagateDelete( TupleSets<LeftTuple> trgLeftTuples, TupleSets<LeftTuple> stagedLeftTuples, Object accctx ) {
+    protected void propagateDelete(TupleSets<LeftTuple> trgLeftTuples, TupleSets<LeftTuple> stagedLeftTuples, Object accctx ) {
         GroupByContext groupByContext = (GroupByContext)accctx;
         for ( TupleList<AccumulateContextEntry> tupleList : groupByContext.getGroups().values()) {
             super.propagateDelete(trgLeftTuples, stagedLeftTuples, tupleList.getContext());

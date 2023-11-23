@@ -1,19 +1,21 @@
-/*
- * Copyright 2017 Red Hat, Inc. and/or its affiliates.
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *       http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.drools.compiler.kie.util;
 
 import java.util.List;
@@ -86,7 +88,7 @@ public class InjectionHelper {
     }
       
     private static void wireWIHs(BeanCreator beanCreator, BeanCreator fallbackBeanCreator, ClassLoader cl, List<WorkItemHandlerModel> wihModels, KieSession kSession) { 
-     	 for (WorkItemHandlerModel wihModel : wihModels) {
+          for (WorkItemHandlerModel wihModel : wihModels) {
              WorkItemHandler wih;
              try {
                  wih = beanCreator.createBean(cl, wihModel.getType(), wihModel.getQualifierModel());
@@ -102,7 +104,7 @@ public class InjectionHelper {
      }
     
     private static void wireListeners(BeanCreator beanCreator, BeanCreator fallbackBeanCreator, ClassLoader cl, List<ListenerModel> listenerModels, KieRuntimeEventManager kRuntimeEventManager) {
-    	for (ListenerModel listenerModel : listenerModels) {
+        for (ListenerModel listenerModel : listenerModels) {
             Object listener = createListener( beanCreator, fallbackBeanCreator, cl, listenerModel );
             switch(listenerModel.getKind()) {
                 case AGENDA_EVENT_LISTENER:
@@ -133,15 +135,15 @@ public class InjectionHelper {
     }
     
     private static void wireChannels(BeanCreator beanCreator, BeanCreator fallbackBeanCreator, ClassLoader cl, List<ChannelModel> channelModels, KieSession kSession) {
-    	wireSessionChannels(beanCreator, fallbackBeanCreator, cl, channelModels, kSession);
+        wireSessionChannels(beanCreator, fallbackBeanCreator, cl, channelModels, kSession);
     }
     
     private static void wireChannels(BeanCreator beanCreator, BeanCreator fallbackBeanCreator, ClassLoader cl, List<ChannelModel> channelModels, StatelessKieSession kSession) {
-    	wireSessionChannels(beanCreator, fallbackBeanCreator, cl, channelModels, kSession);
+        wireSessionChannels(beanCreator, fallbackBeanCreator, cl, channelModels, kSession);
     }
     
     private static void wireSessionChannels(BeanCreator beanCreator, BeanCreator fallbackBeanCreator, ClassLoader cl, List<ChannelModel> channelModels, Object kSession) {
-    	for (ChannelModel channelModel : channelModels) {
+        for (ChannelModel channelModel : channelModels) {
             Channel channel;
             try {
                 channel = beanCreator.createBean(cl, channelModel.getType(), channelModel.getQualifierModel());
@@ -153,11 +155,11 @@ public class InjectionHelper {
                 }
             }
             if (kSession instanceof KieSession) {
-            	((KieSession) kSession).registerChannel(channelModel.getName(), channel);
+                ((KieSession) kSession).registerChannel(channelModel.getName(), channel);
             } else if (kSession instanceof StatelessKieSession) {
-            	((StatelessKieSession) kSession).registerChannel(channelModel.getName(), channel);
+                ((StatelessKieSession) kSession).registerChannel(channelModel.getName(), channel);
             } else {
-            	throw new IllegalArgumentException("kSession not of correct type. Expected KieSession or StatelessKieSession but was: " + kSession.getClass().getCanonicalName());
+                throw new IllegalArgumentException("kSession not of correct type. Expected KieSession or StatelessKieSession but was: " + kSession.getClass().getCanonicalName());
             }
         }
     }

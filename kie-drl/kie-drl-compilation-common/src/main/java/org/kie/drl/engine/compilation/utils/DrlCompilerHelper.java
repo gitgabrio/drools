@@ -1,20 +1,24 @@
-/*
- * Copyright 2022 Red Hat, Inc. and/or its affiliates.
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *       http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.kie.drl.engine.compilation.utils;
 
+import org.drools.codegen.common.GeneratedFile;
 import org.drools.compiler.builder.impl.BuildResultCollector;
 import org.drools.compiler.builder.impl.KnowledgeBuilderConfigurationImpl;
 import org.drools.compiler.builder.impl.resources.DrlResourceHandler;
@@ -22,7 +26,6 @@ import org.drools.compiler.lang.descr.CompositePackageDescr;
 import org.drools.drl.ast.descr.PackageDescr;
 import org.drools.drl.parser.DroolsParserException;
 import org.drools.io.FileSystemResource;
-import org.drools.model.codegen.execmodel.GeneratedFile;
 import org.drools.model.codegen.execmodel.PackageModelWriter;
 import org.drools.model.codegen.project.CodegenPackageSources;
 import org.drools.model.codegen.project.RuleCodegenError;
@@ -31,7 +34,11 @@ import org.kie.api.io.Resource;
 import org.kie.drl.api.identifiers.DrlIdFactory;
 import org.kie.drl.api.identifiers.KieDrlComponentRoot;
 import org.kie.drl.api.identifiers.LocalComponentIdDrl;
-import org.kie.drl.engine.compilation.model.*;
+import org.kie.drl.engine.compilation.model.DecisionTableFileSetResource;
+import org.kie.drl.engine.compilation.model.DrlCompilationContext;
+import org.kie.drl.engine.compilation.model.DrlFileSetResource;
+import org.kie.drl.engine.compilation.model.DrlPackageDescrSetResource;
+import org.kie.drl.engine.compilation.model.ExecutableModelClassesContainer;
 import org.kie.efesto.common.api.identifiers.EfestoAppRoot;
 import org.kie.efesto.compilationmanager.api.exceptions.KieCompilerServiceException;
 import org.kie.efesto.compilationmanager.api.model.EfestoSetResource;
@@ -43,7 +50,13 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class DrlCompilerHelper {
 
@@ -98,10 +111,10 @@ public class DrlCompilerHelper {
         }
         Map<String, String> sourceCode = new HashMap<>();
         for (GeneratedFile generatedFile : modelFiles) {
-            String key = generatedFile.getPath()
+            String key = generatedFile.relativePath()
                     .replace(".java", "")
                     .replace(File.separatorChar, '.');
-            String value = new String(generatedFile.getData(),
+            String value = new String(generatedFile.contents(),
                                       StandardCharsets.UTF_8);
             sourceCode.put(key, value);
         }

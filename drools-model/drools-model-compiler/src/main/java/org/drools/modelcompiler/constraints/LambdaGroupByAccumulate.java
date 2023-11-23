@@ -1,22 +1,22 @@
-/*
- * Copyright (c) 2020. Red Hat, Inc. and/or its affiliates.
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *       http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.drools.modelcompiler.constraints;
-
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
 
 import org.drools.base.base.ValueResolver;
 import org.drools.base.reteoo.AccumulateContextEntry;
@@ -26,11 +26,16 @@ import org.drools.base.rule.Declaration;
 import org.drools.base.rule.accessor.Accumulator;
 import org.drools.core.common.ReteEvaluator;
 import org.drools.core.reteoo.AccumulateNode.GroupByContext;
+import org.drools.core.reteoo.LeftTuple;
 import org.drools.core.reteoo.Tuple;
 import org.drools.core.util.index.TupleList;
 import org.drools.model.functions.Function1;
 import org.drools.model.functions.FunctionN;
 import org.kie.api.runtime.rule.FactHandle;
+
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 
 
 public class LambdaGroupByAccumulate extends Accumulate {
@@ -107,8 +112,9 @@ public class LambdaGroupByAccumulate extends Accumulate {
     public Object accumulate(Object workingMemoryContext, Object context,
                              BaseTuple match, FactHandle handle, ValueResolver valueResolver) {
         GroupByContext groupByContext = ( GroupByContext ) context;
+        LeftTuple leftTupleMatch = (LeftTuple) match;
         TupleList<AccumulateContextEntry> tupleList = groupByContext.getGroup(workingMemoryContext, innerAccumulate,
-                                                                              (Tuple) match, getKey( (Tuple) match, handle, (ReteEvaluator) valueResolver), (ReteEvaluator) valueResolver);
+                                                                              leftTupleMatch, getKey(leftTupleMatch, handle, (ReteEvaluator) valueResolver), (ReteEvaluator) valueResolver);
 
         return accumulate(workingMemoryContext, match, handle, groupByContext, tupleList, valueResolver);
     }
@@ -124,7 +130,7 @@ public class LambdaGroupByAccumulate extends Accumulate {
     @Override
     public boolean tryReverse(Object workingMemoryContext, Object context, BaseTuple leftTuple, FactHandle handle,
                               BaseTuple match, ValueResolver valueResolver) {
-        Tuple tupleMatch = (Tuple) match;
+        LeftTuple tupleMatch = (LeftTuple) match;
         TupleList<AccumulateContextEntry> memory = tupleMatch.getMemory();
         AccumulateContextEntry entry = memory.getContext();
         boolean reversed = innerAccumulate.tryReverse(workingMemoryContext, entry, leftTuple, handle, match, valueResolver);

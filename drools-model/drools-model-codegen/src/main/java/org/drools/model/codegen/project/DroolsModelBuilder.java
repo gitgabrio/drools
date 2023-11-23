@@ -1,29 +1,22 @@
-/*
- * Copyright 2022 Red Hat, Inc. and/or its affiliates.
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *       http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.drools.model.codegen.project;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import org.drools.codegen.common.DroolsModelBuildContext;
 import org.drools.codegen.common.GeneratedFile;
@@ -49,7 +42,16 @@ import org.kie.util.maven.support.ReleaseIdImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static java.util.stream.Collectors.toList;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
 import static org.drools.compiler.kie.builder.impl.AbstractKieModule.loadResourceConfiguration;
 import static org.kie.internal.builder.KnowledgeBuilderFactory.newKnowledgeBuilderConfiguration;
 
@@ -164,14 +166,14 @@ public class DroolsModelBuilder {
 
     public Collection<GeneratedFile> generateCanonicalModelSources() {
         List<GeneratedFile> modelFiles = new ArrayList<>();
-        List<org.drools.model.codegen.execmodel.GeneratedFile> legacyModelFiles = new ArrayList<>();
+        List<GeneratedFile> legacyModelFiles = new ArrayList<>();
 
         for (CodegenPackageSources pkgSources : this.codegenPackageSources) {
             pkgSources.collectGeneratedFiles(legacyModelFiles);
             modelFiles.addAll(generateInternalResource(pkgSources));
         }
 
-        modelFiles.addAll(convertGeneratedRuleFile(legacyModelFiles));
+        modelFiles.addAll(legacyModelFiles);
         return modelFiles;
     }
 
@@ -192,11 +194,11 @@ public class DroolsModelBuilder {
 
     private List<GeneratedFile> generateInternalResource(CodegenPackageSources pkgSources) {
         List<GeneratedFile> modelFiles = new ArrayList<>();
-        org.drools.model.codegen.execmodel.GeneratedFile reflectConfigSource = pkgSources.getReflectConfigSource();
+        GeneratedFile reflectConfigSource = pkgSources.getReflectConfigSource();
         if (reflectConfigSource != null) {
             modelFiles.add(new GeneratedFile(GeneratedFileType.INTERNAL_RESOURCE,
-                    reflectConfigSource.getPath(),
-                    reflectConfigSource.getData()));
+                    reflectConfigSource.relativePath(),
+                    reflectConfigSource.contents()));
         }
         return modelFiles;
     }
@@ -232,9 +234,5 @@ public class DroolsModelBuilder {
 
     private Resource findPropertiesResource(Resource resource) {
         return resources.stream().filter(r -> r.getSourcePath().equals(resource.getSourcePath() + ".properties")).findFirst().orElse(null);
-    }
-
-    private Collection<GeneratedFile> convertGeneratedRuleFile(Collection<org.drools.model.codegen.execmodel.GeneratedFile> legacyModelFiles) {
-        return legacyModelFiles.stream().map(f -> new GeneratedFile(RuleCodegen.RULE_TYPE, f.getPath(), f.getData())).collect(toList());
     }
 }

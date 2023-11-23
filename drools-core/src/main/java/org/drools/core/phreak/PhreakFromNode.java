@@ -1,39 +1,44 @@
-/*
- * Copyright 2015 Red Hat, Inc. and/or its affiliates.
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * 
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
-*/
-
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 package org.drools.core.phreak;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.drools.base.rule.ContextEntry;
+import org.drools.base.rule.accessor.DataProvider;
+import org.drools.base.rule.constraint.AlphaNodeFieldConstraint;
 import org.drools.core.common.BetaConstraints;
+import org.drools.core.common.PropagationContext;
 import org.drools.core.common.ReteEvaluator;
 import org.drools.core.common.TupleSets;
+import org.drools.core.reteoo.AbstractTuple;
 import org.drools.core.reteoo.BetaMemory;
 import org.drools.core.reteoo.FromNode;
 import org.drools.core.reteoo.FromNode.FromMemory;
 import org.drools.core.reteoo.LeftTuple;
 import org.drools.core.reteoo.LeftTupleSink;
 import org.drools.core.reteoo.RightTuple;
-import org.drools.core.reteoo.TupleMemory;
-import org.drools.base.rule.ContextEntry;
-import org.drools.base.rule.constraint.AlphaNodeFieldConstraint;
-import org.drools.base.rule.accessor.DataProvider;
-import org.drools.core.common.PropagationContext;
+import org.drools.core.reteoo.RightTupleImpl;
 import org.drools.core.reteoo.Tuple;
+import org.drools.core.reteoo.TupleMemory;
 import org.drools.core.util.FastIterator;
 import org.drools.core.util.LinkedList;
 import org.kie.api.runtime.rule.FactHandle;
@@ -138,20 +143,20 @@ public class PhreakFromNode {
 
             PropagationContext propagationContext = leftTuple.getPropagationContext();
 
-            final Map<Object, RightTuple> previousMatches = (Map<Object, RightTuple>) leftTuple.getContextObject();
-            final Map<Object, RightTuple> newMatches = new HashMap<>();
+            final Map<Object, RightTupleImpl> previousMatches = (Map<Object, RightTupleImpl>) leftTuple.getContextObject();
+            final Map<Object, RightTupleImpl> newMatches = new HashMap<>();
             leftTuple.setContextObject( newMatches );
 
             betaConstraints.updateFromTuple(context, reteEvaluator, leftTuple);
 
-            FastIterator rightIt = LinkedList.fastIterator;
+            FastIterator<AbstractTuple> rightIt = LinkedList.fastIterator;
             for (final java.util.Iterator<?> it = dataProvider.getResults(leftTuple, reteEvaluator, fm.providerContext); it.hasNext(); ) {
                 final Object object = it.next();
                 if ( (object == null) || !resultClass.isAssignableFrom( object.getClass() ) ) {
                     continue; // skip anything if it not assignable
                 }
 
-                RightTuple rightTuple = previousMatches.remove(object);
+                RightTupleImpl rightTuple = previousMatches.remove(object);
 
                 if (rightTuple == null) {
                     // new match, propagate assert
@@ -160,8 +165,7 @@ public class PhreakFromNode {
                     // previous match, so reevaluate and propagate modify
                     if (rightIt.next(rightTuple) != null) {
                         // handle the odd case where more than one object has the same hashcode/equals value
-                        previousMatches.put(object,
-                                            (RightTuple) rightIt.next(rightTuple));
+                        previousMatches.put(object, (RightTupleImpl) rightIt.next(rightTuple));
                         rightTuple.setNext(null);
                     }
                 }
@@ -174,8 +178,8 @@ public class PhreakFromNode {
                 }
             }
 
-            for (RightTuple rightTuple : previousMatches.values()) {
-                for (RightTuple current = rightTuple; current != null; current = (RightTuple) rightIt.next(current)) {
+            for (RightTupleImpl rightTuple : previousMatches.values()) {
+                for (RightTupleImpl current = rightTuple; current != null; current = (RightTupleImpl) rightIt.next(current)) {
                     deleteChildLeftTuple(propagationContext, trgLeftTuples, stagedLeftTuples, current.getFirstChild());
                 }
             }

@@ -1,17 +1,21 @@
-/*
- * Copyright (c) 2020. Red Hat, Inc. and/or its affiliates.
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *       http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.drools.serialization.protobuf;
 
 import org.drools.base.base.ValueResolver;
@@ -2527,7 +2531,7 @@ public class MarshallingTest extends CommonTestMethodBase {
         clock.advanceTime( 4, TimeUnit.SECONDS );
 
         assertThat(ksession.getFactCount()).isEqualTo(2);
-        ksession.fireAllRules();
+        assertThat(ksession.fireAllRules()).isEqualTo(1);
         assertThat(ksession.getFactCount()).isEqualTo(0);
     }
 
@@ -2826,5 +2830,45 @@ public class MarshallingTest extends CommonTestMethodBase {
         // Wait for our thread to exit
         // ** The thread exits if we call t.interrupt();
         t.join();
+    }
+
+    @Test
+    public void cepActivation_shouldFireActivation() throws Exception {
+        // DROOLS-7531
+        String str =
+                "import " + getClass().getCanonicalName() + ".*\n" +
+                "declare A\n" +
+                " @role( event )\n" +
+                " @expires( 10m )\n" +
+                "end\n" +
+                "declare B\n" +
+                " @role( event )\n" +
+                " @expires( 10m )\n" +
+                "end\n" +
+                "rule one\n" +
+                "when\n" +
+                "   $a : A()\n" +
+                "   not ( B(this after[0s, 5s] $a) )\n" +
+                "then\n" +
+                "  System.out.println(\"Fired!\");\n" +
+                "end\n";
+
+        KieBaseConfiguration config = RuleBaseFactory.newKnowledgeBaseConfiguration();
+        config.setOption(EventProcessingOption.STREAM);
+
+        KieBase kBase = loadKnowledgeBaseFromString(config, str);
+
+        KieSessionConfiguration ksconf = RuleBaseFactory.newKnowledgeSessionConfiguration();
+        ksconf.setOption(ClockTypeOption.PSEUDO);
+        KieSession ksession = kBase.newKieSession(ksconf, null);
+        PseudoClockScheduler sessionClock = (PseudoClockScheduler) ksession.getSessionClock();
+
+        ksession.insert(new A());
+        sessionClock.advanceTime(6, TimeUnit.SECONDS);
+
+        ksession = marshallStatefulKnowledgeSession(ksession);
+
+        int fired = ksession.fireAllRules();
+        assertThat(fired).isEqualTo(1);
     }
 }

@@ -7,11 +7,10 @@ changeBranch = env.ghprbSourceBranch ?: CHANGE_BRANCH
 
 pipeline {
     agent {
-        label 'kie-rhel8 && kie-mem16g && !built-in'
-    }
-    tools {
-        maven env.BUILD_MAVEN_TOOL
-        jdk env.BUILD_JDK_TOOL
+        docker { 
+            image env.AGENT_DOCKER_BUILDER_IMAGE
+            args env.AGENT_DOCKER_BUILDER_ARGS
+        }
     }
     options {
         timestamps()
@@ -21,7 +20,7 @@ pipeline {
         stage('Initialization') {
             steps {
                 script {
-                    cleanWs()
+                    cleanWs(disableDeferredWipeout: true)
 
                     sh 'printenv > env_props'
                     archiveArtifacts artifacts: 'env_props'
@@ -59,10 +58,8 @@ pipeline {
         }
     }
     post {
-        always {
-            script {
-                cleanWs()
-            }
+        cleanup {
+            cleanWs()
         }
         unsuccessful {
             script {
@@ -78,10 +75,4 @@ String getRepoName() {
 
 String getGitAuthorCredsId() {
     return env.AUTHOR_CREDS_ID
-}
-
-MavenCommand getMavenCommand() {
-    return new MavenCommand(this, ['-fae', '-ntp'])
-                .withSettingsXmlId(env.MAVEN_SETTINGS_CONFIG_FILE_ID)
-                .withProperty('full')
 }

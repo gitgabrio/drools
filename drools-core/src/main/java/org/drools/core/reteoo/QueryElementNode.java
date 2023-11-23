@@ -1,45 +1,47 @@
-/*
- * Copyright 2010 Red Hat, Inc. and/or its affiliates.
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.drools.core.reteoo;
 
 import java.util.List;
 
+import org.drools.base.definitions.rule.impl.QueryImpl;
+import org.drools.base.definitions.rule.impl.RuleImpl;
 import org.drools.base.reteoo.NodeTypeEnums;
+import org.drools.base.rule.Declaration;
+import org.drools.base.rule.QueryArgument;
+import org.drools.base.rule.QueryElement;
 import org.drools.core.RuleBaseConfiguration;
 import org.drools.core.base.DroolsQueryImpl;
 import org.drools.core.base.InternalViewChangedEventListener;
 import org.drools.core.common.InternalFactHandle;
 import org.drools.core.common.Memory;
 import org.drools.core.common.MemoryFactory;
+import org.drools.core.common.PropagationContext;
 import org.drools.core.common.QueryElementFactHandle;
 import org.drools.core.common.ReteEvaluator;
 import org.drools.core.common.TupleSets;
 import org.drools.core.common.TupleSetsImpl;
 import org.drools.core.common.UpdateContext;
-import org.drools.base.definitions.rule.impl.RuleImpl;
 import org.drools.core.phreak.BuildtimeSegmentUtilities;
 import org.drools.core.phreak.StackEntry;
 import org.drools.core.reteoo.builder.BuildContext;
-import org.drools.base.rule.Declaration;
-import org.drools.base.rule.QueryArgument;
-import org.drools.base.rule.QueryElement;
-import org.drools.base.definitions.rule.impl.QueryImpl;
 import org.drools.core.rule.consequence.InternalMatch;
-import org.drools.core.common.PropagationContext;
 import org.drools.core.util.AbstractBaseLinkedListNode;
 import org.kie.api.runtime.rule.FactHandle;
 
@@ -162,7 +164,7 @@ public class QueryElementNode extends LeftTupleSource implements LeftTupleSinkNo
         return queryObject;
     }
 
-    public Object[] getActualArguments( LeftTuple leftTuple, ReteEvaluator reteEvaluator ) {
+    public Object[] getActualArguments(LeftTuple leftTuple, ReteEvaluator reteEvaluator ) {
         Object[] args = new Object[argsTemplate.length]; // the actual args, to be created from the  template
         for (int i = 0; i < argsTemplate.length; i++) {
             args[i] = argsTemplate[i].getValue( reteEvaluator, leftTuple );
@@ -170,7 +172,7 @@ public class QueryElementNode extends LeftTupleSource implements LeftTupleSinkNo
         return args;
     }
 
-    protected UnificationNodeViewChangedEventListener createCollector( LeftTuple leftTuple, int[] varIndexes, boolean tupleMemoryEnabled ) {
+    protected UnificationNodeViewChangedEventListener createCollector(LeftTuple leftTuple, int[] varIndexes, boolean tupleMemoryEnabled ) {
         return new UnificationNodeViewChangedEventListener( leftTuple,
                                                             varIndexes,
                                                             this,
@@ -221,7 +223,7 @@ public class QueryElementNode extends LeftTupleSource implements LeftTupleSinkNo
         implements
         InternalViewChangedEventListener {
 
-        protected LeftTuple          leftTuple;
+        protected LeftTuple leftTuple;
 
         protected QueryElementNode   node;
 
@@ -256,7 +258,7 @@ public class QueryElementNode extends LeftTupleSource implements LeftTupleSinkNo
         @Override
         public void rowAdded(RuleImpl rule, LeftTuple resultLeftTuple, ReteEvaluator reteEvaluator) {
 
-            QueryTerminalNode queryTerminalNode = resultLeftTuple.getTupleSink();
+            QueryTerminalNode queryTerminalNode = (QueryTerminalNode) resultLeftTuple.getTupleSink();
             QueryImpl query = queryTerminalNode.getQuery();
             Declaration[] decls = queryTerminalNode.getRequiredDeclarations();
             DroolsQueryImpl dquery = (DroolsQueryImpl) this.factHandle.getObject();
@@ -268,7 +270,7 @@ public class QueryElementNode extends LeftTupleSource implements LeftTupleSinkNo
                 objects[variable] = decl.getValue(reteEvaluator, resultLeftTuple);
             }
 
-            QueryElementFactHandle resultHandle = createQueryResultHandle(leftTuple.findMostRecentPropagationContext(),
+            QueryElementFactHandle resultHandle = createQueryResultHandle(leftTuple.getPropagationContext(),
                                                                           reteEvaluator,
                                                                           objects);
             
@@ -276,7 +278,7 @@ public class QueryElementNode extends LeftTupleSource implements LeftTupleSinkNo
 
             if ( query.processAbduction((InternalMatch) resultLeftTuple, dquery, objects, reteEvaluator) ) {
                 LeftTupleSink sink = dquery.getLeftTupleSink();
-                LeftTuple childLeftTuple = sink.createLeftTuple( this.leftTuple, rightTuple, sink );
+                LeftTuple childLeftTuple = sink.createLeftTuple(this.leftTuple, rightTuple, sink );
                 boolean stagedInsertWasEmpty = dquery.getResultLeftTupleSets().addInsert(childLeftTuple);
                 if ( stagedInsertWasEmpty ) {
                     dquery.getQueryNodeMemory().setNodeDirtyWithoutNotify();
@@ -292,7 +294,7 @@ public class QueryElementNode extends LeftTupleSource implements LeftTupleSinkNo
             return size;
         }
 
-        protected RightTuple createResultRightTuple( QueryElementFactHandle resultHandle, LeftTuple resultLeftTuple, boolean open ) {
+        protected RightTuple createResultRightTuple(QueryElementFactHandle resultHandle, LeftTuple resultLeftTuple, boolean open ) {
             RightTuple rightTuple = new RightTupleImpl( resultHandle );
             if ( open ) {
                 rightTuple.setBlocked( resultLeftTuple );
@@ -360,7 +362,7 @@ public class QueryElementNode extends LeftTupleSource implements LeftTupleSinkNo
             resultLeftTuple.setContextObject( null );
 
             // We need to recopy everything back again, as we don't know what has or hasn't changed
-            QueryTerminalNode queryTerminalNode = resultLeftTuple.getTupleSink();
+            QueryTerminalNode queryTerminalNode = (QueryTerminalNode) resultLeftTuple.getTupleSink();
             Declaration[] decls = queryTerminalNode.getRequiredDeclarations();
             FactHandle rootHandle = resultLeftTuple.get(0);
             DroolsQueryImpl dquery = (DroolsQueryImpl) rootHandle.getObject();
@@ -472,12 +474,22 @@ public class QueryElementNode extends LeftTupleSource implements LeftTupleSinkNo
         }
 
         QueryElementNode other = (QueryElementNode) object;
-        if ( this.leftInput.getId() != other.leftInput.getId() ) return false;
-        if ( openQuery != other.openQuery ) return false;
-        if ( !openQuery && dataDriven != other.dataDriven ) return false;
+        if ( this.leftInput.getId() != other.leftInput.getId() ) {
+            return false;
+        }
+        if ( openQuery != other.openQuery ) {
+            return false;
+        }
+        if ( !openQuery && dataDriven != other.dataDriven ) {
+            return false;
+        }
         if ( queryElement == null ) {
-            if ( other.queryElement != null ) return false;
-        } else if ( !queryElement.equals( other.queryElement ) ) return false;
+            if ( other.queryElement != null ) {
+                return false;
+            }
+        } else if ( !queryElement.equals( other.queryElement ) ) {
+            return false;
+        }
         return true;
     }
 
@@ -582,27 +594,27 @@ public class QueryElementNode extends LeftTupleSource implements LeftTupleSinkNo
 
         public static class QueryTupleSets extends TupleSetsImpl<LeftTuple> {
             @Override
-            protected LeftTuple getPreviousTuple( LeftTuple tuple ) {
+            protected LeftTuple getPreviousTuple(LeftTuple tuple ) {
                 return tuple.getRightParentPrevious();
             }
 
             @Override
-            protected void setPreviousTuple( LeftTuple tuple, LeftTuple stagedPrevious ) {
+            protected void setPreviousTuple(LeftTuple tuple, LeftTuple stagedPrevious ) {
                 tuple.setRightParentPrevious( stagedPrevious );
             }
 
             @Override
-            protected LeftTuple getNextTuple( LeftTuple tuple ) {
+            protected LeftTuple getNextTuple(LeftTuple tuple ) {
                 return tuple.getRightParentNext();
             }
 
             @Override
-            protected void setNextTuple( LeftTuple tuple, LeftTuple stagedNext ) {
+            protected void setNextTuple(LeftTuple tuple, LeftTuple stagedNext ) {
                 tuple.setRightParentNext( stagedNext );
             }
 
             @Override
-            protected void setStagedType( LeftTuple tuple, short type ) {
+            protected void setStagedType(LeftTuple tuple, short type ) {
                 tuple.setStagedTypeForQueries( type );
             }
 
@@ -621,7 +633,7 @@ public class QueryElementNode extends LeftTupleSource implements LeftTupleSinkNo
             private void addAllInsertsTo( TupleSets<LeftTuple> tupleSets ) {
                 LeftTuple leftTuple = getInsertFirst();
                 while (leftTuple != null) {
-                    LeftTuple next = getNextTuple( leftTuple );
+                    LeftTuple next = getNextTuple(leftTuple );
                     clear( leftTuple );
                     tupleSets.addInsert( leftTuple );
                     leftTuple = next;
@@ -632,7 +644,7 @@ public class QueryElementNode extends LeftTupleSource implements LeftTupleSinkNo
             private void addAllUpdatesTo( TupleSets<LeftTuple> tupleSets ) {
                 LeftTuple leftTuple = getUpdateFirst();
                 while (leftTuple != null) {
-                    LeftTuple next = getNextTuple( leftTuple );
+                    LeftTuple next = getNextTuple(leftTuple );
                     clear( leftTuple );
                     tupleSets.addUpdate( leftTuple );
                     leftTuple = next;
@@ -643,7 +655,7 @@ public class QueryElementNode extends LeftTupleSource implements LeftTupleSinkNo
             private void addAllDeletesTo( TupleSets<LeftTuple> tupleSets ) {
                 LeftTuple leftTuple = getDeleteFirst();
                 while (leftTuple != null) {
-                    LeftTuple next = getNextTuple( leftTuple );
+                    LeftTuple next = getNextTuple(leftTuple );
                     clear( leftTuple );
                     tupleSets.addDelete( leftTuple );
                     leftTuple = next;
@@ -667,7 +679,7 @@ public class QueryElementNode extends LeftTupleSource implements LeftTupleSinkNo
     @Override
     public LeftTuple createPeer(LeftTuple original) {
         JoinNodeLeftTuple peer = new JoinNodeLeftTuple();
-        peer.initPeer((AbstractLeftTuple) original, this);
+        peer.initPeer((LeftTuple) original, this);
         original.setPeer(peer);
         return peer;
     }

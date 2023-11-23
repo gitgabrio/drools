@@ -1,55 +1,51 @@
-/*
- * Copyright 2016 Red Hat, Inc. and/or its affiliates.
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *       http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.drools.kiesession.agenda;
 
 import org.drools.core.common.InternalFactHandle;
-import org.drools.core.common.InternalWorkingMemoryEntryPoint;
-import org.drools.core.impl.InternalRuleBase;
-import org.drools.core.reteoo.ObjectTypeNode;
+import org.drools.core.common.InternalWorkingMemory;
 import org.drools.core.common.PropagationContext;
+import org.drools.core.reteoo.ObjectTypeNode;
 
 public class PartitionedDefaultAgenda extends DefaultAgenda {
 
     private final int partition;
 
-    PartitionedDefaultAgenda(InternalRuleBase kBase,
-                             boolean initMain,
+    PartitionedDefaultAgenda(InternalWorkingMemory workingMemory,
                              ExecutionStateMachine executionStateMachine,
                              int partition) {
-        super(kBase, initMain, executionStateMachine);
+        super(workingMemory, executionStateMachine);
         this.partition = partition;
     }
 
     /**
      * Do not use this constructor! It should be used just by deserialization.
      */
-    public PartitionedDefaultAgenda() {
-        partition = 0;
+    @Override
+    protected void retractFactHandle(PropagationContext ectx, InternalFactHandle factHandle) {
+        ObjectTypeNode.retractLeftTuples(factHandle, ectx, workingMemory, partition );
+        ObjectTypeNode.retractRightTuples(factHandle, ectx, workingMemory, partition );
     }
 
     @Override
-    protected void doRetract( PropagationContext ectx ) {
-        InternalFactHandle factHandle = (InternalFactHandle) ectx.getFactHandle();
-        ObjectTypeNode.retractLeftTuples( factHandle, ectx, workingMemory, partition );
-        ObjectTypeNode.retractRightTuples( factHandle, ectx, workingMemory, partition );
-        if ( isMainPartition() && factHandle.isPendingRemoveFromStore() ) {
-            String epId = factHandle.getEntryPointName();
-            ( (InternalWorkingMemoryEntryPoint) workingMemory.getEntryPoint( epId ) ).removeFromObjectStore( factHandle );
-        }
+    protected boolean isPendingRemoveFactHandleFromStore(InternalFactHandle factHandle) {
+        return isMainPartition() && super.isPendingRemoveFactHandleFromStore(factHandle);
     }
 
     private boolean isMainPartition() {

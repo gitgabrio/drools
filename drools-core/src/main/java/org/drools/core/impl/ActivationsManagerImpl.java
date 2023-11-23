@@ -1,20 +1,29 @@
-/*
- * Copyright 2021 Red Hat, Inc. and/or its affiliates.
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.drools.core.impl;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.drools.base.definitions.rule.impl.QueryImpl;
 import org.drools.base.definitions.rule.impl.RuleImpl;
@@ -29,8 +38,8 @@ import org.drools.core.common.InternalFactHandle;
 import org.drools.core.common.InternalWorkingMemoryEntryPoint;
 import org.drools.core.common.PropagationContext;
 import org.drools.core.common.ReteEvaluator;
-import org.drools.core.concurrent.RuleEvaluator;
-import org.drools.core.concurrent.SequentialRuleEvaluator;
+import org.drools.core.concurrent.GroupEvaluator;
+import org.drools.core.concurrent.SequentialGroupEvaluator;
 import org.drools.core.event.AgendaEventSupport;
 import org.drools.core.phreak.ExecutableEntry;
 import org.drools.core.phreak.PropagationEntry;
@@ -43,20 +52,12 @@ import org.drools.core.reteoo.ObjectTypeNode;
 import org.drools.core.reteoo.PathMemory;
 import org.drools.core.reteoo.RuleTerminalNodeLeftTuple;
 import org.drools.core.reteoo.TerminalNode;
-import org.drools.core.reteoo.Tuple;
 import org.drools.core.rule.consequence.InternalMatch;
 import org.drools.core.rule.consequence.KnowledgeHelper;
 import org.drools.util.StringUtils;
 import org.kie.api.conf.EventProcessingOption;
 import org.kie.api.event.rule.MatchCancelledCause;
 import org.kie.api.runtime.rule.AgendaFilter;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class ActivationsManagerImpl implements ActivationsManager {
 
@@ -71,7 +72,7 @@ public class ActivationsManagerImpl implements ActivationsManager {
 
     private final PropagationList propagationList;
 
-    private final RuleEvaluator ruleEvaluator;
+    private final GroupEvaluator groupEvaluator;
 
     private boolean firing = false;
 
@@ -85,7 +86,7 @@ public class ActivationsManagerImpl implements ActivationsManager {
         this.reteEvaluator = reteEvaluator;
         this.agendaGroupsManager = new AgendaGroupsManager.SimpleAgendaGroupsManager(reteEvaluator);
         this.propagationList = new SynchronizedPropagationList(reteEvaluator);
-        this.ruleEvaluator = new SequentialRuleEvaluator( this );
+        this.groupEvaluator = new SequentialGroupEvaluator( this );
         if (reteEvaluator.getKnowledgeBase().getRuleBaseConfiguration().getEventProcessingMode() == EventProcessingOption.STREAM) {
             expirationContexts = new ArrayList<>();
         }
@@ -183,22 +184,19 @@ public class ActivationsManagerImpl implements ActivationsManager {
 
     @Override
     public void cancelActivation(InternalMatch internalMatch) {
-        InternalMatch item = internalMatch;
-
         if ( internalMatch.isQueued() ) {
             if (internalMatch.getActivationGroupNode() != null ) {
                 internalMatch.getActivationGroupNode().getActivationGroup().removeActivation(internalMatch);
             }
-            ((Tuple) internalMatch).decreaseActivationCountForEvents();
 
             getAgendaEventSupport().fireActivationCancelled(internalMatch, reteEvaluator, MatchCancelledCause.WME_MODIFY);
         }
 
-        if (item.getRuleAgendaItem() != null) {
-            item.getRuleAgendaItem().getRuleExecutor().fireConsequenceEvent( this.reteEvaluator, this, item, ON_DELETE_MATCH_CONSEQUENCE_NAME );
+        if (internalMatch.getRuleAgendaItem() != null) {
+            internalMatch.getRuleAgendaItem().getRuleExecutor().fireConsequenceEvent( this.reteEvaluator, this, internalMatch, ON_DELETE_MATCH_CONSEQUENCE_NAME );
         }
 
-        reteEvaluator.getRuleEventSupport().onDeleteMatch( item );
+        reteEvaluator.getRuleEventSupport().onDeleteMatch(internalMatch);
     }
 
     @Override
@@ -259,12 +257,17 @@ public class ActivationsManagerImpl implements ActivationsManager {
 
     @Override
     public KnowledgeHelper getKnowledgeHelper() {
-        return ruleEvaluator.getKnowledgeHelper();
+        return groupEvaluator.getKnowledgeHelper();
     }
 
     @Override
     public void resetKnowledgeHelper() {
-        ruleEvaluator.resetKnowledgeHelper();
+        groupEvaluator.resetKnowledgeHelper();
+    }
+
+    @Override
+    public void haltGroupEvaluation() {
+        groupEvaluator.haltEvaluation();
     }
 
     @Override
@@ -279,10 +282,10 @@ public class ActivationsManagerImpl implements ActivationsManager {
 
     @Override
     public int fireAllRules(AgendaFilter agendaFilter, int fireLimit) {
-        return fireLoop( agendaFilter, fireLimit, RestHandler.FIRE_ALL_RULES );
+        return fireLoop( agendaFilter, fireLimit );
     }
 
-    private int fireLoop(AgendaFilter agendaFilter, int fireLimit, RestHandler restHandler) {
+    private int fireLoop(AgendaFilter agendaFilter, int fireLimit) {
         firing = true;
         int fireCount = 0;
         PropagationEntry head = propagationList.takeAll();
@@ -303,7 +306,7 @@ public class ActivationsManagerImpl implements ActivationsManager {
                 // only fire rules while the limit has not reached.
                 // if halt is called, then isFiring will be false.
                 // The while loop may continue to loop, to keep flushing the action propagation queue
-                returnedFireCount = ruleEvaluator.evaluateAndFire( agendaFilter, fireCount, fireLimit, group );
+                returnedFireCount = groupEvaluator.evaluateAndFire( group, agendaFilter, fireCount, fireLimit );
                 fireCount += returnedFireCount;
 
                 limitReached = ( fireLimit > 0 && fireCount >= fireLimit );
@@ -315,7 +318,7 @@ public class ActivationsManagerImpl implements ActivationsManager {
 
             if ( returnedFireCount == 0 && head == null && ( group == null || ( group.isEmpty() && !group.isAutoDeactivate() ) ) && !flushExpirations() ) {
                 // if true, the engine is now considered potentially at rest
-                head = restHandler.handleRest( this );
+                head = handleRest();
             }
         }
 
@@ -344,44 +347,11 @@ public class ActivationsManagerImpl implements ActivationsManager {
         }
     }
 
-    interface RestHandler {
-        RestHandler FIRE_ALL_RULES = new RestHandler.FireAllRulesRestHandler();
-        RestHandler FIRE_UNTIL_HALT = new RestHandler.FireUntilHaltRestHandler();
-
-        PropagationEntry handleRest(ActivationsManagerImpl agenda);
-
-        class FireAllRulesRestHandler implements RestHandler {
-            @Override
-            public PropagationEntry handleRest(ActivationsManagerImpl agenda) {
-                PropagationEntry head = agenda.propagationList.takeAll();
-                if (head == null) {
-                    agenda.firing = false;
-                }
-                return head;
-            }
+    private PropagationEntry handleRest() {
+        PropagationEntry head = propagationList.takeAll();
+        if (head == null) {
+            firing = false;
         }
-
-        class FireUntilHaltRestHandler implements RestHandler {
-            @Override
-            public PropagationEntry handleRest(ActivationsManagerImpl agenda) {
-                PropagationEntry head;
-                // this must use the same sync target as takeAllPropagations, to ensure this entire block is atomic, up to the point of wait
-                synchronized (agenda.propagationList) {
-                    head = agenda.propagationList.takeAll();
-
-                    // if halt() has called, the thread should not be put into a wait state
-                    // instead this is just a safe way to make sure the queue is flushed before exiting the loop
-                    if (head == null) {
-                        agenda.propagationList.waitOnRest();
-                        head = agenda.propagationList.takeAll();
-                        if (head == null) {
-                            agenda.firing = false;
-                        }
-                    }
-                }
-
-                return head;
-            }
-        }
+        return head;
     }
 }

@@ -1,19 +1,21 @@
-/*
- * Copyright 2010 Red Hat, Inc. and/or its affiliates.
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.drools.kiesession.session;
 
 import org.drools.base.RuleBase;
@@ -78,7 +80,7 @@ import org.drools.core.runtime.process.InternalProcessRuntime;
 import org.drools.core.runtime.rule.impl.LiveQueryImpl;
 import org.drools.core.runtime.rule.impl.OpenQueryViewChangedEventListenerAdapter;
 import org.drools.core.time.TimerService;
-import org.drools.core.util.bitmask.BitMask;
+import org.drools.util.bitmask.BitMask;
 import org.drools.kiesession.entrypoints.NamedEntryPointsManager;
 import org.drools.kiesession.rulebase.InternalKnowledgeBase;
 import org.kie.api.KieBase;
@@ -277,8 +279,7 @@ public class StatefulKnowledgeSessionImpl extends AbstractRuntime
              environment,
              new RuleRuntimeEventSupport(),
              new AgendaEventSupport(),
-             new RuleEventListenerSupport(),
-             null);
+             new RuleEventListenerSupport());
     }
 
     public StatefulKnowledgeSessionImpl(final long id,
@@ -286,7 +287,6 @@ public class StatefulKnowledgeSessionImpl extends AbstractRuntime
                                         final FactHandleFactory handleFactory,
                                         final long propagationContext,
                                         final SessionConfiguration config,
-                                        final InternalAgenda agenda,
                                         final Environment environment) {
         this(id,
              kBase,
@@ -297,8 +297,7 @@ public class StatefulKnowledgeSessionImpl extends AbstractRuntime
              environment,
              new RuleRuntimeEventSupport(),
              new AgendaEventSupport(),
-             new RuleEventListenerSupport(),
-             agenda);
+             new RuleEventListenerSupport());
     }
 
 
@@ -311,8 +310,7 @@ public class StatefulKnowledgeSessionImpl extends AbstractRuntime
                                          final Environment environment,
                                          final RuleRuntimeEventSupport workingMemoryEventSupport,
                                          final AgendaEventSupport agendaEventSupport,
-                                         final RuleEventListenerSupport ruleEventListenerSupport,
-                                         final InternalAgenda agenda) {
+                                         final RuleEventListenerSupport ruleEventListenerSupport) {
         this.id = id;
         this.kBase = kBase;
         this.handleFactory = handleFactory;
@@ -338,8 +336,7 @@ public class StatefulKnowledgeSessionImpl extends AbstractRuntime
         RuleBaseConfiguration conf = kBase.getRuleBaseConfiguration();
         this.pctxFactory = RuntimeComponentFactory.get().getPropagationContextFactory();
 
-        this.agenda = agenda != null ? agenda : RuntimeComponentFactory.get().getAgendaFactory( config ).createAgenda(kBase);
-        this.agenda.setWorkingMemory(this);
+        this.agenda = RuntimeComponentFactory.get().getAgendaFactory( config ).createAgenda(this);
 
         this.entryPointsManager = (NamedEntryPointsManager) RuntimeComponentFactory.get().getEntryPointFactory().createEntryPointsManager(this);
 
@@ -740,7 +737,7 @@ public class StatefulKnowledgeSessionImpl extends AbstractRuntime
 
         @Override
         public void internalExecute(ReteEvaluator reteEvaluator ) {
-            LeftInputAdapterNode lian = factHandle.getFirstLeftTuple().getTupleSource();
+            LeftInputAdapterNode lian = (LeftInputAdapterNode) factHandle.getFirstLeftTuple().getTupleSource();
             LeftInputAdapterNode.LiaNodeMemory lmem = getNodeMemory(lian);
             SegmentMemory lsmem = lmem.getSegmentMemory();
 

@@ -1,31 +1,34 @@
-/*
- * Copyright 2023 Red Hat, Inc. and/or its affiliates.
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *       http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.drools.base.common;
+
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ForkJoinPool;
 
 import org.drools.util.ObjectPool;
 import org.kie.internal.concurrent.ExecutorProviderFactory;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ForkJoinPool;
-
 public class PartitionsManager {
 
-    private static final int MIN_PARALLEL_THRESHOLD = 8;
-    private static final int MAX_PARALLEL_THRESHOLD = MIN_PARALLEL_THRESHOLD * 4;
+    public static final int MIN_PARALLEL_THRESHOLD = 8;
+    public static final int MAX_PARALLEL_THRESHOLD = MIN_PARALLEL_THRESHOLD * 4;
 
     private int partitionCounter = 0;
 
@@ -51,8 +54,12 @@ public class PartitionsManager {
         private static final ForkJoinPool RULES_EVALUATION_POOL = new ForkJoinPool(); // avoid common pool
     }
 
-    public static ForkJoinPool getFireAllExecutors() {
-        return ForkJoinPoolHolder.RULES_EVALUATION_POOL;
+    public static void doOnForkJoinPool(Runnable task) {
+        ForkJoinPoolHolder.RULES_EVALUATION_POOL.submit( task ).join();
+    }
+
+    public static <T> T doOnForkJoinPool(Callable<T> task) {
+        return ForkJoinPoolHolder.RULES_EVALUATION_POOL.submit( task ).join();
     }
 
     private static class FireUntilHaltExecutorsPoolHolder {

@@ -1,42 +1,45 @@
-/*
- * Copyright 2005 Red Hat, Inc. and/or its affiliates.
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.drools.core.common;
 
-import org.drools.base.factmodel.traits.TraitTypeEnum;
-import org.drools.base.rule.EntryPointId;
-import org.drools.core.WorkingMemoryEntryPoint;
-import org.drools.core.impl.InternalRuleBase;
-import org.drools.core.reteoo.AbstractLeftTuple;
-import org.drools.core.reteoo.LeftTuple;
-import org.drools.core.reteoo.ObjectTypeNode;
-import org.drools.core.reteoo.RightTuple;
-import org.drools.core.reteoo.Tuple;
-import org.drools.core.util.AbstractBaseLinkedListNode;
-import org.drools.util.StringUtils;
-import org.kie.api.runtime.rule.FactHandle;
+import java.util.Objects;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
-import java.util.Objects;
-import java.util.function.Consumer;
-import java.util.function.Predicate;
-import java.util.stream.Stream;
+
+import org.drools.base.factmodel.traits.TraitTypeEnum;
+import org.drools.base.rule.EntryPointId;
+import org.drools.core.WorkingMemoryEntryPoint;
+import org.drools.core.impl.InternalRuleBase;
+import org.drools.core.reteoo.LeftTuple;
+import org.drools.core.reteoo.ObjectTypeNode;
+import org.drools.core.reteoo.RightTuple;
+import org.drools.core.reteoo.RightTupleImpl;
+import org.drools.core.reteoo.Tuple;
+import org.drools.core.util.AbstractBaseLinkedListNode;
+import org.drools.util.StringUtils;
+import org.kie.api.runtime.rule.FactHandle;
 
 /**
  * Implementation of <code>FactHandle</code>.
@@ -353,7 +356,7 @@ public class DefaultFactHandle extends AbstractBaseLinkedListNode<DefaultFactHan
     }
 
     protected void setLinkedTuples(InternalRuleBase kbase) {
-        linkedTuples = kbase != null && kbase.hasParallelEvaluation() ?
+        linkedTuples = kbase != null && kbase.isPartitioned() ?
                        new CompositeLinkedTuples(kbase.getParallelEvaluationSlotsCount()) :
                        new SingleLinkedTuples();
     }
@@ -630,8 +633,8 @@ public class DefaultFactHandle extends AbstractBaseLinkedListNode<DefaultFactHan
 
         @Override
         public void removeRightTuple( RightTuple rightTuple ) {
-            RightTuple previous = rightTuple.getHandlePrevious();
-            RightTuple next = rightTuple.getHandleNext();
+            RightTupleImpl previous = rightTuple.getHandlePrevious();
+            RightTupleImpl next = rightTuple.getHandleNext();
 
             if ( previous != null && next != null ) {
                 // remove from middle
@@ -668,27 +671,27 @@ public class DefaultFactHandle extends AbstractBaseLinkedListNode<DefaultFactHan
 
         @Override
         public void forEachRightTuple(Consumer<RightTuple> rightTupleConsumer) {
-            for (RightTuple rightTuple = firstRightTuple; rightTuple != null; ) {
-                RightTuple nextRightTuple = rightTuple.getHandleNext();
+            for (RightTupleImpl rightTuple = (RightTupleImpl) firstRightTuple; rightTuple != null; ) {
+                RightTupleImpl nextRightTuple = rightTuple.getHandleNext();
                 rightTupleConsumer.accept( rightTuple );
                 rightTuple = nextRightTuple;
             }
         }
 
         @Override
-        public void forEachLeftTuple(Consumer<AbstractLeftTuple> leftTupleConsumer) {
+        public void forEachLeftTuple(Consumer<LeftTuple> leftTupleConsumer) {
             for ( LeftTuple leftTuple = firstLeftTuple; leftTuple != null; ) {
                 LeftTuple nextLeftTuple = leftTuple.getHandleNext();
-                leftTupleConsumer.accept( (AbstractLeftTuple) leftTuple );
+                leftTupleConsumer.accept( leftTuple );
                 leftTuple = nextLeftTuple;
             }
         }
 
-        public AbstractLeftTuple findFirstLeftTuple(Predicate<AbstractLeftTuple> lefttTuplePredicate ) {
+        public LeftTuple findFirstLeftTuple(Predicate<LeftTuple> lefttTuplePredicate ) {
             for ( LeftTuple leftTuple = firstLeftTuple; leftTuple != null; ) {
                 LeftTuple nextLeftTuple = leftTuple.getHandleNext();
-                if (lefttTuplePredicate.test( (AbstractLeftTuple) leftTuple )) {
-                    return (AbstractLeftTuple) leftTuple;
+                if (lefttTuplePredicate.test( leftTuple )) {
+                    return leftTuple;
                 }
                 leftTuple = nextLeftTuple;
             }
@@ -838,18 +841,18 @@ public class DefaultFactHandle extends AbstractBaseLinkedListNode<DefaultFactHan
         }
 
         @Override
-        public void forEachLeftTuple( Consumer<AbstractLeftTuple> leftTupleConsumer ) {
+        public void forEachLeftTuple( Consumer<LeftTuple> leftTupleConsumer ) {
             for (int i = 0; i < partitionedTuples.length; i++) {
                 forEachLeftTuple( i, leftTupleConsumer );
             }
         }
 
-        public void forEachLeftTuple( int partition, Consumer<AbstractLeftTuple> leftTupleConsumer ) {
+        public void forEachLeftTuple( int partition, Consumer<LeftTuple> leftTupleConsumer ) {
             getPartitionedTuple(partition).forEachLeftTuple( leftTupleConsumer );
         }
 
         @Override
-        public AbstractLeftTuple findFirstLeftTuple( Predicate<AbstractLeftTuple> lefttTuplePredicate ) {
+        public LeftTuple findFirstLeftTuple(Predicate<LeftTuple> lefttTuplePredicate ) {
             return Stream.of( partitionedTuples )
                          .map( t -> t.findFirstLeftTuple( lefttTuplePredicate ) )
                          .filter( Objects::nonNull )
@@ -932,10 +935,10 @@ public class DefaultFactHandle extends AbstractBaseLinkedListNode<DefaultFactHan
         public void forEachRightTuple(Consumer<RightTuple> rightTupleConsumer) { }
 
         @Override
-        public void forEachLeftTuple(Consumer<AbstractLeftTuple> leftTupleConsumer) { }
+        public void forEachLeftTuple(Consumer<LeftTuple> leftTupleConsumer) { }
 
         @Override
-        public AbstractLeftTuple findFirstLeftTuple(Predicate<AbstractLeftTuple> leftTuplePredicate) {
+        public LeftTuple findFirstLeftTuple(Predicate<LeftTuple> leftTuplePredicate) {
             return null;
         }
 
@@ -956,12 +959,12 @@ public class DefaultFactHandle extends AbstractBaseLinkedListNode<DefaultFactHan
     }
 
     @Override
-    public void forEachLeftTuple(Consumer<AbstractLeftTuple> leftTupleConsumer) {
+    public void forEachLeftTuple(Consumer<LeftTuple> leftTupleConsumer) {
         linkedTuples.forEachLeftTuple( leftTupleConsumer );
     }
 
     @Override
-    public LeftTuple findFirstLeftTuple(Predicate<AbstractLeftTuple> lefttTuplePredicate ) {
+    public LeftTuple findFirstLeftTuple(Predicate<LeftTuple> lefttTuplePredicate ) {
         return linkedTuples.findFirstLeftTuple( lefttTuplePredicate );
     }
 

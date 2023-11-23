@@ -1,32 +1,31 @@
-/*
- * Copyright 2022 Red Hat, Inc. and/or its affiliates.
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- *
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.drools.model.codegen.execmodel;
-
-import java.io.IOException;
-import java.io.UncheckedIOException;
-import java.util.Collection;
 
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
+import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.ArrayCreationExpr;
 import com.github.javaparser.ast.expr.ArrayInitializerExpr;
 import com.github.javaparser.ast.expr.BinaryExpr;
@@ -39,6 +38,8 @@ import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.IfStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
+import org.drools.codegen.common.GeneratedFile;
+import org.drools.codegen.common.GeneratedFileType;
 import org.drools.codegen.common.context.JavaDroolsModelBuildContext;
 import org.drools.model.codegen.project.template.TemplatedGenerator;
 import org.kie.api.conf.EventProcessingOption;
@@ -47,14 +48,24 @@ import org.kie.api.runtime.conf.ClockTypeOption;
 import org.kie.internal.ruleunit.RuleUnitDescription;
 import org.kie.internal.ruleunit.RuleUnitVariable;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+
 import static com.github.javaparser.StaticJavaParser.parseExpression;
+import static java.util.stream.Collectors.toList;
 import static org.drools.model.codegen.execmodel.JavaParserCompiler.getPrettyPrinter;
+import static org.drools.model.codegen.execmodel.PackageSources.logSource;
+import static org.drools.util.ClassUtils.rawType;
 
 public class RuleUnitWriter {
 
     private static final String RULE_UNIT_VAR = "ruleUnit";
 
-    private static final String TEMPLATE_RULE_UNITS_FOLDER = "/class-templates/ruleunits/";
+    static final String TEMPLATE_RULE_UNITS_FOLDER = "/class-templates/ruleunits/";
 
     private final TemplatedGenerator.Builder templateBuilder;
 
@@ -66,6 +77,7 @@ public class RuleUnitWriter {
         this.pkgModel = pkgModel;
         this.ruleSourceResult = ruleSourceResult;
         this.ruleUnitDescr = ruleUnitDescr;
+
         this.templateBuilder = TemplatedGenerator.builder()
                 .withTemplateBasePath(TEMPLATE_RULE_UNITS_FOLDER)
                 .withPackageName(pkgModel.getName())
@@ -74,6 +86,10 @@ public class RuleUnitWriter {
 
     public String getUnitName() {
         return pkgModel.getPathName() + "/" + getRuleUnitSimpleClassName() + ".java";
+    }
+
+    public String getUnitPojoName() {
+        return pkgModel.getPathName() + "/" + ruleUnitDescr.getSimpleName() + ".java";
     }
 
     public String getInstanceName() {
@@ -92,14 +108,31 @@ public class RuleUnitWriter {
         return ruleUnitDescr.getSimpleName() + "RuleUnitInstance";
     }
 
+    public Collection<GeneratedFile> generate() {
+        Collection<GeneratedFile> generatedFiles = new ArrayList<>();
+        generatedFiles.add( new GeneratedFile( GeneratedFileType.RULE, getUnitName(), logSource( getUnitSource() ) ) );
+        generatedFiles.add( new GeneratedFile( GeneratedFileType.RULE, getInstanceName(), logSource( getInstanceSource() ) ) );
+        if (ruleUnitDescr.isGenerated()) {
+            generatedFiles.add( new GeneratedFile( GeneratedFileType.RULE, getUnitPojoName(), logSource( getRuleUnitPojoSource() ) ) );
+        }
+
+        List<RuleUnitQueryWriter> queryWriters = pkgModel.getQueriesInRuleUnit(ruleUnitDescr).stream()
+                .filter(query -> !query.hasParameters())
+                .map(query -> new RuleUnitQueryWriter(pkgModel, ruleUnitDescr, query))
+                .collect(toList());
+
+        for (RuleUnitQueryWriter queryWriter : queryWriters) {
+            generatedFiles.addAll( queryWriter.generate() );
+        }
+        return generatedFiles;
+    }
+
     public String getUnitSource() {
         CompilationUnit cu = templateBuilder.build(pkgModel.getContext(), "RuleUnit").compilationUnitOrThrow("Could not create CompilationUnit");
 
         ClassOrInterfaceDeclaration parsedClass = cu
                 .getClassByName("CLASS_NAME")
                 .orElseThrow(RuntimeException::new);
-
-        cu.setPackageDeclaration(pkgModel.getName());
 
         parsedClass.setName(getRuleUnitSimpleClassName());
         parsedClass.findAll(ConstructorDeclaration.class)
@@ -237,5 +270,36 @@ public class RuleUnitWriter {
         sb.append(".");
         sb.append(eventProcessingOption.getMode().toUpperCase());
         return parseExpression(sb.toString());
+    }
+
+    private String getRuleUnitPojoSource() {
+        ClassOrInterfaceDeclaration generatedPojoSource =
+                new ClassOrInterfaceDeclaration()
+                        .setPublic(true)
+                        .addImplementedType("org.drools.ruleunits.api.RuleUnitData")
+                        .setName(ruleUnitDescr.getSimpleName());
+
+        for (RuleUnitVariable v : ruleUnitDescr.getUnitVarDeclarations()) {
+            ClassOrInterfaceType t = new ClassOrInterfaceType()
+                    .setName(rawType(v.getType()).getCanonicalName());
+            FieldDeclaration f = new FieldDeclaration();
+            VariableDeclarator vd = new VariableDeclarator(t, v.getName());
+            f.getVariables().add(vd);
+            if (v.isDataSource()) {
+                t.setTypeArguments(StaticJavaParser.parseType(v.getDataSourceParameterType().getCanonicalName()));
+                if (v.isDataStore()) {
+                    vd.setInitializer("org.drools.ruleunits.api.DataSource.createStore()");
+                } else {
+                    vd.setInitializer("org.drools.ruleunits.api.DataSource.createSingleton()");
+                }
+            }
+            generatedPojoSource.addMember(f);
+            f.createGetter();
+            if (v.setter() != null) {
+                f.createSetter();
+            }
+        }
+
+        return JavaParserCompiler.toPojoSource(ruleUnitDescr.getPackageName(), Collections.emptyList(), Collections.emptyList(), generatedPojoSource);
     }
 }

@@ -1,27 +1,22 @@
-/*
- * Copyright 2023 Red Hat, Inc. and/or its affiliates.
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.drools.reliability.test;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Stream;
 
 import org.drools.base.facttemplates.Event;
 import org.drools.core.ClassObjectFilter;
@@ -57,10 +52,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.test.domain.Person;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
+
 import static org.drools.reliability.infinispan.InfinispanStorageManagerFactory.INFINISPAN_STORAGE_MARSHALLER;
 import static org.drools.reliability.infinispan.InfinispanStorageManagerFactory.INFINISPAN_STORAGE_MODE;
-import static org.drools.reliability.test.util.TestConfigurationUtils.DROOLS_RELIABILITY_MODULE_TEST;
 import static org.drools.reliability.test.util.PrototypeUtils.createEvent;
+import static org.drools.reliability.test.util.TestConfigurationUtils.DROOLS_RELIABILITY_MODULE_TEST;
 import static org.drools.util.Config.getConfig;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
@@ -109,6 +112,14 @@ public abstract class ReliabilityTestBasics {
                 arguments(PersistedSessionOption.PersistenceStrategy.STORES_ONLY, PersistedSessionOption.SafepointStrategy.ALWAYS),
                 arguments(PersistedSessionOption.PersistenceStrategy.STORES_ONLY, PersistedSessionOption.SafepointStrategy.EXPLICIT),
                 arguments(PersistedSessionOption.PersistenceStrategy.STORES_ONLY, PersistedSessionOption.SafepointStrategy.AFTER_FIRE)
+        );
+    }
+
+    static Stream<Arguments> strategyProviderStoresOnlyWithAllSafepointsWithActivationKey() {
+        return Stream.of(
+                arguments(PersistedSessionOption.PersistenceStrategy.STORES_ONLY, PersistedSessionOption.SafepointStrategy.ALWAYS, PersistedSessionOption.ActivationStrategy.ACTIVATION_KEY),
+                arguments(PersistedSessionOption.PersistenceStrategy.STORES_ONLY, PersistedSessionOption.SafepointStrategy.EXPLICIT, PersistedSessionOption.ActivationStrategy.ACTIVATION_KEY),
+                arguments(PersistedSessionOption.PersistenceStrategy.STORES_ONLY, PersistedSessionOption.SafepointStrategy.AFTER_FIRE, PersistedSessionOption.ActivationStrategy.ACTIVATION_KEY)
         );
     }
 
@@ -199,6 +210,10 @@ public abstract class ReliabilityTestBasics {
         session.delete(fh);
     }
 
+    protected FactHandle insertMatchingPerson(String name) {
+        return insertMatchingPerson(sessions.get(0), name, 20); // for rules don't care about age
+    }
+
     protected FactHandle insertMatchingPerson(String name, Integer age) {
         return insertMatchingPerson(sessions.get(0), name, age);
     }
@@ -256,6 +271,16 @@ public abstract class ReliabilityTestBasics {
         return getKieSession(drl, persistenceStrategy != null ? PersistedSessionOption.newSession().withPersistenceStrategy(persistenceStrategy).withSafepointStrategy(safepointStrategy) : null, options);
     }
 
+    protected KieSession createSession(String drl, PersistedSessionOption.PersistenceStrategy persistenceStrategy, PersistedSessionOption.SafepointStrategy safepointStrategy,
+                                       PersistedSessionOption.PersistenceObjectsStrategy persistenceObjectsStrategy, Option... options) {
+        return getKieSession(drl, persistenceStrategy != null ? PersistedSessionOption.newSession().withPersistenceStrategy(persistenceStrategy)
+                .withSafepointStrategy(safepointStrategy).withPersistenceObjectsStrategy(persistenceObjectsStrategy) : null, options);
+    }
+
+    protected KieSession createSession(String drl, PersistedSessionOption.PersistenceStrategy persistenceStrategy, PersistedSessionOption.SafepointStrategy safepointStrategy, PersistedSessionOption.ActivationStrategy activationStrategy, Option... options) {
+        return getKieSession(drl, persistenceStrategy != null ? PersistedSessionOption.newSession().withPersistenceStrategy(persistenceStrategy).withSafepointStrategy(safepointStrategy).withActivationStrategy(activationStrategy) : null, options);
+    }
+
     protected KieSession createSession(String drl, PersistedSessionOption.PersistenceStrategy persistenceStrategy, PersistedSessionOption.SafepointStrategy safepointStrategy, boolean useKieBaseCache, Option... options) {
         return getKieSession(drl, persistenceStrategy != null ? PersistedSessionOption.newSession().withPersistenceStrategy(persistenceStrategy).withSafepointStrategy(safepointStrategy) : null, useKieBaseCache, options);
     }
@@ -273,9 +298,32 @@ public abstract class ReliabilityTestBasics {
         return restoreSession(sessionIdToRestoreFrom, drl, persistenceStrategy, safepointStrategy, options);
     }
 
+    protected KieSession restoreSession(String drl, PersistedSessionOption.PersistenceStrategy persistenceStrategy, PersistedSessionOption.SafepointStrategy safepointStrategy,
+                                        PersistedSessionOption.PersistenceObjectsStrategy persistenceObjectsStrategy, Option... options) {
+        Long sessionIdToRestoreFrom = (Long) this.persistedSessionIds.values().toArray()[0];
+        return restoreSession(sessionIdToRestoreFrom, drl, persistenceStrategy, safepointStrategy, persistenceObjectsStrategy, options);
+    }
+
+    protected KieSession restoreSession(String drl, PersistedSessionOption.PersistenceStrategy persistenceStrategy, PersistedSessionOption.SafepointStrategy safepointStrategy, PersistedSessionOption.ActivationStrategy activationStrategy, Option... options) {
+        Long sessionIdToRestoreFrom = (Long)this.persistedSessionIds.values().toArray()[0];
+        return restoreSession(sessionIdToRestoreFrom, drl, persistenceStrategy, safepointStrategy, activationStrategy, options);
+    }
+
     protected KieSession restoreSession(Long sessionId, String drl, PersistedSessionOption.PersistenceStrategy persistenceStrategy, PersistedSessionOption.SafepointStrategy safepointStrategy, Option... options) {
         Long sessionIdToRestoreFrom = this.persistedSessionIds.get(sessionId);
         return getKieSession(drl, PersistedSessionOption.fromSession(sessionIdToRestoreFrom).withPersistenceStrategy(persistenceStrategy).withSafepointStrategy(safepointStrategy), options);
+    }
+
+    protected KieSession restoreSession(Long sessionId, String drl, PersistedSessionOption.PersistenceStrategy persistenceStrategy, PersistedSessionOption.SafepointStrategy safepointStrategy,
+                                        PersistedSessionOption.PersistenceObjectsStrategy persistenceObjectsStrategy, Option... options) {
+        Long sessionIdToRestoreFrom = this.persistedSessionIds.get(sessionId);
+        return getKieSession(drl, PersistedSessionOption.fromSession(sessionIdToRestoreFrom).withPersistenceStrategy(persistenceStrategy)
+                .withSafepointStrategy(safepointStrategy).withPersistenceObjectsStrategy(persistenceObjectsStrategy), options);
+    }
+
+    protected KieSession restoreSession(Long sessionId, String drl, PersistedSessionOption.PersistenceStrategy persistenceStrategy, PersistedSessionOption.SafepointStrategy safepointStrategy, PersistedSessionOption.ActivationStrategy activationStrategy, Option... options) {
+        Long sessionIdToRestoreFrom = this.persistedSessionIds.get(sessionId);
+        return getKieSession(drl, PersistedSessionOption.fromSession(sessionIdToRestoreFrom).withPersistenceStrategy(persistenceStrategy).withSafepointStrategy(safepointStrategy).withActivationStrategy(activationStrategy), options);
     }
 
     protected KieSession restoreSession(Long sessionId, String drl, PersistedSessionOption.PersistenceStrategy persistenceStrategy, PersistedSessionOption.SafepointStrategy safepointStrategy, boolean useKieBaseCache, Option... options) {
@@ -285,6 +333,10 @@ public abstract class ReliabilityTestBasics {
 
     protected int fireAllRules() {
         return fireAllRules(sessions.get(0));
+    }
+
+    protected int fireAllRules(int max) {
+        return sessions.get(0).fireAllRules(max);
     }
 
     protected int fireAllRules(KieSession session) {
@@ -395,6 +447,25 @@ public abstract class ReliabilityTestBasics {
                 .filter(p -> p.getObject() instanceof Person)
                 .filter(p -> ( (Person) p.getObject()).getName().equals(person.getName()) )
                 .filter(p -> ( (Person) p.getObject()).getAge()==person.getAge() ).findFirst();
+    }
+
+    protected Optional<Object> getObjectByType(Class objectClass){
+        return getObjectByType(sessions.get(0), objectClass);
+    }
+
+    protected Optional<Object> getObjectByType(KieSession kieSession, Class objectClass){
+        return (Optional<Object>) kieSession.getObjects(new ClassObjectFilter(objectClass)).stream().findFirst();
+    }
+
+    protected Optional<FactHandle> getFactHandleByType(Class objectClass){
+        return getFactHandleByType(sessions.get(0), objectClass);
+    }
+
+    protected Optional<FactHandle> getFactHandleByType(KieSession kieSession, Class objectClass){
+        return kieSession.getFactHandles()
+                .stream()
+                .filter(fh -> fh.getObject().getClass().equals(objectClass))
+                .findFirst();
     }
 
     private static class OptionsFilter {

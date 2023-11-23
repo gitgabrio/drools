@@ -1,19 +1,21 @@
-/*
- * Copyright 2017 Red Hat, Inc. and/or its affiliates.
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *       http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.kie.dmn.validation;
 
 import java.io.File;
@@ -130,7 +132,7 @@ public class ValidatorTest extends AbstractValidatorTest {
     @Test
     public void testNAME_INVALID_empty_name() {
         List<DMNMessage> validate = validator.validate( getReader( "DROOLS-1447.dmn" ), VALIDATE_SCHEMA, VALIDATE_MODEL, VALIDATE_COMPILATION);
-        assertThat(validate).withFailMessage(ValidatorUtil.formatMessages(validate)).hasSize(4);
+        assertThat(validate).withFailMessage(ValidatorUtil.formatMessages(validate)).hasSize(5);
         assertThat(validate.stream().anyMatch(p -> p.getMessageType().equals(DMNMessageType.FAILED_XML_VALIDATION))).isTrue();
         assertThat(validate.stream().anyMatch(p -> p.getMessageType().equals(DMNMessageType.VARIABLE_NAME_MISMATCH))).isTrue();
         assertThat(validate.stream().anyMatch(p -> p.getMessageType().equals(DMNMessageType.INVALID_NAME) && p.getSourceId().equals("_5e43b55c-888e-443c-b1b9-80e4aa6746bd"))).isTrue();
@@ -192,7 +194,7 @@ public class ValidatorTest extends AbstractValidatorTest {
     @Test
     public void testITEMDEF_NOT_UNIQUE() {
         List<DMNMessage> validate = validator.validate( getReader( "ITEMDEF_NOT_UNIQUE.dmn" ), VALIDATE_SCHEMA, VALIDATE_MODEL, VALIDATE_COMPILATION);
-        assertThat(validate).withFailMessage(ValidatorUtil.formatMessages(validate)).hasSize(2);
+        assertThat(validate).withFailMessage(ValidatorUtil.formatMessages(validate)).hasSize(3);
         assertThat(validate.stream().anyMatch(p -> p.getMessageType().equals(DMNMessageType.DUPLICATED_ITEM_DEF))).isTrue();
     }
     
@@ -287,7 +289,7 @@ public class ValidatorTest extends AbstractValidatorTest {
     @Test
     public void testVALIDATION() {
         List<DMNMessage> validate = validator.validate( getReader( "validation.dmn" ), VALIDATE_MODEL, VALIDATE_COMPILATION);
-        assertThat(validate).withFailMessage(ValidatorUtil.formatMessages(validate)).hasSize(5);
+        assertThat(validate).withFailMessage(ValidatorUtil.formatMessages(validate)).hasSize(7);
         assertThat(validate.stream().anyMatch(p -> p.getMessageType().equals(DMNMessageType.INVALID_NAME))).isTrue();
         assertThat(validate.stream().anyMatch(p -> p.getMessageType().equals(DMNMessageType.MISSING_TYPE_REF))).isTrue();
         assertThat(validate.stream().anyMatch(p -> p.getMessageType().equals(DMNMessageType.MISSING_EXPRESSION))).isTrue();
@@ -448,7 +450,7 @@ public class ValidatorTest extends AbstractValidatorTest {
                                                             VALIDATE_COMPILATION)
                                              .theseModels(getReader("Financial.dmn", DMN13specificTest.class),
                                                           getReader("Chapter 11 Example.dmn", DMN13specificTest.class));
-        assertThat(validate).withFailMessage(ValidatorUtil.formatMessages(validate)).hasSize(2);
+        assertThat(validate).withFailMessage(ValidatorUtil.formatMessages(validate)).hasSize(3);
         assertThat(validate.stream().anyMatch(p -> p.getLevel() == Level.WARNING &&
                 p.getMessageType().equals(DMNMessageType.MISSING_EXPRESSION) &&
                 p.getSourceId().equals("_4bd33d4a-741b-444a-968b-64e1841211e7"))).as(ValidatorUtil.formatMessages(validate)).isTrue();
@@ -497,7 +499,7 @@ public class ValidatorTest extends AbstractValidatorTest {
                                                        VALIDATE_MODEL,
                                                        VALIDATE_COMPILATION);
         assertThat(validate.stream().allMatch(p -> p.getLevel() == Level.WARNING)).as(ValidatorUtil.formatMessages(validate)).isTrue();
-        assertThat(validate).withFailMessage(ValidatorUtil.formatMessages(validate)).hasSize(2);
+        assertThat(validate).withFailMessage(ValidatorUtil.formatMessages(validate)).hasSize(4);
         assertThat(validate.stream().anyMatch(p -> p.getLevel() == Level.WARNING &&
                 p.getSourceId() != null &&
                 p.getSourceId().equals("_3ce3c41a-450a-40d1-9e9c-09180cd29879"))).as(ValidatorUtil.formatMessages(validate)).isTrue();

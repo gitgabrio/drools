@@ -1,30 +1,36 @@
-/*
- * Copyright 2015 Red Hat, Inc. and/or its affiliates.
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * 
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
-*/
-
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 package org.drools.core.phreak;
 
 import java.util.List;
 
+import org.drools.base.common.NetworkNode;
+import org.drools.base.reteoo.NodeTypeEnums;
+import org.drools.base.rule.ContextEntry;
 import org.drools.core.base.DroolsQueryImpl;
 import org.drools.core.common.ActivationsManager;
 import org.drools.core.common.BetaConstraints;
 import org.drools.core.common.Memory;
-import org.drools.base.common.NetworkNode;
 import org.drools.core.common.ReteEvaluator;
 import org.drools.core.common.TupleSets;
 import org.drools.core.common.TupleSetsImpl;
+import org.drools.core.reteoo.AbstractTerminalNode;
 import org.drools.core.reteoo.AccumulateNode;
 import org.drools.core.reteoo.AccumulateNode.AccumulateMemory;
 import org.drools.core.reteoo.AsyncReceiveNode;
@@ -47,7 +53,6 @@ import org.drools.core.reteoo.LeftTupleNode;
 import org.drools.core.reteoo.LeftTupleSink;
 import org.drools.core.reteoo.LeftTupleSinkNode;
 import org.drools.core.reteoo.LeftTupleSource;
-import org.drools.base.reteoo.NodeTypeEnums;
 import org.drools.core.reteoo.NotNode;
 import org.drools.core.reteoo.ObjectSink;
 import org.drools.core.reteoo.PathMemory;
@@ -65,7 +70,6 @@ import org.drools.core.reteoo.TimerNode;
 import org.drools.core.reteoo.TimerNode.TimerNodeMemory;
 import org.drools.core.reteoo.Tuple;
 import org.drools.core.reteoo.TupleMemory;
-import org.drools.base.rule.ContextEntry;
 import org.drools.core.util.FastIterator;
 import org.drools.core.util.LinkedList;
 import org.slf4j.Logger;
@@ -327,7 +331,7 @@ public class RuleNetworkEvaluator {
             boolean terminalNode = true;
             switch (node.getType()) {
                 case NodeTypeEnums.RuleTerminalNode:
-                    pRtNode.doNode(( TerminalNode ) node, activationsManager, srcTuples, executor);
+                    pRtNode.doNode((AbstractTerminalNode) node, activationsManager, srcTuples, executor);
                     break;
                 case NodeTypeEnums.QueryTerminalNode:
                     pQtNode.doNode((QueryTerminalNode) node, activationsManager, srcTuples, stack);
@@ -379,10 +383,10 @@ public class RuleNetworkEvaluator {
         }
     }
 
-    public TupleSets<LeftTuple> evalNode( PathMemory pmem, NetworkNode node, long bit, Memory nodeMem,
-                                   SegmentMemory[] smems, int smemIndex, ActivationsManager activationsManager, LinkedList<StackEntry> stack,
-                                   boolean processRian, RuleExecutor executor, TupleSets<LeftTuple> srcTuples, SegmentMemory smem,
-                                   TupleSets<LeftTuple> stagedLeftTuples, LeftTupleSinkNode sink ) {
+    public TupleSets<LeftTuple> evalNode(PathMemory pmem, NetworkNode node, long bit, Memory nodeMem,
+                                         SegmentMemory[] smems, int smemIndex, ActivationsManager activationsManager, LinkedList<StackEntry> stack,
+                                         boolean processRian, RuleExecutor executor, TupleSets<LeftTuple> srcTuples, SegmentMemory smem,
+                                         TupleSets<LeftTuple> stagedLeftTuples, LeftTupleSinkNode sink ) {
         TupleSets<LeftTuple> trgTuples = new TupleSetsImpl<>();
         if ( NodeTypeEnums.isBetaNode( node )) {
             boolean exitInnerEval = evalBetaNode(pmem, node, nodeMem, smems, smemIndex, trgTuples, activationsManager, stack, processRian, executor, srcTuples, stagedLeftTuples, sink);
@@ -757,8 +761,8 @@ public class RuleNetworkEvaluator {
     }
 
     public static void findLeftTupleBlocker(BetaNode betaNode, TupleMemory rtm,
-                                             ContextEntry[] contextEntry, BetaConstraints constraints,
-                                             LeftTuple leftTuple, boolean useLeftMemory) {
+                                            ContextEntry[] contextEntry, BetaConstraints constraints,
+                                            LeftTuple leftTuple, boolean useLeftMemory) {
         // This method will also remove rightTuples that are from subnetwork where no leftmemory use used
         FastIterator it = betaNode.getRightIterator(rtm);
         for (RightTuple rightTuple = betaNode.getFirstRightTuple(leftTuple, rtm, it); rightTuple != null; ) {
@@ -791,7 +795,7 @@ public class RuleNetworkEvaluator {
         deleteChildLeftTuple( childLeftTuple, trgLeftTuples, stagedLeftTuples );
     }
 
-    public static void deleteChildLeftTuple( LeftTuple childLeftTuple, TupleSets<LeftTuple> trgLeftTuples, TupleSets<LeftTuple> stagedLeftTuples ) {
+    public static void deleteChildLeftTuple(LeftTuple childLeftTuple, TupleSets<LeftTuple> trgLeftTuples, TupleSets<LeftTuple> stagedLeftTuples ) {
         if (childLeftTuple.isStagedOnRight()) {
             ( (SubnetworkTuple) childLeftTuple ).moveStagingFromRightToLeft();
         } else {
@@ -971,7 +975,7 @@ public class RuleNetworkEvaluator {
         return useLeftMemory;
     }
 
-    public static void normalizeStagedTuples( TupleSets<LeftTuple> stagedLeftTuples, LeftTuple childLeftTuple ) {
+    public static void normalizeStagedTuples(TupleSets<LeftTuple> stagedLeftTuples, LeftTuple childLeftTuple ) {
         if (!childLeftTuple.isStagedOnRight()) {
             switch ( childLeftTuple.getStagedType() ) {
                 // handle clash with already staged entries

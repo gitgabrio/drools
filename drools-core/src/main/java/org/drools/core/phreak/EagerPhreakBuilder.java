@@ -1,19 +1,32 @@
-/*
- * Copyright 2015 Red Hat, Inc. and/or its affiliates.
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.drools.core.phreak;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.drools.base.common.NetworkNode;
 import org.drools.base.reteoo.NodeTypeEnums;
@@ -59,16 +72,6 @@ import org.drools.core.reteoo.WindowNode;
 import org.drools.core.util.FastIterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import static org.drools.core.phreak.BuildtimeSegmentUtilities.isAssociatedWith;
 
@@ -1151,7 +1154,7 @@ public class EagerPhreakBuilder implements PhreakBuilder {
 
     private static void visitChild(LeftTuple lt, boolean insert, InternalWorkingMemory wm, TerminalNode tn) {
         LeftTuple prevLt = null;
-        LeftTupleSinkNode sink = lt.getTupleSink();
+        LeftTupleSinkNode sink = (LeftTupleSinkNode) lt.getTupleSink();
 
         for ( ; sink != null; sink = sink.getNextLeftTupleSinkNode() ) {
             if ( lt != null ) {
@@ -1190,10 +1193,10 @@ public class EagerPhreakBuilder implements PhreakBuilder {
         }
     }
 
-    private static void insertPeerRightTuple( LeftTuple lt, InternalWorkingMemory wm, TerminalNode tn, boolean insert ) {
+    private static void insertPeerRightTuple(LeftTuple lt, InternalWorkingMemory wm, TerminalNode tn, boolean insert ) {
         // There's a shared RightInputAdapterNode, so check if one of its sinks is associated only to the new rule
         LeftTuple prevLt = null;
-        RightInputAdapterNode rian = lt.getTupleSink();
+        RightInputAdapterNode rian = (RightInputAdapterNode) lt.getTupleSink();
 
         for (ObjectSink sink : rian.getObjectSinkPropagator().getSinks()) {
             if (lt != null) {
@@ -1304,7 +1307,7 @@ public class EagerPhreakBuilder implements PhreakBuilder {
             LeftTuple rightPrevious = removingLt.getRightParentPrevious();
             LeftTuple rightNext     = removingLt.getRightParentNext();
 
-            LeftTuple  leftParent  = removingLt.getLeftParent();
+            LeftTuple leftParent  = removingLt.getLeftParent();
             RightTuple rightParent = removingLt.getRightParent();
 
             // This tuple is the first peer and thus is linked into the left parent LT.

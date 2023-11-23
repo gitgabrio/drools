@@ -1,20 +1,31 @@
-/*
- * Copyright 2005 Red Hat, Inc. and/or its affiliates.
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.drools.core.reteoo;
+
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+import java.io.Serializable;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 
 import org.drools.base.InitialFact;
 import org.drools.base.base.ClassObjectType;
@@ -35,17 +46,8 @@ import org.drools.core.reteoo.builder.BuildContext;
 import org.drools.core.time.Job;
 import org.drools.core.time.JobContext;
 import org.drools.core.time.impl.DefaultJobHandle;
-import org.drools.core.util.bitmask.BitMask;
-import org.drools.core.util.bitmask.EmptyBitMask;
-
-import java.io.Externalizable;
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
-import java.io.Serializable;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
+import org.drools.util.bitmask.BitMask;
+import org.drools.util.bitmask.EmptyBitMask;
 
 import static org.drools.base.rule.TypeDeclaration.NEVER_EXPIRES;
 
@@ -112,7 +114,7 @@ public class ObjectTypeNode extends ObjectSource implements ObjectSink {
         initMemoryId( context );
     }
 
-    public void setupParallelEvaluation(InternalRuleBase kbase) {
+    public void setupParallelExecution(InternalRuleBase kbase) {
         if (objectType == ClassObjectType.InitialFact_ObjectType) {
             return;
         }
@@ -159,8 +161,12 @@ public class ObjectTypeNode extends ObjectSource implements ObjectSink {
 
         @Override
         public boolean equals(Object o) {
-            if (this == o) return true;
-            if (!(o instanceof Id)) return false;
+            if (this == o) {
+                return true;
+            }
+            if (!(o instanceof Id)) {
+                return false;
+            }
 
             Id otherId = (Id) o;
             return id == otherId.id && otnId == otherId.otnId;
@@ -349,7 +355,7 @@ public class ObjectTypeNode extends ObjectSource implements ObjectSink {
         if (InitialFact.class.isAssignableFrom(classType)) {
             sink.assertObject(workingMemory.getInitialFactHandle(), context, workingMemory);
         } else {
-            Iterator<InternalFactHandle> it = workingMemory.getStoreForClass(classType).iterator();
+            Iterator<InternalFactHandle> it = getFactHandlesIterator(workingMemory);
             while (it.hasNext()) {
                 sink.assertObject(it.next(), context, workingMemory);
             }
@@ -360,7 +366,7 @@ public class ObjectTypeNode extends ObjectSource implements ObjectSink {
         Class<?> classType = ((ClassObjectType) getObjectType()).getClassType();
         return InitialFact.class.isAssignableFrom(classType) ?
                 Collections.singleton(workingMemory.getInitialFactHandle()).iterator() :
-                workingMemory.getStoreForClass(classType).iterator();
+                workingMemory.getEntryPoint(((EntryPointNode)source).getEntryPoint().getEntryPointId()).getObjectStore().getStoreForClass(classType).iterator();
     }
 
     /**

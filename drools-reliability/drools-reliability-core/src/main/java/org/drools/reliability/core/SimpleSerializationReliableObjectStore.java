@@ -1,22 +1,28 @@
-/*
- * Copyright 2023 Red Hat, Inc. and/or its affiliates.
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.drools.reliability.core;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.drools.core.ClockType;
@@ -26,10 +32,12 @@ import org.drools.core.common.InternalFactHandle;
 import org.drools.core.common.InternalWorkingMemory;
 import org.drools.core.common.InternalWorkingMemoryEntryPoint;
 import org.drools.core.common.Storage;
+import org.drools.reliability.core.util.ReliabilityUtils;
+import org.kie.api.runtime.conf.PersistedSessionOption;
 
 public class SimpleSerializationReliableObjectStore extends IdentityObjectStore implements SimpleReliableObjectStore {
 
-    protected final transient Storage<Long, StoredObject> storage;
+    protected transient Storage<Long, StoredObject> storage;
 
     protected boolean reInitPropagated = false;
 
@@ -57,23 +65,23 @@ public class SimpleSerializationReliableObjectStore extends IdentityObjectStore 
     @Override
     public List<StoredObject> reInit(InternalWorkingMemory session, InternalWorkingMemoryEntryPoint ep) {
         reInitPropagated = true;
-        List<StoredObject> propagated = new ArrayList<>();
+        Map<Long, StoredObject> propagated = new HashMap<>();
         List<StoredObject> notPropagated = new ArrayList<>();
-        for (StoredObject entry : storage.values()) {
-            if (entry.isPropagated()) {
-                propagated.add(entry);
+        for (Long factHandleId : storage.keySet()) {
+            StoredObject storedObject = storage.get(factHandleId);
+            if (storedObject.isPropagated()) {
+                propagated.put(factHandleId, storedObject);
             } else {
-                notPropagated.add(entry);
+                notPropagated.add(storedObject);
             }
         }
+
         storage.clear();
 
         if (session.getSessionConfiguration().getClockType() == ClockType.PSEUDO_CLOCK) {
             repropagateWithPseudoClock(session, ep, propagated);
         } else {
-            // fact handles with a match have been already propagated in the original session, so they shouldn't fire
-            propagated.forEach(obj -> obj.repropagate(ep));
-            session.fireAllRules(match -> false);
+            repropagate(session, ep, propagated);
         }
 
         reInitPropagated = false;
@@ -82,9 +90,41 @@ public class SimpleSerializationReliableObjectStore extends IdentityObjectStore 
         return notPropagated;
     }
 
-    private void repropagateWithPseudoClock(InternalWorkingMemory session, InternalWorkingMemoryEntryPoint ep, List<StoredObject> propagated) {
+    private void repropagate(InternalWorkingMemory session, InternalWorkingMemoryEntryPoint ep, Map<Long, StoredObject> propagated) {
+        Map<Long, Long> factHandleIdMap = new HashMap<>();
+        propagated.forEach((oldFactHandleId, storedObject) -> {
+            long newFactHandleId = storedObject.repropagate(ep);
+            factHandleIdMap.put(newFactHandleId, oldFactHandleId);
+        });
+
+        fireOnlyWhenActivationRemaining(session, factHandleIdMap);
+    }
+
+    private void fireOnlyWhenActivationRemaining(InternalWorkingMemory session, Map<Long, Long> factHandleIdMap) {
+        if (session.getSessionConfiguration().getPersistedSessionOption().getActivationStrategy() == PersistedSessionOption.ActivationStrategy.ACTIVATION_KEY) {
+            // fact handles with a match have been already propagated in the original session, so they shouldn't fire unless remained in activationsStorage
+            Storage<String, Object> activationsStorage = ((ReliableKieSession)session).getActivationsStorage();
+            Set<String> activationKeySet = activationsStorage.keySet();
+            session.fireAllRules(match -> {
+                String activationKey = ReliabilityUtils.getActivationKeyReplacingNewIdWithOldId(match, factHandleIdMap);
+                if (activationKeySet.contains(activationKey)) {
+                    // If there is a remaining activation, it can fire
+                    activationsStorage.remove(activationKey);
+                    return true;
+                } else {
+                    return false;
+                }
+            });
+        } else {
+            session.fireAllRules(match -> false);
+        }
+    }
+
+    private void repropagateWithPseudoClock(InternalWorkingMemory session, InternalWorkingMemoryEntryPoint ep, Map<Long, StoredObject> propagated) {
         ReliablePseudoClockScheduler clock = (ReliablePseudoClockScheduler) session.getSessionClock();
-        for (StoredObject storedObject : propagated) {
+        Map<Long, Long> factHandleIdMap = new HashMap<>();
+        for (Map.Entry<Long, StoredObject> entry : propagated.entrySet()) {
+            StoredObject storedObject = entry.getValue();
             if (storedObject.isEvent()) {
                 StoredEvent storedEvent = (StoredEvent) storedObject;
                 long currentTime = clock.getCurrentTime();
@@ -93,10 +133,11 @@ public class SimpleSerializationReliableObjectStore extends IdentityObjectStore 
                     clock.advanceTime(timestamp - currentTime, TimeUnit.MILLISECONDS);
                 }
             }
-            storedObject.repropagate(ep); // This may schedule an expiration
+            long newFactHandleId = storedObject.repropagate(ep); // This may schedule an expiration
+            factHandleIdMap.put(newFactHandleId, entry.getKey());
         }
-        // fact handles with a match have been already propagated in the original session, so they shouldn't fire
-        session.fireAllRules(match -> false);
+
+        fireOnlyWhenActivationRemaining(session, factHandleIdMap);
 
         // Finally, meet with the persistedTime
         long currentTime = clock.getCurrentTime();
@@ -113,7 +154,7 @@ public class SimpleSerializationReliableObjectStore extends IdentityObjectStore 
         storage.put(getHandleForObject(object).getId(), storedObject);
     }
 
-    private StoredObject factHandleToStoredObject(InternalFactHandle handle, boolean propagated, Object object) {
+    protected StoredObject factHandleToStoredObject(InternalFactHandle handle, boolean propagated, Object object) {
         return handle.isEvent() ?
                 createStoredEvent(propagated, object, ((DefaultEventHandle) handle).getStartTimestamp(), ((DefaultEventHandle) handle).getDuration()) :
                 createStoredObject(propagated, object);

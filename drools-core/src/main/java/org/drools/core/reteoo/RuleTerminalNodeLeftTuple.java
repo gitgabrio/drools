@@ -1,19 +1,21 @@
-/*
- * Copyright 2010 Red Hat, Inc. and/or its affiliates.
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.drools.core.reteoo;
 
 import java.util.ArrayList;
@@ -21,20 +23,20 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
+import org.drools.base.definitions.rule.impl.RuleImpl;
+import org.drools.base.rule.Declaration;
+import org.drools.base.rule.consequence.Consequence;
 import org.drools.core.common.ActivationGroupNode;
 import org.drools.core.common.ActivationNode;
 import org.drools.core.common.ActivationsManager;
 import org.drools.core.common.InternalAgendaGroup;
 import org.drools.core.common.InternalFactHandle;
 import org.drools.core.common.PropagationContext;
-import org.drools.base.definitions.rule.impl.RuleImpl;
 import org.drools.core.phreak.RuleAgendaItem;
-import org.drools.base.rule.Declaration;
-import org.drools.base.rule.consequence.Consequence;
 import org.drools.core.rule.consequence.InternalMatch;
 import org.kie.api.runtime.rule.FactHandle;
 
-public class RuleTerminalNodeLeftTuple extends AbstractLeftTuple implements InternalMatch {
+public class RuleTerminalNodeLeftTuple extends LeftTuple implements InternalMatch {
     private static final long serialVersionUID = 540l;
     /**
      * The salience
@@ -58,6 +60,9 @@ public class RuleTerminalNodeLeftTuple extends AbstractLeftTuple implements Inte
     protected         RuleAgendaItem                                 ruleAgendaItem;
 
     private Runnable callback;
+
+    private RuleImpl rule;
+    private Consequence consequence;
 
     public RuleTerminalNodeLeftTuple() {
         // constructor needed for serialisation
@@ -133,18 +138,28 @@ public class RuleTerminalNodeLeftTuple extends AbstractLeftTuple implements Inte
         this.matched = true;
     }
 
+    @Override
+    protected void setSink(Sink sink) {
+        super.setSink(sink);
+        TerminalNode terminalNode = (TerminalNode) sink;
+        this.rule = terminalNode.getRule();
+        if (this.rule != null && terminalNode instanceof RuleTerminalNode) {
+            String consequenceName = ((RuleTerminalNode)terminalNode).getConsequenceName();
+            this.consequence = consequenceName.equals(RuleImpl.DEFAULT_CONSEQUENCE_NAME) ? rule.getConsequence() : rule.getNamedConsequence(consequenceName);
+        }
+    }
+
     /**
      * Retrieve the rule.
      *
      * @return The rule.
      */
     public RuleImpl getRule() {
-        return getTerminalNode().getRule();
+        return this.rule;
     }
 
     public Consequence getConsequence() {
-        String consequenceName = ((RuleTerminalNode) getTerminalNode()).getConsequenceName();
-        return consequenceName.equals(RuleImpl.DEFAULT_CONSEQUENCE_NAME) ? getTerminalNode().getRule().getConsequence() : getTerminalNode().getRule().getNamedConsequence(consequenceName);
+        return consequence;
     }
 
     /**
@@ -234,7 +249,7 @@ public class RuleTerminalNodeLeftTuple extends AbstractLeftTuple implements Inte
     }
 
     public TerminalNode getTerminalNode() {
-        return (TerminalNode) getTupleSink();
+        return (AbstractTerminalNode) getTupleSink();
     }
 
     public List<FactHandle> getFactHandles() {
@@ -311,9 +326,15 @@ public class RuleTerminalNodeLeftTuple extends AbstractLeftTuple implements Inte
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        if (!super.equals(o)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        if (!super.equals(o)) {
+            return false;
+        }
         RuleTerminalNodeLeftTuple that = (RuleTerminalNodeLeftTuple) o;
         return ruleAgendaItem.getRule().getName().equals(that.ruleAgendaItem.getRule().getName());
     }

@@ -1,19 +1,21 @@
-/*
- * Copyright 2017 Red Hat, Inc. and/or its affiliates.
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *       http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.kie.dmn.legacy.tests.validation.v1_1;
 
 import java.io.IOException;
@@ -40,7 +42,7 @@ public class ValidatorDecisionTableTest
             final List<DMNMessage> validate = validator.validate(
                     reader,
                     VALIDATE_MODEL, VALIDATE_COMPILATION);
-            assertThat(validate).as(ValidatorUtil.formatMessages(validate)).hasSize(2);
+            assertThat(validate).as(ValidatorUtil.formatMessages(validate)).hasSize(4);
             assertThat(validate.stream().anyMatch(p -> p.getMessageType().equals(DMNMessageType.MISSING_EXPRESSION))).isTrue();
         }
     }
@@ -50,7 +52,7 @@ public class ValidatorDecisionTableTest
         final List<DMNMessage> validate = validator.validate(
                 getFile("DTABLE_EMPTY_ENTRY.dmn"),
                 VALIDATE_MODEL, VALIDATE_COMPILATION);
-        assertThat(validate).as(ValidatorUtil.formatMessages(validate)).hasSize(2);
+        assertThat(validate).as(ValidatorUtil.formatMessages(validate)).hasSize(4);
         assertThat(validate.stream().anyMatch(p -> p.getMessageType().equals(DMNMessageType.MISSING_EXPRESSION))).isTrue();
     }
 
@@ -61,7 +63,7 @@ public class ValidatorDecisionTableTest
                                "https://github.com/kiegroup/kie-dmn",
                                "DTABLE_PRIORITY_MISSING_OUTVALS"),
                 VALIDATE_MODEL, VALIDATE_COMPILATION);
-        assertThat(validate).as(ValidatorUtil.formatMessages(validate)).hasSize(2);
+        assertThat(validate).as(ValidatorUtil.formatMessages(validate)).hasSize(4);
         assertThat(validate.stream().anyMatch(p -> p.getMessageType().equals(DMNMessageType.MISSING_EXPRESSION))).isTrue();
     }
 
@@ -69,7 +71,7 @@ public class ValidatorDecisionTableTest
     public void testDTABLE_MULTIPLEOUT_NAME_ReaderInput() throws IOException {
         try (final Reader reader = getReader( "DTABLE_MULTIPLEOUTPUT_WRONG_OUTPUT.dmn" )) {
             List<DMNMessage> validate = validator.validate( reader, VALIDATE_SCHEMA, VALIDATE_MODEL, VALIDATE_COMPILATION);
-            assertThat(validate).as(ValidatorUtil.formatMessages(validate)).hasSize(5);
+            assertThat(validate).as(ValidatorUtil.formatMessages(validate)).hasSize(6);
             assertThat(validate.stream().anyMatch(p -> p.getMessageType().equals(DMNMessageType.MISSING_NAME))).isTrue();
             assertThat(validate.stream().anyMatch(p -> p.getMessageType().equals(DMNMessageType.MISSING_TYPE_REF))).isTrue();
             assertThat(validate.stream().anyMatch(p -> p.getMessageType().equals(DMNMessageType.INVALID_NAME))).isTrue();
@@ -79,7 +81,7 @@ public class ValidatorDecisionTableTest
     @Test
     public void testDTABLE_MULTIPLEOUT_NAME_FileInput() {
         List<DMNMessage> validate = validator.validate( getFile( "DTABLE_MULTIPLEOUTPUT_WRONG_OUTPUT.dmn" ), VALIDATE_SCHEMA, VALIDATE_MODEL, VALIDATE_COMPILATION);
-        assertThat(validate).as(ValidatorUtil.formatMessages(validate)).hasSize(5);
+        assertThat(validate).as(ValidatorUtil.formatMessages(validate)).hasSize(6);
         assertThat(validate.stream().anyMatch(p -> p.getMessageType().equals(DMNMessageType.MISSING_NAME))).isTrue();
         assertThat(validate.stream().anyMatch(p -> p.getMessageType().equals(DMNMessageType.MISSING_TYPE_REF))).isTrue();
         assertThat(validate.stream().anyMatch(p -> p.getMessageType().equals(DMNMessageType.INVALID_NAME))).isTrue();
@@ -92,7 +94,7 @@ public class ValidatorDecisionTableTest
                                 "https://github.com/kiegroup/kie-dmn",
                                 "DTABLE_MULTIPLEOUTPUT_WRONG_OUTPUT"),
                 VALIDATE_MODEL, VALIDATE_COMPILATION);
-        assertThat(validate).as(ValidatorUtil.formatMessages(validate)).hasSize(5);
+        assertThat(validate).as(ValidatorUtil.formatMessages(validate)).hasSize(6);
         assertThat(validate.stream().anyMatch(p -> p.getMessageType().equals(DMNMessageType.MISSING_NAME))).isTrue();
         assertThat(validate.stream().anyMatch(p -> p.getMessageType().equals(DMNMessageType.MISSING_TYPE_REF))).isTrue();
         assertThat(validate.stream().anyMatch(p -> p.getMessageType().equals(DMNMessageType.INVALID_NAME))).isTrue();

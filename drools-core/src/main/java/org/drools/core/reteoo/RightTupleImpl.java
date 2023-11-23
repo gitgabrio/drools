@@ -1,25 +1,27 @@
-/*
- * Copyright 2010 Red Hat, Inc. and/or its affiliates.
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.drools.core.reteoo;
 
 import org.drools.base.reteoo.NodeTypeEnums;
 import org.drools.core.common.InternalFactHandle;
-import org.drools.core.common.ReteEvaluator;
 import org.drools.core.common.PropagationContext;
+import org.drools.core.common.ReteEvaluator;
 import org.drools.core.util.index.TupleList;
 
 public class RightTupleImpl extends AbstractTuple implements RightTuple {
@@ -46,14 +48,21 @@ public class RightTupleImpl extends AbstractTuple implements RightTuple {
     public RightTupleImpl(InternalFactHandle handle,
                       RightTupleSink sink) {
         this( handle );
-        this.sink = sink;
+        setSink(sink);
 
         // add to end of RightTuples on handle
         handle.addLastRightTuple( this );
     }
 
+    // It's better to always cast to a concrete or abstract class to avoid
+    // secondary super cache problem. See https://issues.redhat.com/browse/DROOLS-7521
     public RightTupleSink getTupleSink() {
-        return (RightTupleSink) sink;
+        Object sink = getSink();
+        if(sink instanceof BetaNode) {
+            return (BetaNode)sink;
+        } else {
+            return (RightTupleSink) sink;
+        }
     }
     
     public void reAdd() {
@@ -71,7 +80,7 @@ public class RightTupleImpl extends AbstractTuple implements RightTuple {
         this.memory = null;
         this.firstChild = null;
         this.lastChild = null;
-        this.sink = null;
+        setSink(null);
     }
 
     public void unlinkFromLeftParent() {
@@ -122,12 +131,12 @@ public class RightTupleImpl extends AbstractTuple implements RightTuple {
         this.memory = memory;
     }
 
-    public RightTuple getHandlePrevious() {
-        return (RightTuple) handlePrevious;
+    public RightTupleImpl getHandlePrevious() {
+        return (RightTupleImpl) handlePrevious;
     }
 
-    public RightTuple getHandleNext() {
-        return (RightTuple) handleNext;
+    public RightTupleImpl getHandleNext() {
+        return (RightTupleImpl) handleNext;
     }
 
     public LeftTuple getFirstChild() {
@@ -146,12 +155,12 @@ public class RightTupleImpl extends AbstractTuple implements RightTuple {
         this.lastChild = lastChild;
     }
     
-    public RightTuple getStagedNext() {
-        return (RightTuple) stagedNext;
+    public RightTupleImpl getStagedNext() {
+        return (RightTupleImpl) stagedNext;
     }
 
-    public RightTuple getStagedPrevious() {
-        return (RightTuple) stagedPrevious;
+    public RightTupleImpl getStagedPrevious() {
+        return (RightTupleImpl) stagedPrevious;
     }
 
     public LeftTuple getTempBlocked() {
@@ -249,7 +258,7 @@ public class RightTupleImpl extends AbstractTuple implements RightTuple {
 
     @Override
     public ObjectTypeNode.Id getInputOtnId() {
-        return sink != null ? getTupleSink().getRightInputOtnId() : null;
+        return getSink() != null ? getTupleSink().getRightInputOtnId() : null;
     }
 
     @Override

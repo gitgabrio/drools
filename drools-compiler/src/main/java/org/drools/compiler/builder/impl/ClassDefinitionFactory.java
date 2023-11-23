@@ -1,18 +1,21 @@
-/*
- * Copyright 2015 Red Hat, Inc. and/or its affiliates.
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
-*/
-
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 package org.drools.compiler.builder.impl;
 
 import java.io.Externalizable;
@@ -30,8 +33,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.drools.base.base.ClassFieldInspector;
+import org.drools.base.base.CoreComponentsBuilder;
+import org.drools.base.factmodel.AnnotationDefinition;
+import org.drools.base.factmodel.ClassDefinition;
+import org.drools.base.factmodel.FieldDefinition;
+import org.drools.base.factmodel.traits.Thing;
+import org.drools.base.factmodel.traits.Trait;
+import org.drools.base.factmodel.traits.Traitable;
+import org.drools.base.factmodel.traits.TraitableBean;
+import org.drools.base.rule.TypeDeclaration;
+import org.drools.compiler.builder.impl.classbuilder.EnumClassDefinition;
+import org.drools.compiler.builder.impl.classbuilder.EnumLiteralDefinition;
 import org.drools.compiler.compiler.PackageRegistry;
 import org.drools.compiler.compiler.TypeDeclarationError;
+import org.drools.compiler.rule.builder.util.AnnotationFactory;
 import org.drools.drl.ast.descr.AbstractClassTypeDeclarationDescr;
 import org.drools.drl.ast.descr.AnnotationDescr;
 import org.drools.drl.ast.descr.EnumDeclarationDescr;
@@ -40,25 +56,12 @@ import org.drools.drl.ast.descr.PatternDescr;
 import org.drools.drl.ast.descr.QualifiedName;
 import org.drools.drl.ast.descr.TypeDeclarationDescr;
 import org.drools.drl.ast.descr.TypeFieldDescr;
-import org.drools.compiler.rule.builder.util.AnnotationFactory;
-import org.drools.util.TypeResolver;
-import org.drools.base.base.ClassFieldInspector;
-import org.drools.base.base.CoreComponentsBuilder;
-import org.drools.base.factmodel.AnnotationDefinition;
-import org.drools.base.factmodel.ClassDefinition;
-import org.drools.compiler.builder.impl.classbuilder.EnumClassDefinition;
-import org.drools.compiler.builder.impl.classbuilder.EnumLiteralDefinition;
-import org.drools.base.factmodel.FieldDefinition;
-import org.kie.internal.definition.GenericTypeDefinition;
-import org.drools.base.factmodel.traits.Thing;
-import org.drools.base.factmodel.traits.Trait;
-import org.drools.base.factmodel.traits.Traitable;
-import org.drools.base.factmodel.traits.TraitableBean;
-import org.drools.base.rule.TypeDeclaration;
 import org.drools.util.ClassUtils;
+import org.drools.util.TypeResolver;
 import org.kie.api.definition.type.Key;
 import org.kie.api.definition.type.Position;
 import org.kie.api.io.Resource;
+import org.kie.internal.definition.GenericTypeDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

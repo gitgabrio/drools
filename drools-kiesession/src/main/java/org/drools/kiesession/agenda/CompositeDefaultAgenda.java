@@ -1,19 +1,21 @@
-/*
- * Copyright 2016 Red Hat, Inc. and/or its affiliates.
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *       http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.drools.kiesession.agenda;
 
 import org.drools.base.common.NetworkNode;
@@ -54,6 +56,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.stream.Stream;
 
 import static java.util.concurrent.CompletableFuture.runAsync;
+import static org.drools.base.common.PartitionsManager.doOnForkJoinPool;
 
 public class CompositeDefaultAgenda implements Externalizable, InternalAgenda {
 
@@ -67,11 +70,14 @@ public class CompositeDefaultAgenda implements Externalizable, InternalAgenda {
 
     public CompositeDefaultAgenda() { }
 
-    public CompositeDefaultAgenda(InternalRuleBase kBase, boolean initMain) {
+    public CompositeDefaultAgenda(InternalWorkingMemory workingMemory) {
+        InternalRuleBase kBase = workingMemory.getKnowledgeBase();
         this.agendas = new DefaultAgenda[kBase.getParallelEvaluationSlotsCount()];
         for ( int i = 0; i < this.agendas.length; i++ ) {
-            agendas[i] = new PartitionedDefaultAgenda(kBase, initMain, executionStateMachine, i);
+            agendas[i] = new PartitionedDefaultAgenda(workingMemory, executionStateMachine, i);
         }
+        // this composite agenda and the first partitioned one share the same propagation list
+        this.propagationList = agendas[0].getPropagationList();
     }
 
     @Override
@@ -120,13 +126,6 @@ public class CompositeDefaultAgenda implements Externalizable, InternalAgenda {
     }
 
     @Override
-    public void setWorkingMemory( InternalWorkingMemory workingMemory ) {
-        Stream.of( agendas ).forEach( a -> a.setWorkingMemory( workingMemory ) );
-        // this composite agenda and the first partitioned one share the same propagation list
-        this.propagationList = agendas[0].getPropagationList();
-    }
-
-    @Override
     public int fireAllRules( AgendaFilter agendaFilter, int fireLimit ) {
         if (!executionStateMachine.toFireAllRules()) {
             return 0;
@@ -160,9 +159,7 @@ public class CompositeDefaultAgenda implements Externalizable, InternalAgenda {
     }
 
     private int parallelFire( AgendaFilter agendaFilter, int fireLimit ) {
-        return PartitionsManager.getFireAllExecutors().submit(() ->
-                Stream.of(agendas).parallel().mapToInt(a -> a.internalFireAllRules( agendaFilter, fireLimit, false )).sum()
-        ).join();
+        return doOnForkJoinPool(() -> Stream.of(agendas).parallel().mapToInt(a -> a.internalFireAllRules( agendaFilter, fireLimit, false )).sum() );
     }
 
     @Override
@@ -275,6 +272,13 @@ public class CompositeDefaultAgenda implements Externalizable, InternalAgenda {
     }
 
     @Override
+    public void haltGroupEvaluation() {
+        for ( int i = 0; i < agendas.length; i++ ) {
+            agendas[i].haltGroupEvaluation();
+        }
+    }
+
+    @Override
     public Iterator<PropagationEntry> getActionsIterator() {
         return new CompositeIterator<>( Stream.of( agendas ).map( DefaultAgenda::getActionsIterator ).toArray(Iterator[]::new) );
     }
@@ -383,11 +387,6 @@ public class CompositeDefaultAgenda implements Externalizable, InternalAgenda {
     }
 
     @Override
-    public int fireNextItem( AgendaFilter filter, int fireCount, int fireLimit ) {
-        throw new UnsupportedOperationException( "org.drools.core.common.CompositeDefaultAgenda.fireNextItem -> TODO" );
-    }
-
-    @Override
     public void cancelActivation( InternalMatch internalMatch) {
         throw new UnsupportedOperationException( "org.drools.core.common.CompositeDefaultAgenda.cancelActivation -> TODO" );
     }
@@ -403,10 +402,12 @@ public class CompositeDefaultAgenda implements Externalizable, InternalAgenda {
     }
 
     @Override
-    public void setFocus( String name ) {
+    public boolean setFocus( String name ) {
+        boolean groupChanged = false;
         for ( int i = 0; i < agendas.length; i++ ) {
-            agendas[i].setFocus( name );
+            groupChanged |= agendas[i].setFocus( name );
         }
+        return groupChanged;
     }
 
     @Override

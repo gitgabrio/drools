@@ -1,24 +1,33 @@
-/*
- * Copyright 2005 Red Hat, Inc. and/or its affiliates.
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.drools.kiesession.agenda;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.drools.base.definitions.rule.impl.QueryImpl;
 import org.drools.base.definitions.rule.impl.RuleImpl;
-import org.drools.base.rule.consequence.ConsequenceException;
+import org.drools.core.RuleBaseConfiguration;
 import org.drools.core.common.ActivationGroupImpl;
 import org.drools.core.common.ActivationGroupNode;
 import org.drools.core.common.ActivationsFilter;
@@ -34,8 +43,9 @@ import org.drools.core.common.InternalWorkingMemoryEntryPoint;
 import org.drools.core.common.PropagationContext;
 import org.drools.core.common.ReteEvaluator;
 import org.drools.core.common.RuleFlowGroup;
-import org.drools.core.concurrent.RuleEvaluator;
-import org.drools.core.concurrent.SequentialRuleEvaluator;
+import org.drools.core.concurrent.GroupEvaluator;
+import org.drools.core.concurrent.ParallelGroupEvaluator;
+import org.drools.core.concurrent.SequentialGroupEvaluator;
 import org.drools.core.event.AgendaEventSupport;
 import org.drools.core.impl.InternalRuleBase;
 import org.drools.core.phreak.ExecutableEntry;
@@ -51,7 +61,6 @@ import org.drools.core.reteoo.ObjectTypeNode;
 import org.drools.core.reteoo.PathMemory;
 import org.drools.core.reteoo.RuleTerminalNodeLeftTuple;
 import org.drools.core.reteoo.TerminalNode;
-import org.drools.core.reteoo.Tuple;
 import org.drools.core.rule.consequence.ConsequenceExceptionHandler;
 import org.drools.core.rule.consequence.InternalMatch;
 import org.drools.core.rule.consequence.KnowledgeHelper;
@@ -64,17 +73,6 @@ import org.kie.api.runtime.rule.AgendaFilter;
 import org.kie.api.runtime.rule.AgendaGroup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.Externalizable;
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Rule-firing Agenda.
@@ -90,18 +88,15 @@ import java.util.concurrent.ConcurrentHashMap;
  * Non-invalidated actions are left on the agenda, and are executed in turn.
  * </p>
  */
-public class DefaultAgenda implements Externalizable, InternalAgenda {
+public class DefaultAgenda implements InternalAgenda {
 
-    protected static final transient Logger log = LoggerFactory.getLogger( DefaultAgenda.class );
+    protected static final Logger log = LoggerFactory.getLogger( DefaultAgenda.class );
 
     private static final long serialVersionUID = 510l;
 
-    /** Working memory of this Agenda. */
-    protected InternalWorkingMemory workingMemory;
+    protected final InternalWorkingMemory workingMemory;
 
-    /** Items time-delayed. */
-
-    private Map<String, InternalActivationGroup> activationGroups;
+    private final Map<String, InternalActivationGroup> activationGroups;
 
     private final org.drools.core.util.LinkedList<RuleAgendaItem> eager = new org.drools.core.util.LinkedList<>();
 
@@ -113,76 +108,63 @@ public class DefaultAgenda implements Externalizable, InternalAgenda {
 
     protected int activationCounter;
 
-    private boolean declarativeAgenda;
-    private boolean sequential;
+    private final boolean declarativeAgenda;
+    private final boolean sequential;
 
     private ActivationsFilter activationsFilter;
 
-    private volatile List<PropagationContext> expirationContexts;
+    private final List<PropagationContext> expirationContexts;
 
-    private RuleEvaluator ruleEvaluator;
+    private final GroupEvaluator groupEvaluator;
 
-    private PropagationList propagationList;
+    private final PropagationList propagationList;
 
-    private ExecutionStateMachine executionStateMachine;
+    private final ExecutionStateMachine executionStateMachine;
 
-    private AgendaGroupsManager agendaGroupsManager;
+    private final AgendaGroupsManager agendaGroupsManager;
 
     // ------------------------------------------------------------
     // Constructors
     // ------------------------------------------------------------
-    public DefaultAgenda() { }
 
-    protected DefaultAgenda(InternalRuleBase kBase) {
-        this( kBase, true );
+    public DefaultAgenda(InternalWorkingMemory workingMemory) {
+        this(workingMemory, null);
     }
 
-    public DefaultAgenda(InternalRuleBase kBase, boolean initMain) {
-        this(kBase, initMain, new ConcurrentExecutionStateMachine());
-    }
+    DefaultAgenda(InternalWorkingMemory workingMemory, ExecutionStateMachine executionStateMachine) {
 
-    DefaultAgenda(InternalRuleBase kBase,
-                  boolean initMain,
-                  ExecutionStateMachine executionStateMachine) {
-        this.agendaGroupsManager = AgendaGroupsManager.create(kBase, initMain);
+        this.workingMemory = workingMemory;
+        this.agendaGroupsManager = AgendaGroupsManager.create(workingMemory);
         this.activationGroups = new HashMap<>();
-        this.executionStateMachine = executionStateMachine;
 
-        Object object = ComponentsFactory.createConsequenceExceptionHandler( kBase.getRuleBaseConfiguration().getConsequenceExceptionHandler(),
-                                                                             kBase.getConfiguration().getClassLoader() );
+        if (executionStateMachine != null) {
+            this.executionStateMachine = executionStateMachine;
+        } else {
+            this.executionStateMachine = workingMemory.getRuleSessionConfiguration().isThreadSafe() ?
+                    new ConcurrentExecutionStateMachine() :
+                    new UnsafeExecutionStateMachine();
+        }
+
+        InternalRuleBase kBase = workingMemory.getKnowledgeBase();
+        RuleBaseConfiguration ruleBaseConf = kBase.getRuleBaseConfiguration();
+        Object object = ComponentsFactory.createConsequenceExceptionHandler( ruleBaseConf.getConsequenceExceptionHandler(),
+                                                                             ruleBaseConf.getClassLoader() );
         if ( object instanceof ConsequenceExceptionHandler ) {
             this.legacyConsequenceExceptionHandler = (ConsequenceExceptionHandler) object;
         } else {
             this.consequenceExceptionHandler = (org.kie.api.runtime.rule.ConsequenceExceptionHandler) object;
         }
 
-        this.declarativeAgenda = kBase.getRuleBaseConfiguration().isDeclarativeAgenda();
-        this.sequential = kBase.getRuleBaseConfiguration().isSequential();
-        if (kBase.getRuleBaseConfiguration().getEventProcessingMode() == EventProcessingOption.STREAM) {
-            expirationContexts = new ArrayList<>();
-        }
-    }
+        this.declarativeAgenda = ruleBaseConf.isDeclarativeAgenda();
+        this.sequential = ruleBaseConf.isSequential();
+        this.expirationContexts = ruleBaseConf.getEventProcessingMode() == EventProcessingOption.STREAM ? new ArrayList<>() : null;
 
-    @Override
-    public void readExternal(ObjectInput in) throws IOException,
-                                            ClassNotFoundException {
-        setWorkingMemory( (InternalWorkingMemory) in.readObject() );
-        agendaGroupsManager = (AgendaGroupsManager) in.readObject();
-        activationGroups = (Map) in.readObject();
-        legacyConsequenceExceptionHandler = (ConsequenceExceptionHandler) in.readObject();
-        declarativeAgenda = in.readBoolean();
-        sequential = in.readBoolean();
-        this.executionStateMachine = new ConcurrentExecutionStateMachine();
-    }
+         // for fully parallel execution the parallelism is implemented at the level of CompositeDefaultAgenda
+         this.groupEvaluator = ruleBaseConf.isParallelEvaluation() && !ruleBaseConf.isParallelExecution() ?
+                 new ParallelGroupEvaluator( this ) :
+                 new SequentialGroupEvaluator( this );
 
-    @Override
-    public void writeExternal(ObjectOutput out) throws IOException {
-        out.writeObject( workingMemory );
-        out.writeObject( agendaGroupsManager );
-        out.writeObject( activationGroups );
-        out.writeObject( legacyConsequenceExceptionHandler );
-        out.writeBoolean( declarativeAgenda );
-        out.writeBoolean( sequential );
+        this.propagationList = createPropagationList();
     }
 
     @Override
@@ -202,19 +184,6 @@ public class DefaultAgenda implements Externalizable, InternalAgenda {
                                           InternalAgendaGroup agendaGroup) {
         rtnLeftTuple.init(activationCounter++, salience, context, ruleAgendaItem, agendaGroup);
         return rtnLeftTuple;
-    }
-
-    @Override
-    public void setWorkingMemory(final InternalWorkingMemory workingMemory) {
-        this.workingMemory = workingMemory;
-        this.agendaGroupsManager.setReteEvaluator( workingMemory );
-
-        if ( !workingMemory.getRuleSessionConfiguration().isThreadSafe() ) {
-            executionStateMachine = new UnsafeExecutionStateMachine();
-        }
-
-        this.ruleEvaluator = new SequentialRuleEvaluator( this );
-        this.propagationList = createPropagationList();
     }
 
     protected PropagationList createPropagationList() {
@@ -346,7 +315,6 @@ public class DefaultAgenda implements Externalizable, InternalAgenda {
             if (internalMatch.getActivationGroupNode() != null ) {
                 internalMatch.getActivationGroupNode().getActivationGroup().removeActivation(internalMatch);
             }
-            (( Tuple ) internalMatch).decreaseActivationCountForEvents();
 
             workingMemory.getAgendaEventSupport().fireActivationCancelled(internalMatch,
                                                                           workingMemory,
@@ -361,15 +329,14 @@ public class DefaultAgenda implements Externalizable, InternalAgenda {
     }
 
     @Override
-    public void setFocus(final String name) {
-        setFocus( null, name );
+    public boolean setFocus(final String name) {
+        return setFocus( null, name );
     }
 
-    public void setFocus(final PropagationContext ctx,
-                         final String name) {
+    public boolean setFocus(final PropagationContext ctx, final String name) {
         InternalAgendaGroup agendaGroup = getAgendaGroupsManager().getAgendaGroup( name );
         agendaGroup.setAutoFocusActivator( ctx );
-        getAgendaGroupsManager().setFocus( agendaGroup );
+        return getAgendaGroupsManager().setFocus( agendaGroup );
     }
 
     @Override
@@ -527,45 +494,6 @@ public class DefaultAgenda implements Externalizable, InternalAgenda {
         agendaGroupsManager.clearAndCancelAgendaGroup(name, this);
     }
 
-    /**
-     * Fire the next scheduled <code>Agenda</code> item, skipping items
-     * that are not allowed by the agenda filter.
-     *
-     * @return true if an activation was fired. false if no more activations
-     *              to fire
-     *
-     * @throws ConsequenceException
-     *             If an error occurs while firing an agenda item.
-     */
-    @Override
-    public int fireNextItem(final AgendaFilter filter,
-                            int fireCount,
-                            int fireLimit) {
-        // Because rules can be on the agenda, but after network evaluation produce no full matches, the
-        // engine uses tryAgain to drive a loop to find a rule that has matches, until there are no more rules left to try.
-        // once rule with 1..n matches is found, it'll return back to the outer loop.
-        boolean tryagain;
-        int localFireCount = 0;
-        do {
-            tryagain = false;
-            evaluateEagerList();
-            final InternalAgendaGroup group = getAgendaGroupsManager().getNextFocus();
-            // if there is a group with focus
-            if ( group != null ) {
-                localFireCount = ruleEvaluator.evaluateAndFire(filter, fireCount, fireLimit, group);
-
-                // it produced no full matches, so drive the search to the next rule
-                if ( localFireCount == 0 ) {
-                    // nothing matched
-                    tryagain = true;
-                    propagationList.flush(); // There may actions to process, which create new rule matches
-                }
-            }
-        } while ( tryagain );
-
-        return localFireCount;
-    }
-
     @Override
     public void evaluateEagerList() {
         while ( !eager.isEmpty() ) {
@@ -648,7 +576,7 @@ public class DefaultAgenda implements Externalizable, InternalAgenda {
     private int fireLoop(AgendaFilter agendaFilter, int fireLimit, RestHandler restHandler, boolean isInternalFire) {
         int fireCount = 0;
         try {
-            PropagationEntry head = propagationList.takeAll();
+            PropagationEntry head = takePropagationHead();
             int returnedFireCount;
 
             boolean limitReached = fireLimit == 0; // -1 or > 0 will return false. No reason for user to give 0, just handled for completeness.
@@ -676,17 +604,11 @@ public class DefaultAgenda implements Externalizable, InternalAgenda {
             // Note that if a halt() command is given, the engine is changed to INACTIVE,
             // and isFiring returns false allowing it to exit before all rules are fired.
             //
-            while ( isFiring()  )  {
+            while ( isFiring() || executionStateMachine.getCurrentState().isHalting() )  {
                 if ( head != null ) {
                     // it is possible that there are no action propagations, but there are rules to fire.
                     propagationList.flush(head);
                     head = null;
-                }
-
-                // a halt may have occurred during the flushPropagations,
-                // which changes the isFiring state. So a second isFiring guard is needed
-                if (!isFiring()) {
-                    break;
                 }
 
                 evaluateEagerList();
@@ -695,11 +617,11 @@ public class DefaultAgenda implements Externalizable, InternalAgenda {
                     // only fire rules while the limit has not reached.
                     // if halt is called, then isFiring will be false.
                     // The while loop may continue to loop, to keep flushing the action propagation queue
-                    returnedFireCount = ruleEvaluator.evaluateAndFire( agendaFilter, fireCount, fireLimit, group );
+                    returnedFireCount = groupEvaluator.evaluateAndFire( group, agendaFilter, fireCount, fireLimit );
                     fireCount += returnedFireCount;
 
                     limitReached = ( fireLimit > 0 && fireCount >= fireLimit );
-                    head = propagationList.takeAll();
+                    head = takePropagationHead();
                 } else {
                     returnedFireCount = 0; // no rules fired this iteration, so we know this is 0
                     group = null; // set the group to null in case the fire limit has been reached
@@ -708,7 +630,7 @@ public class DefaultAgenda implements Externalizable, InternalAgenda {
                 if ( returnedFireCount == 0 && head == null && ( group == null || ( group.isEmpty() && !group.isAutoDeactivate() ) ) && !flushExpirations() ) {
                     // if true, the engine is now considered potentially at rest
                     head = restHandler.handleRest( this, isInternalFire );
-                    if (!isInternalFire && head == null) {
+                    if ( ( !isInternalFire || executionStateMachine.getCurrentState().isHalting() ) && head == null) {
                         break;
                     }
                 }
@@ -723,6 +645,13 @@ public class DefaultAgenda implements Externalizable, InternalAgenda {
             }
         }
         return fireCount;
+    }
+
+    private PropagationEntry takePropagationHead() {
+        if (executionStateMachine.getCurrentState().isHalting()) {
+            return null;
+        }
+        return propagationList.takeAll();
     }
 
     interface RestHandler {
@@ -756,7 +685,7 @@ public class DefaultAgenda implements Externalizable, InternalAgenda {
                 PropagationEntry head;
                 // this must use the same sync target as takeAllPropagations, to ensure this entire block is atomic, up to the point of wait
                 synchronized (agenda.propagationList) {
-                    head = agenda.propagationList.takeAll();
+                    head = agenda.takePropagationHead();
 
                     // if halt() has called, the thread should not be put into a wait state
                     // instead this is just a safe way to make sure the queue is flushed before exiting the loop
@@ -764,7 +693,7 @@ public class DefaultAgenda implements Externalizable, InternalAgenda {
                             agenda.executionStateMachine.getCurrentState() == ExecutionStateMachine.ExecutionState.FIRING_UNTIL_HALT ||
                             agenda.executionStateMachine.getCurrentState() == ExecutionStateMachine.ExecutionState.INACTIVE_ON_FIRING_UNTIL_HALT )) {
                         agenda.propagationList.waitOnRest();
-                        head = agenda.propagationList.takeAll();
+                        head = agenda.takePropagationHead();
                     }
                 }
 
@@ -834,11 +763,34 @@ public class DefaultAgenda implements Externalizable, InternalAgenda {
         @Override
         public void internalExecute(ReteEvaluator reteEvaluator ) {
             executionStateMachine.internalHalt();
+            reteEvaluator.getActivationsManager().haltGroupEvaluation();
         }
 
         @Override
         public String toString() {
             return "Halt";
+        }
+    }
+
+    static class ImmediateHalt extends PropagationEntry.AbstractPropagationEntry {
+
+        private final ExecutionStateMachine executionStateMachine;
+        private final PropagationList propagationList;
+
+        protected ImmediateHalt( ExecutionStateMachine executionStateMachine, PropagationList propagationList ) {
+            this.executionStateMachine = executionStateMachine;
+            this.propagationList = propagationList;
+        }
+
+        @Override
+        public void internalExecute(ReteEvaluator reteEvaluator ) {
+            executionStateMachine.immediateHalt(propagationList);
+            reteEvaluator.getActivationsManager().haltGroupEvaluation();
+        }
+
+        @Override
+        public String toString() {
+            return "ImmediateHalt";
         }
     }
 
@@ -848,7 +800,10 @@ public class DefaultAgenda implements Externalizable, InternalAgenda {
         // This will place a halt command on the propagation queue
         // that will allow the engine to halt safely
         if ( isFiring() ) {
-            propagationList.addEntry(new Halt(executionStateMachine));
+            PropagationEntry halt = executionStateMachine.getCurrentState() == ExecutionStateMachine.ExecutionState.FIRING_ALL_RULES ?
+                    new ImmediateHalt(executionStateMachine, propagationList) :
+                    new Halt(executionStateMachine);
+            propagationList.addEntry(halt);
         }
     }
 
@@ -890,11 +845,17 @@ public class DefaultAgenda implements Externalizable, InternalAgenda {
 
     @Override
     public KnowledgeHelper getKnowledgeHelper() {
-        return ruleEvaluator.getKnowledgeHelper();
+        return groupEvaluator.getKnowledgeHelper();
     }
 
+    @Override
     public void resetKnowledgeHelper() {
-        ruleEvaluator.resetKnowledgeHelper();
+        groupEvaluator.resetKnowledgeHelper();
+    }
+
+    @Override
+    public void haltGroupEvaluation() {
+        groupEvaluator.haltEvaluation();
     }
 
     @Override
@@ -944,6 +905,10 @@ public class DefaultAgenda implements Externalizable, InternalAgenda {
 
             public boolean isFiring() {
                 return firing;
+            }
+
+            public boolean isHalting() {
+                return this == HALTING;
             }
 
             public boolean isAlive() {
@@ -1296,12 +1261,20 @@ public class DefaultAgenda implements Externalizable, InternalAgenda {
 
     protected void doRetract( PropagationContext ectx ) {
         InternalFactHandle factHandle = (InternalFactHandle) ectx.getFactHandle();
-        ObjectTypeNode.retractLeftTuples( factHandle, ectx, workingMemory );
-        ObjectTypeNode.retractRightTuples( factHandle, ectx, workingMemory );
-        if ( factHandle.isPendingRemoveFromStore() ) {
+        retractFactHandle(ectx, factHandle);
+        if (isPendingRemoveFactHandleFromStore(factHandle)) {
             String epId = factHandle.getEntryPointName();
             ( (InternalWorkingMemoryEntryPoint) workingMemory.getEntryPoint( epId ) ).removeFromObjectStore( factHandle );
         }
+    }
+
+    protected void retractFactHandle(PropagationContext ectx, InternalFactHandle factHandle) {
+        ObjectTypeNode.retractLeftTuples(factHandle, ectx, workingMemory );
+        ObjectTypeNode.retractRightTuples(factHandle, ectx, workingMemory );
+    }
+
+    protected boolean isPendingRemoveFactHandleFromStore(InternalFactHandle factHandle) {
+        return factHandle.isPendingRemoveFromStore();
     }
 
     @Override

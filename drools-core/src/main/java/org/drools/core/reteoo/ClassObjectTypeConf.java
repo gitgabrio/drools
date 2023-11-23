@@ -1,19 +1,21 @@
-/*
- * Copyright 2010 Red Hat, Inc. and/or its affiliates.
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.drools.core.reteoo;
 
 import java.beans.PropertyChangeListener;
@@ -26,20 +28,20 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import org.drools.core.WorkingMemoryEntryPoint;
 import org.drools.base.base.ClassObjectType;
+import org.drools.base.base.ObjectType;
+import org.drools.base.rule.EntryPointId;
+import org.drools.base.rule.TypeDeclaration;
+import org.drools.base.util.TimeIntervalParser;
+import org.drools.core.WorkingMemoryEntryPoint;
 import org.drools.core.common.InternalFactHandle;
 import org.drools.core.common.ReteEvaluator;
 import org.drools.core.impl.InternalRuleBase;
-import org.drools.base.rule.EntryPointId;
-import org.drools.base.rule.TypeDeclaration;
 import org.drools.core.rule.accessor.FactHandleFactory;
 import org.drools.core.rule.consequence.InternalMatch;
-import org.drools.base.util.TimeIntervalParser;
 import org.kie.api.definition.type.Expires;
 import org.kie.api.definition.type.Role;
 import org.kie.api.definition.type.Role.Type;
-import org.drools.base.base.ObjectType;
 
 public class ClassObjectTypeConf
     implements
@@ -169,8 +171,9 @@ public class ClassObjectTypeConf
         String pkgName = "";
         if ( pkg == null ) {
             int index = clazz.getName().lastIndexOf( '.' );
-            if ( index != -1 ) pkgName = clazz.getName().substring( 0,
-                                                                    index );
+            if ( index != -1 ) {
+                pkgName = clazz.getName().substring( 0, index );
+            }
         } else {
             pkgName = pkg.getName();
         }
@@ -243,11 +246,11 @@ public class ClassObjectTypeConf
     }
 
     public String getClassName() {
-    	return this.cls != null ? this.cls.getName() : "";
+        return this.cls != null ? this.cls.getName() : "";
     }
     
     public String getTypeName() {
-    	return getClassName();
+        return getClassName();
     }
 
     @Override

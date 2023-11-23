@@ -1,19 +1,21 @@
-/*
- * Copyright 2023 Red Hat, Inc. and/or its affiliates.
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.kie.api.runtime.conf;
 
 
@@ -28,12 +30,24 @@ public class PersistedSessionOption implements SingleValueKieSessionOption {
         FULL, STORES_ONLY
     }
 
+    public enum PersistenceObjectsStrategy {
+        SIMPLE, OBJECT_REFERENCES
+    }
+
     public enum SafepointStrategy {
         ALWAYS, AFTER_FIRE, EXPLICIT;
 
         public boolean useSafepoints() {
             return this != ALWAYS;
         }
+    }
+
+    /**
+     * NONE : On restoring a session, filter firing based on StoredObject.isPropagated
+     * ACTIVATION_KEY : On restoring a session, filter firing based on StoredObject.isPropagated and persisted ActivationKey
+     */
+    public enum ActivationStrategy {
+        NONE, ACTIVATION_KEY
     }
 
     /**
@@ -45,7 +59,11 @@ public class PersistedSessionOption implements SingleValueKieSessionOption {
 
     private PersistenceStrategy persistenceStrategy = PersistenceStrategy.FULL;
 
+    private PersistenceObjectsStrategy persistenceObjectsStrategy = PersistenceObjectsStrategy.SIMPLE;
+
     private SafepointStrategy safepointStrategy = SafepointStrategy.ALWAYS;
+
+    private ActivationStrategy activationStrategy = ActivationStrategy.NONE;
 
     private PersistedSessionOption() {
         this(-1L);
@@ -78,6 +96,13 @@ public class PersistedSessionOption implements SingleValueKieSessionOption {
         return persistenceStrategy;
     }
 
+    public PersistenceObjectsStrategy getPersistenceObjectsStrategy() {return persistenceObjectsStrategy;}
+
+    public PersistedSessionOption withPersistenceObjectsStrategy(PersistenceObjectsStrategy persistenceObjectsStrategy){
+        this.persistenceObjectsStrategy = persistenceObjectsStrategy;
+        return this;
+    }
+
     public PersistedSessionOption withPersistenceStrategy(PersistenceStrategy persistenceStrategy) {
         this.persistenceStrategy = persistenceStrategy;
         return this;
@@ -89,6 +114,15 @@ public class PersistedSessionOption implements SingleValueKieSessionOption {
 
     public PersistedSessionOption withSafepointStrategy(SafepointStrategy safepointStrategy) {
         this.safepointStrategy = safepointStrategy;
+        return this;
+    }
+
+    public ActivationStrategy getActivationStrategy() {
+        return activationStrategy;
+    }
+
+    public PersistedSessionOption withActivationStrategy(ActivationStrategy activationStrategy) {
+        this.activationStrategy = activationStrategy;
         return this;
     }
 

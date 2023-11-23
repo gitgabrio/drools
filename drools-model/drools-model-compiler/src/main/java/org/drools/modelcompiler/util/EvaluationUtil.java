@@ -1,19 +1,21 @@
-/*
- * Copyright 2005 JBoss Inc
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.drools.modelcompiler.util;
 
 import java.math.BigDecimal;
@@ -30,7 +32,7 @@ import java.util.Optional;
 import java.util.function.BiPredicate;
 
 import org.drools.base.time.TimeUtils;
-import org.drools.core.base.CoercionUtil;
+import org.drools.util.CoercionUtil;
 import org.drools.model.BitMask;
 import org.drools.model.bitmask.AllSetBitMask;
 import org.drools.model.bitmask.AllSetButLastBitMask;
@@ -303,28 +305,28 @@ public class EvaluationUtil {
     }
 
 
-    public static org.drools.core.util.bitmask.BitMask adaptBitMask(BitMask mask) {
+    public static org.drools.util.bitmask.BitMask adaptBitMask(BitMask mask) {
         if (mask == null) {
             return null;
         }
         if (mask instanceof LongBitMask ) {
             long maskValue = (( LongBitMask ) mask).asLong();
-            return maskValue == 0L ? org.drools.core.util.bitmask.EmptyBitMask.get() : new org.drools.core.util.bitmask.LongBitMask( maskValue );
+            return maskValue == 0L ? org.drools.util.bitmask.EmptyBitMask.get() : new org.drools.util.bitmask.LongBitMask( maskValue );
         }
         if (mask instanceof EmptyBitMask ) {
-            return org.drools.core.util.bitmask.EmptyBitMask.get();
+            return org.drools.util.bitmask.EmptyBitMask.get();
         }
         if (mask instanceof AllSetBitMask ) {
-            return org.drools.core.util.bitmask.AllSetBitMask.get();
+            return org.drools.util.bitmask.AllSetBitMask.get();
         }
         if (mask instanceof AllSetButLastBitMask ) {
-            return org.drools.core.util.bitmask.AllSetButLastBitMask.get();
+            return org.drools.util.bitmask.AllSetButLastBitMask.get();
         }
         if (mask instanceof EmptyButLastBitMask ) {
-            return org.drools.core.util.bitmask.EmptyButLastBitMask.get();
+            return org.drools.util.bitmask.EmptyButLastBitMask.get();
         }
         if (mask instanceof OpenBitSet ) {
-            return new org.drools.core.util.bitmask.OpenBitSet( ( (OpenBitSet) mask ).getBits(), ( (OpenBitSet) mask ).getNumWords() );
+            return new org.drools.util.bitmask.OpenBitSet( ( (OpenBitSet) mask ).getBits(), ( (OpenBitSet) mask ).getNumWords() );
         }
         throw new IllegalArgumentException( "Unknown bitmask: " + mask );
     }

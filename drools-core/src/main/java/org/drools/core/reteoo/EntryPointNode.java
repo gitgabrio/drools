@@ -1,20 +1,27 @@
-/*
- * Copyright 2007 Red Hat, Inc. and/or its affiliates.
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.drools.core.reteoo;
+
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.drools.base.base.ClassObjectType;
 import org.drools.base.base.ObjectType;
@@ -27,19 +34,14 @@ import org.drools.core.common.DefaultEventHandle;
 import org.drools.core.common.InternalFactHandle;
 import org.drools.core.common.InternalWorkingMemory;
 import org.drools.core.common.ObjectTypeConfigurationRegistry;
-import org.drools.core.common.ReteEvaluator;
 import org.drools.core.common.PropagationContext;
+import org.drools.core.common.ReteEvaluator;
 import org.drools.core.impl.InternalRuleBase;
 import org.drools.core.phreak.PropagationEntry;
 import org.drools.core.reteoo.builder.BuildContext;
-import org.drools.core.util.bitmask.BitMask;
+import org.drools.util.bitmask.BitMask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * A node that is an entry point into the Rete network.
@@ -75,7 +77,7 @@ public class EntryPointNode extends ObjectSource implements ObjectSink {
 
     private ObjectTypeConfigurationRegistry typeConfReg;
 
-    private boolean parallelEvaluation = false;
+    private boolean parallelExecution = false;
 
     // ------------------------------------------------------------
     // Constructors
@@ -113,8 +115,8 @@ public class EntryPointNode extends ObjectSource implements ObjectSink {
     // Instance methods
     // ------------------------------------------------------------
 
-    public void setupParallelEvaluation(InternalRuleBase kbase) {
-        parallelEvaluation = true;
+    public void setupParallelExecution(InternalRuleBase kbase) {
+        parallelExecution = true;
     }
 
     public ObjectTypeConfigurationRegistry getTypeConfReg() {
@@ -190,8 +192,8 @@ public class EntryPointNode extends ObjectSource implements ObjectSink {
             log.trace("Insert {}", handle.toString());
         }
 
-        if ( parallelEvaluation || !reteEvaluator.isThreadSafe() ) {
-            // In case of multithreaded evaluation the CompositePartitionAwareObjectSinkAdapter
+        if ( parallelExecution || !reteEvaluator.isThreadSafe() ) {
+            // In case of parallel execution the CompositePartitionAwareObjectSinkAdapter
             // used by the OTNs will take care of enqueueing this insertion on the propagation queues
             // of the different agendas
             PropagationEntry.Insert.execute( handle, context, reteEvaluator, objectTypeConf );
@@ -288,15 +290,22 @@ public class EntryPointNode extends ObjectSource implements ObjectSink {
      * @param reteEvaluator
      *            The working memory session.
      */
-    public void retractObject(final InternalFactHandle handle,
-                              final PropagationContext context,
-                              final ObjectTypeConf objectTypeConf,
-                              final ReteEvaluator reteEvaluator) {
+    public void retractObject(InternalFactHandle handle, PropagationContext context,
+                              ObjectTypeConf objectTypeConf, ReteEvaluator reteEvaluator) {
         if ( log.isTraceEnabled() ) {
             log.trace( "Delete {}", handle.toString()  );
         }
 
         reteEvaluator.addPropagation(new PropagationEntry.Delete(this, handle, context, objectTypeConf));
+    }
+
+    public void immediateDeleteObject(InternalFactHandle handle, PropagationContext context,
+                                      ObjectTypeConf objectTypeConf, ReteEvaluator reteEvaluator) {
+        if ( log.isTraceEnabled() ) {
+            log.trace( "Delete {}", handle.toString()  );
+        }
+
+        PropagationEntry.Delete.execute(reteEvaluator, this, handle, context, objectTypeConf);
     }
 
     public void propagateRetract(InternalFactHandle handle, PropagationContext context, ObjectTypeConf objectTypeConf, ReteEvaluator reteEvaluator) {

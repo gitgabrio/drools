@@ -1,26 +1,29 @@
-/*
- * Copyright 2015 Red Hat, Inc. and/or its affiliates.
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.drools.core.util.index;
 
 import java.io.Serializable;
 
 import org.drools.core.common.InternalFactHandle;
-import org.drools.core.reteoo.TupleMemory;
+import org.drools.core.reteoo.AbstractTuple;
 import org.drools.core.reteoo.Tuple;
+import org.drools.core.reteoo.TupleMemory;
 import org.drools.core.util.Entry;
 import org.drools.core.util.FastIterator;
 import org.drools.core.util.Iterator;
@@ -85,8 +88,8 @@ public class TupleList<C> implements TupleMemory, Entry<TupleList<C>>, Serializa
             return;
         }
 
-        Tuple previous = tuple.getPrevious();
-        Tuple next = tuple.getNext();
+        AbstractTuple previous = (AbstractTuple) tuple.getPrevious();
+        AbstractTuple next = (AbstractTuple) tuple.getNext();
         if (previous == null) {
             next.setPrevious( null );
             this.first = next;
@@ -95,7 +98,7 @@ public class TupleList<C> implements TupleMemory, Entry<TupleList<C>>, Serializa
             next.setPrevious( previous );
         }
 
-        this.last.setNext( tuple );
+        this.last.setNext((AbstractTuple) tuple);
         tuple.setPrevious( this.last );
         tuple.setNext( null );
         this.last = tuple;
@@ -103,7 +106,7 @@ public class TupleList<C> implements TupleMemory, Entry<TupleList<C>>, Serializa
 
     public void add(final Tuple tuple) {
         if ( this.last != null ) {
-            this.last.setNext( tuple );
+            this.last.setNext( (AbstractTuple) tuple );
             tuple.setPrevious( this.last );
             this.last = tuple;
         } else {
@@ -117,7 +120,7 @@ public class TupleList<C> implements TupleMemory, Entry<TupleList<C>>, Serializa
 
     public void remove(final Tuple tuple) {
         Tuple previous = tuple.getPrevious();
-        Tuple next = tuple.getNext();
+        AbstractTuple next = tuple.getNext();
 
         if ( previous != null && next != null ) {
             // remove from middle
@@ -199,16 +202,15 @@ public class TupleList<C> implements TupleMemory, Entry<TupleList<C>>, Serializa
         return TupleMemory.IndexType.NONE;
     }
 
-    public FastIterator<Tuple> fastIterator() {
+    public FastIterator<AbstractTuple> fastIterator() {
         return LinkedList.fastIterator; // contains no state, so ok to be static
     }
     
-    public FastIterator<Tuple> fullFastIterator() {
+    public FastIterator<AbstractTuple> fullFastIterator() {
         return LinkedList.fastIterator; // contains no state, so ok to be static
     }
-    
 
-    public FastIterator<Tuple> fullFastIterator(Tuple tuple) {
+    public FastIterator<AbstractTuple> fullFastIterator(AbstractTuple tuple) {
         return LinkedList.fastIterator; // contains no state, so ok to be static
     }    
 

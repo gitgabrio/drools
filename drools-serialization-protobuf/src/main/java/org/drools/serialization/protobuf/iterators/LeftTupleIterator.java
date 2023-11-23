@@ -1,18 +1,21 @@
-/*
- * Copyright 2015 Red Hat, Inc. and/or its affiliates.
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * 
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
-*/
-
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 package org.drools.serialization.protobuf.iterators;
 
 import org.drools.core.common.InternalFactHandle;
@@ -38,6 +41,7 @@ import org.drools.core.reteoo.ObjectSource;
 import org.drools.core.reteoo.ObjectTypeNode;
 import org.drools.core.reteoo.QueryElementNode;
 import org.drools.core.reteoo.RightTuple;
+import org.drools.core.reteoo.RightTupleImpl;
 import org.drools.core.reteoo.Tuple;
 import org.drools.core.util.FastIterator;
 import org.drools.core.util.Iterator;
@@ -49,7 +53,7 @@ public class LeftTupleIterator
 
     protected LeftTupleSink         node;
 
-    protected   LeftTuple           currentLeftTuple;
+    protected LeftTuple currentLeftTuple;
 
     private   java.util.Iterator<InternalFactHandle> otnIterator;
 
@@ -64,8 +68,8 @@ public class LeftTupleIterator
         setFirstLeftTupleForNode();
     }
     
-    public static Iterator<LeftTuple> iterator( InternalWorkingMemory wm,
-                                                LeftTupleSink         node) {
+    public static Iterator<LeftTuple> iterator(InternalWorkingMemory wm,
+                                               LeftTupleSink         node) {
         return new LeftTupleIterator(wm, node);
     }
 
@@ -119,7 +123,7 @@ public class LeftTupleIterator
                             return childleftTuple;
                         }
                     }
-                    leftTuple = (LeftTuple) localIt.next( leftTuple );
+                    leftTuple = (LeftTuple) localIt.next(leftTuple );
                 }
                 break;
             }
@@ -155,7 +159,7 @@ public class LeftTupleIterator
 
                 while (otnIterator.hasNext()) {
                     InternalFactHandle handle = otnIterator.next();
-                    LeftTuple leftTuple = handle.findFirstLeftTuple( lt -> lt.getTupleSink() == sink );
+                    LeftTuple leftTuple = handle.findFirstLeftTuple(lt -> lt.getTupleSink() == sink );
                     if ( leftTuple != null ) {
                         return leftTuple;
                     }
@@ -164,9 +168,9 @@ public class LeftTupleIterator
             }
             case NodeTypeEnums.EvalConditionNode:
             case NodeTypeEnums.QueryElementNode: {
-                LeftTuple parentLeftTuple = getFirstLeftTuple( source.getLeftTupleSource(),
-                                                               (LeftTupleSink) source,
-                                                               wm );
+                LeftTuple parentLeftTuple = getFirstLeftTuple(source.getLeftTupleSource(),
+                                                              (LeftTupleSink) source,
+                                                              wm );
 
                 while ( parentLeftTuple != null ) {
                     for ( LeftTuple leftTuple = parentLeftTuple.getFirstChild(); leftTuple != null; leftTuple = leftTuple.getHandleNext() ) {
@@ -256,7 +260,7 @@ public class LeftTupleIterator
                         return childLeftTuple;
                     }
                 }
-                leftTuple = (LeftTuple) localIt.next( leftTuple );
+                leftTuple = (LeftTuple) localIt.next(leftTuple );
             }
 
         } else if ( source instanceof JoinNode || source instanceof NotNode|| source instanceof FromNode || source instanceof AccumulateNode ) {
@@ -286,13 +290,13 @@ public class LeftTupleIterator
                         return childLeftTuple;
                     }
                 }
-                leftTuple = (LeftTuple) localIt.next( leftTuple );
+                leftTuple = (LeftTuple) localIt.next(leftTuple );
             }
         }
         if ( source instanceof ExistsNode ) {
             BetaMemory memory = (BetaMemory) wm.getNodeMemory( (MemoryFactory) source );
             if (leftTuple != null) {
-                RightTuple rightTuple = leftTuple.getLeftParent().getBlocker();
+                RightTupleImpl rightTuple = (RightTupleImpl) leftTuple.getLeftParent().getBlocker();
                 FastIterator localIt = memory.getRightTupleMemory().fullFastIterator( rightTuple );
 
                 for ( LeftTuple childleftTuple = leftTuple.getHandleNext(); childleftTuple != null; childleftTuple = childleftTuple.getHandleNext() ) {
@@ -320,7 +324,7 @@ public class LeftTupleIterator
                         }
 
                     }
-                    rightTuple = (RightTuple) localIt.next( rightTuple );
+                    rightTuple = (RightTupleImpl) localIt.next( rightTuple );
                 }
             }
         } else if ( source instanceof EvalConditionNode || source instanceof QueryElementNode ) {

@@ -1,24 +1,29 @@
-/*
- * Copyright 2016 Red Hat, Inc. and/or its affiliates.
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *       http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.drools.mvel.integrationtests;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import org.drools.mvel.compiler.Cheese;
 import org.drools.mvel.compiler.Person;
@@ -158,5 +163,39 @@ public class FireUntilHaltTest {
         }
         assertThat(alive).as("Thread should have died!").isFalse();
         assertThat(list.size()).isEqualTo(1);
+    }
+
+    @Test
+    public void testAllFactsProcessedBeforeHalt() throws Exception {
+        String drl = "package org.example.drools;\n" +
+                "\n" +
+                "global java.util.concurrent.CountDownLatch latch;\n" +
+                "\n" +
+                "rule \"R1\" when\n" +
+                "    $s : String()\n" +
+                "then\n" +
+                "    latch.countDown();\n" +
+                "end\n" +
+                "rule \"R2\" when\n" +
+                "    $s : String()\n" +
+                "then\n" +
+                "    latch.countDown();\n" +
+                "end\n";
+
+        KieBase kbase = KieBaseUtil.getKieBaseFromKieModuleFromDrl("test", kieBaseTestConfiguration, drl);
+        KieSession ksession = kbase.newKieSession();
+
+        CountDownLatch latch = new CountDownLatch(4);
+        ksession.setGlobal("latch", latch);
+
+        Executors.newSingleThreadExecutor().execute(ksession::fireUntilHalt);
+
+        ksession.insert("aaa");
+        ksession.insert("bbb");
+
+        ksession.halt();
+
+        // the 2 facts inserted should be processed before halt
+        assertThat(latch.await(100, TimeUnit.MILLISECONDS)).isTrue();
     }
 }

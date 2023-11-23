@@ -1,19 +1,21 @@
-/*
- * Copyright 2021 Red Hat, Inc. and/or its affiliates.
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.drools.mvelcompiler;
 
 import java.math.BigDecimal;
@@ -800,6 +802,17 @@ public class MvelCompilerTest implements CompilerTest {
     }
 
     @Test
+    public void testBigDecimalArithmeticWithValueOfDouble() {
+        test(ctx -> ctx.addDeclaration("$p", Person.class),
+            "{ " +
+                    "    $p.salary = $p.salary + BigDecimal.valueOf(0.5);\n" +
+                    "}",
+            "{ " +
+                    "    $p.setSalary($p.getSalary().add(BigDecimal.valueOf(0.5), java.math.MathContext.DECIMAL128));\n" +
+                    "}");
+    }
+
+    @Test
     public void testBigDecimalArithmeticWithConversionLiteral() {
         test(ctx -> ctx.addDeclaration("$p", Person.class),
              "{ " +
@@ -819,6 +832,116 @@ public class MvelCompilerTest implements CompilerTest {
              "{ " +
                      "    java.math.BigDecimal operation = $p.getSalary().add(new java.math.BigDecimal(10), java.math.MathContext.DECIMAL128);\n" +
                      "}");
+    }
+
+    @Test
+    public void testBigDecimalAssignmentToInt() {
+        test(ctx -> ctx.addDeclaration("$p", Person.class),
+                "{ " +
+                        "    $p.age = $p.salary;\n" +
+                        "}",
+                "{ " +
+                        "    $p.setAge($p.getSalary().intValue());\n" +
+                        "}");
+    }
+
+    @Test
+    public void testBigDecimalAssignmentToIntegerBoxed() {
+        test(ctx -> ctx.addDeclaration("$p", Person.class),
+                "{ " +
+                        "    $p.integerBoxed = $p.salary;\n" +
+                        "}",
+                "{ " +
+                        "    $p.setIntegerBoxed($p.getSalary().intValue());\n" +
+                        "}");
+    }
+
+    @Test
+    public void testBigDecimalAssignmentToLong() {
+        test(ctx -> ctx.addDeclaration("$p", Person.class),
+                "{ " +
+                        "    $p.longValue = $p.salary;\n" +
+                        "}",
+                "{ " +
+                        "    $p.setLongValue($p.getSalary().longValue());\n" +
+                        "}");
+    }
+
+    @Test
+    public void testBigDecimalAssignmentToLongBoxed() {
+        test(ctx -> ctx.addDeclaration("$p", Person.class),
+                "{ " +
+                        "    $p.longBoxed = $p.salary;\n" +
+                        "}",
+                "{ " +
+                        "    $p.setLongBoxed($p.getSalary().longValue());\n" +
+                        "}");
+    }
+
+    @Test
+    public void testBigDecimalAssignmentToShort() {
+        test(ctx -> ctx.addDeclaration("$p", Person.class),
+                "{ " +
+                        "    $p.shortValue = $p.salary;\n" +
+                        "}",
+                "{ " +
+                        "    $p.setShortValue($p.getSalary().shortValue());\n" +
+                        "}");
+    }
+
+    @Test
+    public void testBigDecimalAssignmentToShortBoxed() {
+        test(ctx -> ctx.addDeclaration("$p", Person.class),
+                "{ " +
+                        "    $p.shortBoxed = $p.salary;\n" +
+                        "}",
+                "{ " +
+                        "    $p.setShortBoxed($p.getSalary().shortValue());\n" +
+                        "}");
+    }
+
+    @Test
+    public void testBigDecimalAssignmentToDouble() {
+        test(ctx -> ctx.addDeclaration("$p", Person.class),
+                "{ " +
+                        "    $p.doubleValue = $p.salary;\n" +
+                        "}",
+                "{ " +
+                        "    $p.setDoubleValue($p.getSalary().doubleValue());\n" +
+                        "}");
+    }
+
+    @Test
+    public void testBigDecimalAssignmentToDoubleBoxed() {
+        test(ctx -> ctx.addDeclaration("$p", Person.class),
+                "{ " +
+                        "    $p.doubleBoxed = $p.salary;\n" +
+                        "}",
+                "{ " +
+                        "    $p.setDoubleBoxed($p.getSalary().doubleValue());\n" +
+                        "}");
+    }
+
+    @Test
+    public void testBigDecimalAssignmentToFloat() {
+        test(ctx -> ctx.addDeclaration("$p", Person.class),
+                "{ " +
+                        "    $p.floatValue = $p.salary;\n" +
+                        "}",
+                "{ " +
+                        "    $p.setFloatValue($p.getSalary().floatValue());\n" +
+                        "}");
+    }
+
+    @Test
+    public void testBigDecimalAssignmentToFloatBoxed() {
+        test(ctx -> ctx.addDeclaration("$p", Person.class),
+                "{ " +
+                        "    $p.floatBoxed = $p.salary;\n" +
+                        "}",
+                "{ " +
+                        "    $p.setFloatBoxed($p.getSalary().floatValue());\n" +
+                        "}");
     }
 
     @Test

@@ -1,21 +1,22 @@
-/*
- * Copyright 2015 Red Hat, Inc. and/or its affiliates.
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.drools.compiler.builder.impl;
-
-import static java.util.Arrays.asList;
 
 import java.io.File;
 import java.io.IOException;
@@ -33,6 +34,12 @@ import java.util.Optional;
 import java.util.concurrent.ForkJoinPool;
 import java.util.function.Supplier;
 
+import org.drools.base.base.ObjectType;
+import org.drools.base.definitions.InternalKnowledgePackage;
+import org.drools.base.definitions.rule.impl.RuleImpl;
+import org.drools.base.rule.Function;
+import org.drools.base.rule.ImportDeclaration;
+import org.drools.base.rule.TypeDeclaration;
 import org.drools.compiler.builder.InternalKnowledgeBuilder;
 import org.drools.compiler.builder.PackageRegistryManager;
 import org.drools.compiler.builder.impl.processors.CompilationPhase;
@@ -53,14 +60,8 @@ import org.drools.compiler.compiler.ProcessBuilderFactory;
 import org.drools.compiler.compiler.ResourceTypeDeclarationWarning;
 import org.drools.compiler.kie.builder.impl.BuildContext;
 import org.drools.compiler.lang.descr.CompositePackageDescr;
-import org.drools.base.base.ObjectType;
-import org.drools.base.definitions.InternalKnowledgePackage;
-import org.drools.base.definitions.rule.impl.RuleImpl;
 import org.drools.core.impl.InternalRuleBase;
 import org.drools.core.impl.RuleBaseFactory;
-import org.drools.base.rule.Function;
-import org.drools.base.rule.ImportDeclaration;
-import org.drools.base.rule.TypeDeclaration;
 import org.drools.drl.ast.descr.AttributeDescr;
 import org.drools.drl.ast.descr.ImportDescr;
 import org.drools.drl.ast.descr.PackageDescr;
@@ -78,6 +79,7 @@ import org.drools.kiesession.rulebase.KnowledgeBaseFactory;
 import org.drools.wiring.api.ComponentsFactory;
 import org.kie.api.KieBase;
 import org.kie.api.KieBaseConfiguration;
+import org.kie.api.KieServices;
 import org.kie.api.builder.ReleaseId;
 import org.kie.api.definition.KiePackage;
 import org.kie.api.definition.process.Process;
@@ -88,7 +90,6 @@ import org.kie.api.io.Resource;
 import org.kie.api.io.ResourceConfiguration;
 import org.kie.api.io.ResourceType;
 import org.kie.api.io.ResourceWithConfiguration;
-import org.kie.api.KieServices;
 import org.kie.internal.builder.CompositeKnowledgeBuilder;
 import org.kie.internal.builder.KnowledgeBuilderConfiguration;
 import org.kie.internal.builder.KnowledgeBuilderError;
@@ -104,8 +105,12 @@ import org.kie.internal.builder.conf.ParallelRulesBuildThresholdOption;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static java.util.Arrays.asList;
+
 public class KnowledgeBuilderImpl implements InternalKnowledgeBuilder, TypeDeclarationContext, BuildResultCollector, GlobalVariableContext {
     protected static final transient Logger logger = LoggerFactory.getLogger(KnowledgeBuilderImpl.class);
+
+    private static final KieAssemblers ASSEMBLERS = KieService.load(KieAssemblers.class);
 
     private final PackageRegistryManagerImpl pkgRegistryManager;
 
@@ -390,22 +395,13 @@ public class KnowledgeBuilderImpl implements InternalKnowledgeBuilder, TypeDecla
     }
 
     @Deprecated
-    void addPackageForExternalType(Resource resource,
-                                   ResourceType type,
-                                   ResourceConfiguration configuration) throws Exception {
-        KieAssemblers assemblers = KieService.load(KieAssemblers.class);
-
-        assemblers.addResourceAfterRules(this,
-                               resource,
-                               type,
-                               configuration);
+    void addPackageForExternalType(Resource resource, ResourceType type, ResourceConfiguration configuration) throws Exception {
+        ASSEMBLERS.addResourceAfterRules(this, resource, type, configuration);
     }
 
     @Deprecated
     void addPackageForExternalType(ResourceType type, List<ResourceWithConfiguration> resources) throws Exception {
-        KieAssemblers assemblers = KieService.load(KieAssemblers.class);
-
-        assemblers.addResourcesAfterRules(this, resources, type);
+        ASSEMBLERS.addResourcesAfterRules(this, resources, type);
     }
 
     void addPackageFromXSD(Resource resource, ResourceConfiguration configuration) throws IOException {

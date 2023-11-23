@@ -1,19 +1,21 @@
-/*
- * Copyright 2010 Red Hat, Inc. and/or its affiliates.
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.drools.core;
 
 import java.io.Externalizable;
@@ -50,7 +52,7 @@ import org.kie.internal.conf.IndexLeftBetaMemoryOption;
 import org.kie.internal.conf.IndexPrecedenceOption;
 import org.kie.internal.conf.IndexRightBetaMemoryOption;
 import org.kie.internal.conf.MaxThreadsOption;
-import org.kie.internal.conf.MultithreadEvaluationOption;
+import org.kie.internal.conf.ParallelExecutionOption;
 import org.kie.internal.conf.SequentialAgendaOption;
 import org.kie.internal.conf.ShareAlphaNodesOption;
 import org.kie.internal.conf.ShareBetaNodesOption;
@@ -141,10 +143,10 @@ public class RuleBaseConfiguration  extends BaseConfiguration<KieBaseOption, Sin
 
     private IndexPrecedenceOption indexPrecedenceOption;
 
-    // if "true", rulebase builder will try to split
+    // if parallelism is enabled, rulebase builder will try to split
     // the rulebase into multiple partitions that can be evaluated
     // in parallel by using multiple internal threads
-    private boolean multithread;
+    private ParallelExecutionOption parallelExecution;
     private int     maxThreads;
 
     private ConflictResolver conflictResolver;
@@ -200,8 +202,8 @@ public class RuleBaseConfiguration  extends BaseConfiguration<KieBaseOption, Sin
 
         setSequential(Boolean.parseBoolean(getPropertyValue(SequentialOption.PROPERTY_NAME, "false")));
 
-        setMultithreadEvaluation(Boolean.parseBoolean(getPropertyValue(MultithreadEvaluationOption.PROPERTY_NAME,
-                                                                                         "false")));
+        setParallelExecution(ParallelExecutionOption.determineParallelExecution(getPropertyValue(ParallelExecutionOption.PROPERTY_NAME,
+                "sequential")));
 
         setMaxThreads( Integer.parseInt( getPropertyValue( MaxThreadsOption.PROPERTY_NAME,
                                                                              "3" ) ) );
@@ -234,7 +236,7 @@ public class RuleBaseConfiguration  extends BaseConfiguration<KieBaseOption, Sin
         out.writeObject(consequenceExceptionHandler);
         out.writeObject(ruleBaseUpdateHandler);
         out.writeObject(conflictResolver);
-        out.writeBoolean(multithread);
+        out.writeObject(parallelExecution);
         out.writeInt(maxThreads);
         out.writeObject(eventProcessingMode);
         out.writeBoolean(declarativeAgenda);
@@ -263,7 +265,7 @@ public class RuleBaseConfiguration  extends BaseConfiguration<KieBaseOption, Sin
         consequenceExceptionHandler = (String) in.readObject();
         ruleBaseUpdateHandler = (String) in.readObject();
         conflictResolver = (ConflictResolver) in.readObject();
-        multithread = in.readBoolean();
+        parallelExecution = (ParallelExecutionOption) in.readObject();
         maxThreads = in.readInt();
         eventProcessingMode = (EventProcessingOption) in.readObject();
         declarativeAgenda = in.readBoolean();
@@ -334,8 +336,8 @@ public class RuleBaseConfiguration  extends BaseConfiguration<KieBaseOption, Sin
             case MaxThreadsOption.PROPERTY_NAME: {
                 return (T) MaxThreadsOption.get(getMaxThreads());
             }
-            case MultithreadEvaluationOption.PROPERTY_NAME: {
-                return (T) (this.multithread ? MultithreadEvaluationOption.YES : MultithreadEvaluationOption.NO);
+            case ParallelExecutionOption.PROPERTY_NAME: {
+                return (T) parallelExecution;
             }
             case DeclarativeAgendaOption.PROPERTY_NAME: {
                 return (T) (this.isDeclarativeAgenda() ? DeclarativeAgendaOption.ENABLED : DeclarativeAgendaOption.DISABLED);
@@ -419,8 +421,8 @@ public class RuleBaseConfiguration  extends BaseConfiguration<KieBaseOption, Sin
                 setMaxThreads( ( (MaxThreadsOption) option ).getMaxThreads());
                 break;
             }
-            case MultithreadEvaluationOption.PROPERTY_NAME: {
-                setMultithreadEvaluation( ( (MultithreadEvaluationOption) option ).isMultithreadEvaluation());
+            case ParallelExecutionOption.PROPERTY_NAME: {
+                setParallelExecution( (ParallelExecutionOption) option );
                 break;
             }
             case DeclarativeAgendaOption.PROPERTY_NAME: {
@@ -502,8 +504,8 @@ public class RuleBaseConfiguration  extends BaseConfiguration<KieBaseOption, Sin
                 setRuleBaseUpdateHandler(StringUtils.isEmpty(value) ? "" : value);
                 break;
             }
-            case MultithreadEvaluationOption.PROPERTY_NAME: {
-                setMultithreadEvaluation(StringUtils.isEmpty(value) ? false : Boolean.valueOf(value));
+            case ParallelExecutionOption.PROPERTY_NAME: {
+                setParallelExecution(ParallelExecutionOption.determineParallelExecution(StringUtils.isEmpty(value) ? "sequential" : value));
                 break;
             }
             case MaxThreadsOption.PROPERTY_NAME: {
@@ -575,8 +577,8 @@ public class RuleBaseConfiguration  extends BaseConfiguration<KieBaseOption, Sin
             case "drools.ruleBaseUpdateHandler": {
                 return getRuleBaseUpdateHandler();
             }
-            case MultithreadEvaluationOption.PROPERTY_NAME: {
-                return Boolean.toString(isMultithreadEvaluation());
+            case ParallelExecutionOption.PROPERTY_NAME: {
+                return parallelExecution.toExternalForm();
             }
             case MaxThreadsOption.PROPERTY_NAME: {
                 return Integer.toString(getMaxThreads());
@@ -762,21 +764,13 @@ public class RuleBaseConfiguration  extends BaseConfiguration<KieBaseOption, Sin
         this.sequentialAgenda = sequentialAgenda;
     }
 
-    /**
-     * Defines if the RuleBase should be executed using a pool of
-     * threads for evaluating the rules ("true"), or if the rulebase 
-     * should work in classic single thread mode ("false").
-     * 
-     * @param enableMultithread true for multi-thread or 
-     *                     false for single-thread. Default is false.
-     */
-    public void setMultithreadEvaluation(boolean enableMultithread) {
+    public void setParallelExecution(ParallelExecutionOption parallelExecutionOption) {
         checkCanChange();
-        this.multithread = enableMultithread;
+        this.parallelExecution = parallelExecutionOption;
     }
 
     public void enforceSingleThreadEvaluation() {
-        this.multithread = false;
+        this.parallelExecution = ParallelExecutionOption.SEQUENTIAL;
     }
 
     /**
@@ -785,8 +779,12 @@ public class RuleBaseConfiguration  extends BaseConfiguration<KieBaseOption, Sin
      * 
      * @return
      */
-    public boolean isMultithreadEvaluation() {
-        return this.multithread;
+    public boolean isParallelEvaluation() {
+        return this.parallelExecution.isParallel();
+    }
+
+    public boolean isParallelExecution() {
+        return this.parallelExecution == ParallelExecutionOption.FULLY_PARALLEL;
     }
 
     /**
@@ -880,7 +878,9 @@ public class RuleBaseConfiguration  extends BaseConfiguration<KieBaseOption, Sin
         }
 
         public boolean equals(Object obj) {
-            if (obj == this) return true;
+            if (obj == this) {
+                return true;
+            }
             else if (obj instanceof AssertBehaviour) {
                 AssertBehaviour that = (AssertBehaviour) obj;
 

@@ -1,24 +1,22 @@
-/*
- * Copyright 2013 Red Hat, Inc. and/or its affiliates.
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *       http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.drools.mvel.integrationtests;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 
 import org.drools.testcoverage.common.util.KieBaseTestConfiguration;
 import org.drools.testcoverage.common.util.KieBaseUtil;
@@ -31,6 +29,10 @@ import org.kie.api.KieBase;
 import org.kie.api.builder.KieBuilder;
 import org.kie.api.builder.Message;
 import org.kie.api.runtime.KieSession;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -418,5 +420,34 @@ public class RuleExtensionTest {
         assertThat(errors.isEmpty()).as("Should have an error").isFalse();
 
         assertThat(errors.iterator().next().toString().contains("Circular")).isTrue();
+    }
+
+    @Test
+    public void testManyExtensions() {
+        // DROOLS-7542
+        String base =
+                "package org.drools.test;\n" +
+                "\n" +
+                "rule R0 when\n" +
+                "  $s : String()\n" +
+                "then\n" +
+                "end\n";
+
+        StringBuilder drl = new StringBuilder(base);
+        for (int i = 1; i < 100; i++) {
+            drl.append(getExtendedRule(i));
+        }
+
+        KieBuilder kieBuilder = KieUtil.getKieBuilderFromDrls(kieBaseTestConfiguration, true, drl.toString());
+        List<Message> errors = kieBuilder.getResults().getMessages(Message.Level.ERROR);
+        assertThat(errors.isEmpty()).isTrue();
+     }
+
+    private String getExtendedRule(int i) {
+        return  "rule R" + i +" extends R0 when\n" +
+                "  $i : Integer( this == " + i + " )\n" +
+                "then\n" +
+                "end\n";
+
     }
 }

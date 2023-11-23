@@ -1,25 +1,29 @@
-/*
- * Copyright 2011 Red Hat, Inc. and/or its affiliates.
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *       http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.drools.traits.core.util;
 
 import org.drools.traits.core.factmodel.CodedHierarchy;
 import org.drools.traits.core.factmodel.HierarchyEncoder;
 import org.drools.traits.core.factmodel.IndexedTypeHierarchy;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -33,7 +37,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class HierarchyTest {
 
-
+    private static final Logger LOGGER = LoggerFactory.getLogger(HierarchyTest.class);
 
     @Test
     public void testHierEncoderTrivial() {
@@ -44,7 +48,7 @@ public class HierarchyTest {
         encoder.encode("C", List.of("B"));
         encoder.encode( "D", Arrays.asList( "B", "C" ) );
 
-        System.out.println( encoder );
+        LOGGER.debug( encoder.toString() );
 
         assertThat(encoder.getCode("A")).isEqualTo(parseBitSet("0"));
         assertThat(encoder.getCode("B")).isEqualTo(parseBitSet("1"));
@@ -62,7 +66,7 @@ public class HierarchyTest {
         encoder.encode( "D", Collections.EMPTY_LIST );
         encoder.encode( "E", Collections.EMPTY_LIST );
 
-        System.out.println( encoder );
+        LOGGER.debug( encoder.toString() );
 
         assertThat(encoder.getCode("A")).isEqualTo(parseBitSet("1"));
         assertThat(encoder.getCode("B")).isEqualTo(parseBitSet("10"));
@@ -87,7 +91,7 @@ public class HierarchyTest {
         encoder.encode( "D", Arrays.asList( "B", "C" ) );
         encoder.encode( "E", Collections.EMPTY_LIST );
 
-        System.out.println( encoder );
+        LOGGER.debug( encoder.toString() );
 
         BitSet a = encoder.getCode( "A" );
         BitSet b = encoder.getCode( "B" );
@@ -140,7 +144,7 @@ public class HierarchyTest {
         encoder.encode("F", List.of("C"));
         encoder.encode("G", List.of("C"));
 
-        System.out.println( encoder );
+        LOGGER.debug( encoder.toString() );
 
         assertThat(encoder.getCode("A")).isEqualTo(parseBitSet("0"));
         assertThat(encoder.getCode("B")).isEqualTo(parseBitSet("1"));
@@ -170,7 +174,7 @@ public class HierarchyTest {
         encoder.encode( "B6", Arrays.asList( "B2", "B3" ) );
         encoder.encode( "B7", Arrays.asList( "B4", "B5", "B6" ) );
 
-        System.out.println( encoder );
+        LOGGER.debug( encoder.toString() );
 
         assertThat(encoder.getCode("R")).isEqualTo(parseBitSet("0"));
         assertThat(encoder.getCode("A1")).isEqualTo(parseBitSet("1"));
@@ -205,7 +209,7 @@ public class HierarchyTest {
         encoder.encode("A2", List.of("R"));
         encoder.encode("A3", List.of("R"));
 
-        System.out.println( encoder );
+        LOGGER.debug( encoder.toString() );
 
         assertThat(encoder.getCode("R")).isEqualTo(parseBitSet("0"));
         assertThat(encoder.getCode("B1")).isEqualTo(parseBitSet("1"));
@@ -242,7 +246,7 @@ public class HierarchyTest {
         encoder.encode( "B5", Arrays.asList( "B1", "B2", "B3" ) );
         encoder.encode( "B6", Arrays.asList( "B1", "B2", "B3" ) );
 
-        System.out.println( encoder );
+        LOGGER.debug( encoder.toString() );
 
         assertThat(encoder.getCode("R")).isEqualTo(parseBitSet("0"));
         assertThat(encoder.getCode("A1")).isEqualTo(parseBitSet("1"));
@@ -274,7 +278,7 @@ public class HierarchyTest {
         encoder.encode("A2", List.of("R"));
         encoder.encode("A3", List.of("R"));
 
-        System.out.println( encoder );
+        LOGGER.debug( encoder.toString() );
 
         assertThat(encoder.getCode("R")).isEqualTo(parseBitSet("0"));
         assertThat(encoder.getCode("B1")).isEqualTo(parseBitSet("1"));
@@ -300,7 +304,7 @@ public class HierarchyTest {
         encoder.encode( "C", Arrays.asList( "A", "B" ) );
         encoder.encode( "D", Arrays.asList( "A", "B" ) );
 
-        System.out.println( encoder );
+        LOGGER.debug( encoder.toString() );
 
         assertThat(encoder.getCode("T")).isEqualTo(parseBitSet("0"));
         assertThat(encoder.getCode("A")).isEqualTo(parseBitSet("1"));
@@ -327,7 +331,7 @@ public class HierarchyTest {
         encoder.encode("H", List.of("E"));
 
 
-        System.out.println( encoder );
+        LOGGER.debug( encoder.toString() );
 
         assertThat(encoder.getCode("A")).isEqualTo(parseBitSet("0"));
         assertThat(encoder.getCode("B")).isEqualTo(parseBitSet("1"));
@@ -340,7 +344,7 @@ public class HierarchyTest {
 
         encoder.encode( "I", Arrays.asList( "E", "F" ) );
 
-        System.out.println( encoder );
+        LOGGER.debug( encoder.toString() );
 
         assertThat(encoder.getCode("A")).isEqualTo(parseBitSet("0"));
         assertThat(encoder.getCode("B")).isEqualTo(parseBitSet("1"));
@@ -372,11 +376,11 @@ public class HierarchyTest {
         encoder.encode("K", List.of("J"));
 
 
-        System.out.println( encoder );
+        LOGGER.debug( encoder.toString() );
 
         encoder.encode( "I", Arrays.asList( "E", "F" ) );
 
-        System.out.println( encoder );
+        LOGGER.debug( encoder.toString() );
 
         checkHier( encoder, 'K' );
 
@@ -408,7 +412,7 @@ public class HierarchyTest {
         encoder.encode("A7", List.of("A4"));
 
 
-        System.out.println( encoder );
+        LOGGER.debug( encoder.toString() );
 
         assertThat(encoder.getCode("R")).isEqualTo(parseBitSet("0"));
         assertThat(encoder.getCode("B1")).isEqualTo(parseBitSet("1"));
@@ -452,7 +456,7 @@ public class HierarchyTest {
 
 
 
-        System.out.println( encoder );
+        LOGGER.debug( encoder.toString() );
 
         assertThat(encoder.getCode("R")).isEqualTo(parseBitSet("0"));
 
@@ -534,7 +538,7 @@ public class HierarchyTest {
         encoder.encode( "O", Arrays.asList( "H", "M" ) );
         checkHier( encoder, 'O' );
 
-        System.out.println( encoder );
+        LOGGER.debug( encoder.toString() );
 
         Collection<BitSet> codes = encoder.getSortedMap().values();
         Iterator<BitSet> iter = codes.iterator();
@@ -542,7 +546,7 @@ public class HierarchyTest {
         for ( int j = 0; j < codes.size() -1; j++ ) {
             BitSet ns = iter.next();
             Long next = toLong( ns );
-            System.out.println( next );
+            LOGGER.debug( next.toString() );
             assertThat(next > last).isTrue();
             last = next;
         }
@@ -662,11 +666,11 @@ public class HierarchyTest {
         encoder.encode( "F", Arrays.asList( "B", "C" ) );
 
 
-        System.out.println( encoder );
+        LOGGER.debug( encoder.toString() );
 
         encoder.encode( "Z", Arrays.asList( "A", "B", "D" ) );
 
-        System.out.println( encoder );
+        LOGGER.debug( encoder.toString() );
 
         assertThat(((HierarchyEncoderImpl) encoder).superset(encoder.getCode("Z"), encoder.getCode("F")) < 0).isTrue() ;
         assertThat(((HierarchyEncoderImpl) encoder).superset(encoder.getCode("F"), encoder.getCode("Z")) < 0).isTrue() ;
@@ -694,14 +698,14 @@ public class HierarchyTest {
         encoder.encode( "M", Arrays.asList( "R", "Q" ) );
         encoder.encode( "O", Arrays.asList( "M", "P" ) );
 
-        System.out.println( encoder );
+        LOGGER.debug( encoder.toString() );
 
         BitSet b;
         Collection x;
 
         b = parseBitSet( "1100111" );
         x = encoder.upperAncestors(b);
-        System.out.println( "ANC " + x );
+        LOGGER.debug( "ANC " + x );
 
         assertThat(x.contains("A")).isTrue();
         assertThat(x.contains("Z")).isTrue();
@@ -717,7 +721,7 @@ public class HierarchyTest {
 
         b = parseBitSet( "100000" );
         x = encoder.upperAncestors(b);
-        System.out.println( "ANC " + x );
+        LOGGER.debug( "ANC " + x );
 
         assertThat(x.size()).isEqualTo(2);
         assertThat(x.contains("Q")).isTrue();
@@ -725,7 +729,7 @@ public class HierarchyTest {
 
         b = parseBitSet( "1111" );
         x = encoder.upperAncestors(b);
-        System.out.println( "ANC " + x );
+        LOGGER.debug( "ANC " + x );
 
         assertThat(x.size()).isEqualTo(6);
         assertThat(x.contains("A")).isTrue();
@@ -737,7 +741,7 @@ public class HierarchyTest {
 
         b = parseBitSet( "111" );
         x = encoder.upperAncestors(b);
-        System.out.println( "ANC " + x );
+        LOGGER.debug( "ANC " + x );
 
         assertThat(x.size()).isEqualTo(4);
         assertThat(x.contains("A")).isTrue();
@@ -747,7 +751,7 @@ public class HierarchyTest {
 
         b = parseBitSet( "1" );
         x = encoder.upperAncestors(b);
-        System.out.println( "ANC " + x );
+        LOGGER.debug( "ANC " + x );
 
         assertThat(x.size()).isEqualTo(2);
         assertThat(x.contains("A")).isTrue();
@@ -755,7 +759,7 @@ public class HierarchyTest {
 
         b = parseBitSet( "10" );
         x = encoder.upperAncestors(b);
-        System.out.println( "ANC " + x );
+        LOGGER.debug( "ANC " + x );
 
         assertThat(x.size()).isEqualTo(2);
         assertThat(x.contains("Z")).isTrue();
@@ -763,7 +767,7 @@ public class HierarchyTest {
 
         b = parseBitSet( "0" );
         x = encoder.upperAncestors(b);
-        System.out.println( "ANC " + x );
+        LOGGER.debug( "ANC " + x );
 
         assertThat(x.size()).isEqualTo(1);
         assertThat(x.contains("Thing")).isTrue();
@@ -771,7 +775,7 @@ public class HierarchyTest {
 
         b = parseBitSet( "1011" );
         x = encoder.upperAncestors(b);
-        System.out.println( "ANC " + x );
+        LOGGER.debug( "ANC " + x );
 
         assertThat(x.size()).isEqualTo(4);
         assertThat(x.contains("Thing")).isTrue();
@@ -800,14 +804,14 @@ public class HierarchyTest {
         encoder.encode( "M", Arrays.asList( "R", "Q" ) );
         encoder.encode( "O", Arrays.asList( "M", "P" ) );
 
-        System.out.println( encoder );
+        LOGGER.debug( encoder.toString() );
 
         BitSet b;
         Collection x;
 
         b = parseBitSet( "111" );
         x = encoder.lowerDescendants(b);
-        System.out.println( "DESC " + x );
+        LOGGER.debug( "DESC " + x );
 
         assertThat(x.size()).isEqualTo(3);
         assertThat(x.contains("C")).isTrue();
@@ -817,7 +821,7 @@ public class HierarchyTest {
 
         b = parseBitSet( "10" );
         x = encoder.lowerDescendants(b);
-        System.out.println( "DESC " + x );
+        LOGGER.debug( "DESC " + x );
 
         assertThat(x.size()).isEqualTo(5);
         assertThat(x.contains("C")).isTrue();
@@ -829,7 +833,7 @@ public class HierarchyTest {
 
         b = parseBitSet( "100000" );
         x = encoder.lowerDescendants(b);
-        System.out.println( "DESC " + x );
+        LOGGER.debug( "DESC " + x );
 
         assertThat(x.size()).isEqualTo(4);
         assertThat(x.contains("Q")).isTrue();
@@ -842,14 +846,14 @@ public class HierarchyTest {
 
         b = parseBitSet( "100010" );
         x = encoder.lowerDescendants(b);
-        System.out.println( "DESC " + x );
+        LOGGER.debug( "DESC " + x );
 
         assertThat(x.size()).isEqualTo(1);
         assertThat(x.contains("T")).isTrue();
 
         b = parseBitSet( "1111" );
         x = encoder.lowerDescendants(b);
-        System.out.println( "DESC " + x );
+        LOGGER.debug( "DESC " + x );
 
         assertThat(x.size()).isEqualTo(1);
         assertThat(x.contains("N")).isTrue();
@@ -857,7 +861,7 @@ public class HierarchyTest {
 
         b = parseBitSet( "1" );
         x = encoder.lowerDescendants(b);
-        System.out.println( "DESC " + x );
+        LOGGER.debug( "DESC " + x );
 
         assertThat(x.size()).isEqualTo(5);
         assertThat(x.contains("A")).isTrue();
@@ -866,10 +870,10 @@ public class HierarchyTest {
         assertThat(x.contains("N")).isTrue();
         assertThat(x.contains("T")).isTrue();
 
-        System.out.println(" +*******************************+ ");
+        LOGGER.debug(" +*******************************+ ");
 
         x = encoder.lowerDescendants(new BitSet());
-        System.out.println( "DESC " + x );
+        LOGGER.debug( "DESC " + x );
 
         assertThat(x.size()).isEqualTo(13);
         assertThat(x.contains("Z")).isTrue();
@@ -896,30 +900,30 @@ public class HierarchyTest {
         encoder.encode( "M", Arrays.asList( "R", "Q" ) );
         encoder.encode( "O", Arrays.asList( "M", "P" ) );
 
-        System.out.println( encoder );
+        LOGGER.debug( encoder.toString() );
 
         Collection x;
 
         x = encoder.lowerBorder( encoder.metMembersCode(List.of("B")));
-        System.out.println( "GCS " + x );
+        LOGGER.debug( "GCS " + x );
         assertThat(x.size()).isEqualTo(1);
         assertThat(x.contains("B")).isTrue();
 
         x = encoder.immediateChildren( encoder.metMembersCode(List.of("B")));
-        System.out.println( "GCS " + x );
+        LOGGER.debug( "GCS " + x );
         assertThat(x.size()).isEqualTo(1);
         assertThat(x.contains("N")).isTrue();
 
 
 
         x = encoder.lowerBorder( encoder.metMembersCode( Arrays.asList( "Z", "Q" ) ) );
-        System.out.println( "GCS " + x );
+        LOGGER.debug( "GCS " + x );
 
         assertThat(x.size()).isEqualTo(1);
         assertThat(x.contains("T")).isTrue();
 
         x = encoder.immediateChildren( encoder.metMembersCode( Arrays.asList( "Z", "Q" ) ) );
-        System.out.println( "GCS " + x );
+        LOGGER.debug( "GCS " + x );
 
         assertThat(x.size()).isEqualTo(1);
         assertThat(x.contains("T")).isTrue();
@@ -928,14 +932,14 @@ public class HierarchyTest {
 
 
         x = encoder.lowerBorder( encoder.metMembersCode( Arrays.asList( "A", "Z" ) ) );
-        System.out.println( "GCS " + x );
+        LOGGER.debug( "GCS " + x );
 
         assertThat(x.size()).isEqualTo(2);
         assertThat(x.contains("B")).isTrue();
         assertThat(x.contains("C")).isTrue();
 
         x = encoder.immediateChildren( encoder.metMembersCode( Arrays.asList( "A", "Z" ) ) );
-        System.out.println( "GCS " + x );
+        LOGGER.debug( "GCS " + x );
 
         assertThat(x.size()).isEqualTo(2);
         assertThat(x.contains("B")).isTrue();
@@ -945,13 +949,13 @@ public class HierarchyTest {
 
 
         x = encoder.lowerBorder( encoder.metMembersCode(List.of("Thing")));
-        System.out.println( "GCS " + x );
+        LOGGER.debug( "GCS " + x );
 
         assertThat(x.size()).isEqualTo(1);
         assertThat(x.contains("Thing")).isTrue();
 
         x = encoder.immediateChildren( encoder.metMembersCode(List.of("Thing")));
-        System.out.println( "GCS " + x );
+        LOGGER.debug( "GCS " + x );
 
         assertThat(x.size()).isEqualTo(5);
         assertThat(x.contains("A")).isTrue();
@@ -982,17 +986,17 @@ public class HierarchyTest {
         encoder.encode( "M", Arrays.asList( "R", "Q" ) );
         encoder.encode( "O", Arrays.asList( "M", "P" ) );
 
-        System.out.println( encoder );
+        LOGGER.debug( encoder.toString() );
 
         Collection x;
 
         x = encoder.upperBorder( encoder.metMembersCode(List.of("B")));
-        System.out.println( "LCS " + x );
+        LOGGER.debug( "LCS " + x );
         assertThat(x.size()).isEqualTo(1);
         assertThat(x.contains("B")).isTrue();
 
         x = encoder.immediateParents( encoder.metMembersCode(List.of("B")));
-        System.out.println( "LCS " + x );
+        LOGGER.debug( "LCS " + x );
         assertThat(x.size()).isEqualTo(2);
         assertThat(x.contains("A")).isTrue();
         assertThat(x.contains("Z")).isTrue();
@@ -1000,13 +1004,13 @@ public class HierarchyTest {
 
 
         x = encoder.upperBorder( encoder.jointMembersCode( Arrays.asList( "Z", "Q" ) ) );
-        System.out.println( "LCS " + x );
+        LOGGER.debug( "LCS " + x );
 
         assertThat(x.size()).isEqualTo(1);
         assertThat(x.contains("Thing")).isTrue();
 
         x = encoder.immediateParents( encoder.jointMembersCode( Arrays.asList( "Z", "Q" ) ) );
-        System.out.println( "LCS " + x );
+        LOGGER.debug( "LCS " + x );
 
         assertThat(x.size()).isEqualTo(1);
         assertThat(x.contains("Thing")).isTrue();
@@ -1014,14 +1018,14 @@ public class HierarchyTest {
 
 
         x = encoder.upperBorder( encoder.jointMembersCode( Arrays.asList( "B", "C" ) ) );
-        System.out.println( "LCS " + x );
+        LOGGER.debug( "LCS " + x );
 
         assertThat(x.size()).isEqualTo(2);
         assertThat(x.contains("A")).isTrue();
         assertThat(x.contains("Z")).isTrue();
 
         x = encoder.immediateParents( encoder.jointMembersCode( Arrays.asList( "B", "C" ) ) );
-        System.out.println( "LCS " + x );
+        LOGGER.debug( "LCS " + x );
 
         assertThat(x.size()).isEqualTo(2);
         assertThat(x.contains("A")).isTrue();
@@ -1029,13 +1033,13 @@ public class HierarchyTest {
 
 
         x = encoder.upperBorder( encoder.jointMembersCode(List.of("T")));
-        System.out.println( "LCS " + x );
+        LOGGER.debug( "LCS " + x );
 
         assertThat(x.size()).isEqualTo(1);
         assertThat(x.contains("T")).isTrue();
 
         x = encoder.immediateParents( encoder.jointMembersCode(List.of("T")));
-        System.out.println( "LCS " + x );
+        LOGGER.debug( "LCS " + x );
 
         assertThat(x.size()).isEqualTo(2);
         assertThat(x.contains("C")).isTrue();
@@ -1069,7 +1073,7 @@ public class HierarchyTest {
         BitSet nk = encoder.encode( "N", Arrays.asList( "I", "L" ) );
         BitSet ok = encoder.encode( "O", Arrays.asList( "H", "M" ) );
 
-        System.out.println( encoder );
+        LOGGER.debug( encoder.toString() );
 
         CodedHierarchy<String> types = new IndexedTypeHierarchy<String>("A", new BitSet(), "ZZZZ", encoder.getBottom() );
 
@@ -1083,7 +1087,7 @@ public class HierarchyTest {
         types.addMember( "h", hk );
 
 
-        System.out.println( types );
+        LOGGER.debug( types.toString() );
 
         assertThat(types.children("A")).isEqualTo(Arrays.asList("c", "h"));
         assertThat(types.children("c")).isEqualTo(Arrays.asList("f", "n", "o"));
@@ -1109,7 +1113,7 @@ public class HierarchyTest {
         BitSet pk = encoder.encode("P", List.of("O"));
         types.addMember( "p", pk );
 
-        System.out.println( types );
+        LOGGER.debug( types.toString() );
 
         assertThat(types.parents("p")).isEqualTo(List.of("o"));
         assertThat(types.parents("ZZZZ")).isEqualTo(Arrays.asList("j", "k", "n", "p"));
@@ -1118,7 +1122,7 @@ public class HierarchyTest {
 
         types.removeMember( "o" );
 
-        System.out.println( types );
+        LOGGER.debug( types.toString() );
 
         assertThat(types.parents("p")).isEqualTo(Arrays.asList("c", "h"));
         assertThat(types.children("c")).isEqualTo(Arrays.asList("f", "n", "p"));
@@ -1172,7 +1176,7 @@ public class HierarchyTest {
 
         assertThat(encoder.getCode("L")).isNotNull();
 
-        System.out.println( encoder );
+        LOGGER.debug( encoder.toString() );
         assertThat(encoder.size()).isEqualTo(16);
     }
 
@@ -1204,7 +1208,7 @@ public class HierarchyTest {
 
 
 
-        System.out.println( encoder );
+        LOGGER.debug( encoder.toString() );
 
         checkHier( encoder, 'O' );
     }
@@ -1240,11 +1244,11 @@ public class HierarchyTest {
         encoder.encode("W", List.of("V"));
         encoder.encode("X", List.of("W"));
 
-        System.out.println( encoder );
+        LOGGER.debug( encoder.toString() );
 
         encoder.encode( "Y", Arrays.asList( "F", "W") );
 
-        System.out.println( encoder );
+        LOGGER.debug( encoder.toString() );
 
         checkHier( encoder, (char) ( 'A' + encoder.size() - 1 ) );
 

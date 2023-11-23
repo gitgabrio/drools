@@ -1,33 +1,36 @@
-/*
- * Copyright 2015 Red Hat, Inc. and/or its affiliates.
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * 
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
-*/
-
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 package org.drools.core.phreak;
 
+import org.drools.base.definitions.rule.impl.RuleImpl;
+import org.drools.base.rule.accessor.Salience;
 import org.drools.core.common.ActivationsManager;
 import org.drools.core.common.InternalAgendaGroup;
 import org.drools.core.common.InternalFactHandle;
+import org.drools.core.common.PropagationContext;
 import org.drools.core.common.ReteEvaluator;
 import org.drools.core.common.TupleSets;
-import org.drools.base.definitions.rule.impl.RuleImpl;
 import org.drools.core.reteoo.LeftTuple;
 import org.drools.core.reteoo.ObjectTypeConf;
 import org.drools.core.reteoo.RuleTerminalNode;
 import org.drools.core.reteoo.RuleTerminalNodeLeftTuple;
 import org.drools.core.reteoo.TerminalNode;
-import org.drools.core.common.PropagationContext;
-import org.drools.base.rule.accessor.Salience;
 import org.drools.core.reteoo.Tuple;
 import org.drools.core.rule.consequence.InternalMatch;
 import org.kie.api.definition.rule.Rule;
@@ -98,10 +101,14 @@ public class PhreakRuleTerminalNode {
             return;
         }
 
-        PropagationContext pctx = leftTuple.findMostRecentPropagationContext();
-
-        if ( rtnNode.getRule().isNoLoop() && sameRules(rtnNode, pctx.getTerminalNodeOrigin()) ) {
-            return;
+        PropagationContext pctx;
+        if ( rtnNode.getRule().isNoLoop() ) {
+            pctx = leftTuple.findMostRecentPropagationContext();
+            if ( sameRules(rtnNode, pctx.getTerminalNodeOrigin()) ) {
+                return;
+            }
+        } else {
+            pctx = leftTuple.getPropagationContext();
         }
 
         int salienceInt = getSalienceValue(rtnNode, ruleAgendaItem, (InternalMatch) leftTuple, reteEvaluator);
@@ -111,8 +118,8 @@ public class PhreakRuleTerminalNode {
 
         activationsManager.getAgendaEventSupport().fireActivationCreated(rtnLeftTuple, activationsManager.getReteEvaluator());
 
-        if (  rtnNode.getRule().isLockOnActive() &&
-              leftTuple.getPropagationContext().getType() != PropagationContext.Type.RULE_ADDITION ) {
+        if ( rtnNode.getRule().isLockOnActive() && pctx.getType() != PropagationContext.Type.RULE_ADDITION ) {
+            pctx = leftTuple.findMostRecentPropagationContext();
             InternalAgendaGroup agendaGroup = executor.getRuleAgendaItem().getAgendaGroup();
             if (blockedByLockOnActive(rtnNode.getRule(), pctx, agendaGroup)) {
                 activationsManager.getAgendaEventSupport().fireActivationCancelled(rtnLeftTuple, reteEvaluator, MatchCancelledCause.FILTER );
@@ -126,7 +133,6 @@ public class PhreakRuleTerminalNode {
         }
 
         executor.addLeftTuple( leftTuple );
-        leftTuple.increaseActivationCountForEvents(); // increased here, decreased in Agenda's cancelActivation and fireActivation
 
         activationsManager.addItemToActivationGroup( rtnLeftTuple );
         if ( !rtnNode.isFireDirect() && executor.isDeclarativeAgendaEnabled() ) {
@@ -180,15 +186,18 @@ public class PhreakRuleTerminalNode {
             return;
         }
 
-        PropagationContext pctx = leftTuple.findMostRecentPropagationContext();
+        PropagationContext pctx = leftTuple.getPropagationContext();
 
         boolean blocked = false;
-        if( executor.isDeclarativeAgendaEnabled() ) {
+        if ( executor.isDeclarativeAgendaEnabled() ) {
            if ( rtnLeftTuple.hasBlockers() ) {
                blocked = true; // declarativeAgenda still blocking LeftTuple, so don't add back ot list
            }
         } else {
-            blocked = rtnNode.getRule().isNoLoop() && rtnNode.equals(pctx.getTerminalNodeOrigin());
+            if (rtnNode.getRule().isNoLoop()) {
+                pctx = leftTuple.findMostRecentPropagationContext();
+                blocked = rtnNode.equals(pctx.getTerminalNodeOrigin());
+            }
         }
 
         int salienceInt = getSalienceValue(rtnNode, executor.getRuleAgendaItem(), (InternalMatch) leftTuple, reteEvaluator);
@@ -200,9 +209,8 @@ public class PhreakRuleTerminalNode {
         
         if ( !blocked ) {
             boolean addToExector = true;
-            if (  rtnNode.getRule().isLockOnActive() &&
-                  pctx.getType() != PropagationContext.Type.RULE_ADDITION ) {
-
+            if ( rtnNode.getRule().isLockOnActive() && pctx.getType() != PropagationContext.Type.RULE_ADDITION ) {
+                pctx = leftTuple.findMostRecentPropagationContext();
                 InternalAgendaGroup agendaGroup = executor.getRuleAgendaItem().getAgendaGroup();
                 if (blockedByLockOnActive(rtnNode.getRule(), pctx, agendaGroup)) {
                     addToExector = false;

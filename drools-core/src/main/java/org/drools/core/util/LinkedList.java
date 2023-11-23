@@ -1,28 +1,30 @@
-/*
- * Copyright 2005 Red Hat, Inc. and/or its affiliates.
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.drools.core.util;
-
-import org.drools.core.reteoo.Tuple;
 
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.NoSuchElementException;
+
+import org.drools.core.reteoo.AbstractTuple;
 
 /**
  * This is a simple linked linked implementation. Each node must implement </code>LinkedListNode<code> so that it references
@@ -52,7 +54,7 @@ public class LinkedList<T extends LinkedListNode<T>>
 
     private int                      size;
     
-    public static final FastIterator<Tuple> fastIterator = new LinkedListFastIterator(); // contains no state, so ok to be static
+    public static final FastIterator<AbstractTuple> fastIterator = new LinkedListFastIterator(); // contains no state, so ok to be static
 
     /**
      * Construct an empty <code>LinkedList</code>
@@ -352,15 +354,28 @@ public class LinkedList<T extends LinkedListNode<T>>
     public FastIterator fastIterator() {
         return fastIterator;
     }
-    
-    public static class LinkedListFastIterator<K extends Entry<K>> implements FastIterator<K> {
-        public K next(K object) {
+
+    // All the tuples except for TMS are AbstractTuple
+    public static class LinkedListFastIterator implements FastIterator<AbstractTuple> {
+
+        public AbstractTuple next(AbstractTuple object) {
             return object.getNext();
         }
         
         public boolean isFullIterator() {
             return false;
         }        
+    }
+
+    // Special case of iterator that uses K extends Entry<K> to support TMS custom objects
+    public static class TMSLinkedListFastIterator<K extends Entry<K>> implements FastIterator<K> {
+        public K next(K object) {
+            return object.getNext();
+        }
+
+        public boolean isFullIterator() {
+            return false;
+        }
     }
 
     public java.util.Iterator<T> javaUtilIterator() {

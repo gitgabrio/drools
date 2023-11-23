@@ -1,32 +1,31 @@
-/*
- * Copyright (c) 2020. Red Hat, Inc. and/or its affiliates.
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *       http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.drools.mvel;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-
-import org.drools.core.base.ClassFieldAccessorCache;
-import org.drools.base.rule.accessor.ReadAccessor;
-import org.drools.kiesession.rulebase.InternalKnowledgeBase;
-import org.drools.mvel.accessors.ClassFieldAccessorStore;
-import org.drools.kiesession.entrypoints.DisconnectedWorkingMemoryEntryPoint;
-import org.drools.core.common.InternalFactHandle;
+import org.drools.base.base.ValueResolver;
 import org.drools.base.definitions.rule.impl.RuleImpl;
+import org.drools.base.rule.Declaration;
+import org.drools.base.rule.accessor.ReadAccessor;
+import org.drools.base.rule.constraint.AlphaNodeFieldConstraint;
+import org.drools.base.rule.constraint.Constraint;
+import org.drools.core.base.ClassFieldAccessorCache;
+import org.drools.core.common.InternalFactHandle;
 import org.drools.core.reteoo.AlphaNode;
 import org.drools.core.reteoo.BetaNode;
 import org.drools.core.reteoo.CompositeObjectSinkAdapter;
@@ -34,15 +33,26 @@ import org.drools.core.reteoo.CompositeObjectSinkAdapter.HashKey;
 import org.drools.core.reteoo.ObjectSink;
 import org.drools.core.reteoo.ReteooFactHandleFactory;
 import org.drools.core.reteoo.builder.BuildContext;
-import org.drools.base.rule.PredicateConstraint;
-import org.drools.base.rule.constraint.AlphaNodeFieldConstraint;
+import org.drools.kiesession.entrypoints.DisconnectedWorkingMemoryEntryPoint;
+import org.drools.kiesession.rulebase.InternalKnowledgeBase;
 import org.drools.kiesession.rulebase.KnowledgeBaseFactory;
+import org.drools.mvel.accessors.ClassFieldAccessorStore;
 import org.drools.mvel.model.Cheese;
 import org.drools.mvel.model.MockObjectSource;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.kie.api.runtime.rule.FactHandle;
+
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
@@ -109,7 +119,7 @@ public class CompositeObjectSinkAdapterTest {
 
     @Test
     public void testAddOneAlphaNotHashable() {
-        final AlphaNode al = createAlphaNode(new PredicateConstraint( null, null ));
+        final AlphaNode al = createAlphaNode(new AlphaNodeFieldConstraintMock());
         ad.addObjectSink( al );
 
         sinksAre(al);
@@ -118,7 +128,7 @@ public class CompositeObjectSinkAdapterTest {
     
     @Test
     public void testAddOneAlphaNotHashableRemoveOneAlpha() {
-        final AlphaNode al = createAlphaNode(new PredicateConstraint( null, null ));
+        final AlphaNode al = createAlphaNode(new AlphaNodeFieldConstraintMock());
         ad.addObjectSink( al );
 
         ad.removeObjectSink( al );
@@ -413,7 +423,54 @@ public class CompositeObjectSinkAdapterTest {
                                             new MockObjectSource( buildContext.getNextNodeId() ),
                                             buildContext );
 	}
-   
+
+    private static class AlphaNodeFieldConstraintMock implements AlphaNodeFieldConstraint {
+
+        @Override
+        public boolean isAllowed(FactHandle handle, ValueResolver valueResolver) {
+            return false;
+        }
+
+        @Override
+        public AlphaNodeFieldConstraint cloneIfInUse() {
+            return this;
+        }
+
+        @Override
+        public Declaration[] getRequiredDeclarations() {
+            return new Declaration[0];
+        }
+
+        @Override
+        public void replaceDeclaration(Declaration oldDecl, Declaration newDecl) {
+
+        }
+
+        @Override
+        public Constraint clone() {
+            return this;
+        }
+
+        @Override
+        public ConstraintType getType() {
+            return null;
+        }
+
+        @Override
+        public boolean isTemporal() {
+            return false;
+        }
+
+        @Override
+        public void writeExternal(ObjectOutput out) throws IOException {
+
+        }
+
+        @Override
+        public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+
+        }
+    }
 
 	private MockBetaNode createBetaNode() {
 		return new MockBetaNode( buildContext.getNextNodeId(),

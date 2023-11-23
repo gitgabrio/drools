@@ -1,19 +1,21 @@
 /**
- * Copyright 2012 Red Hat, Inc. and/or its affiliates.
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.drools.core.util;
 
 import java.math.BigDecimal;
@@ -39,21 +41,29 @@ public class KieFunctions {
     }
 
     public static boolean equalsTo(Number number, String value) {
-        if (number == null) return value == null;
+        if (number == null) {
+            return value == null;
+        }
 
-        if (value == null) throw new RuntimeException("Number: " + number + " can not be compared with a null value.");
+        if (value == null) {
+            throw new RuntimeException("Number: " + number + " can not be compared with a null value.");
+        }
 
         return compareTo(number, value) == 0;
     }
 
     public static boolean equalsTo(String string, String value) {
-        if (string == null) return value == null;
+        if (string == null) {
+            return value == null;
+        }
 
         return string.equals(value);
     }
 
     public static boolean equalsToIgnoreCase(String string, String value) {
-        if (string == null) return value == null;
+        if (string == null) {
+            return value == null;
+        }
 
         return string.equalsIgnoreCase(value);
     }
@@ -63,61 +73,89 @@ public class KieFunctions {
     }
 
     public static boolean contains(String string, String value) {
-        if (string == null) return value == null;
+        if (string == null) {
+            return value == null;
+        }
 
         return value != null && string.contains(value);
     }
 
     public static boolean startsWith(String string, String value) {
-        if (string == null) return value == null;
+        if (string == null) {
+            return value == null;
+        }
 
         return value != null && string.startsWith(value);
     }
 
     public static boolean endsWith(String string, String value) {
-        if (string == null) return value == null;
+        if (string == null) {
+            return value == null;
+        }
 
         return value != null && string.endsWith(value);
     }
 
     public static boolean greaterThan(Number number, String value) {
-        if (number == null) return false;
+        if (number == null) {
+            return false;
+        }
 
-        if (value == null) throw new RuntimeException("Number: " + number + " can not be compared with a null value.");
+        if (value == null) {
+            throw new RuntimeException("Number: " + number + " can not be compared with a null value.");
+        }
 
         return compareTo(number, value) > 0;
     }
 
     public static boolean greaterOrEqualThan(Number number, String value) {
-        if (number == null) return false;
+        if (number == null) {
+            return false;
+        }
 
-        if (value == null) throw new RuntimeException("Number: " + number + " can not be compared with a null value.");
+        if (value == null) {
+            throw new RuntimeException("Number: " + number + " can not be compared with a null value.");
+        }
 
         return compareTo(number, value) >= 0;
     }
 
     public static boolean lessThan(Number number, String value) {
-        if (number == null) return false;
+        if (number == null) {
+            return false;
+        }
 
-        if (value == null) throw new RuntimeException("Number: " + number + " can not be compared with a null value.");
+        if (value == null) {
+            throw new RuntimeException("Number: " + number + " can not be compared with a null value.");
+        }
 
         return compareTo(number, value) < 0;
     }
 
     public static boolean lessOrEqualThan(Number number, String value) {
-        if (number == null) return false;
+        if (number == null) {
+            return false;
+        }
 
-        if (value == null) throw new RuntimeException("Number: " + number + " can not be compared with a null value.");
+        if (value == null) {
+            throw new RuntimeException("Number: " + number + " can not be compared with a null value.");
+        }
 
         return compareTo(number, value) <= 0;
     }
 
     public static boolean between(Number number, String minValue, String maxValue) {
-        if (number == null) return false;
+        if (number == null) {
+            return false;
+        }
 
-        if (minValue == null) throw new RuntimeException("Number: " + number + " can not be compared with minValue null.");
+        if (minValue == null) {
+            throw new RuntimeException("Number: " + number + " can not be compared with minValue null.");
+        }
 
-        if (maxValue == null) throw new RuntimeException("Number: " + number + " can not be compared with maxValue null.");
+        if (maxValue == null) {
+            throw new RuntimeException("Number: " + number + " can not be compared with maxValue null.");
+        }
 
         return compareTo(number, minValue) >= 0 && compareTo(number, maxValue) <= 0;
     }
@@ -132,8 +170,12 @@ public class KieFunctions {
 
     private static int compareTo(Number number, String value) {
 
-        if (number == null) throw new RuntimeException("Number parameter can not be null.");
-        if (value == null) throw new RuntimeException("Number: " + number + " can not be compared with a null value.");
+        if (number == null) {
+            throw new RuntimeException("Number parameter can not be null.");
+        }
+        if (value == null) {
+            throw new RuntimeException("Number: " + number + " can not be compared with a null value.");
+        }
 
         if (number instanceof Short) {
             return Short.valueOf(number.shortValue()).compareTo(Short.valueOf(value));
