@@ -107,6 +107,13 @@ public class JSONUtils {
     }
 
    static String cleanupMapString(String toClean) {
-        return toClean.replaceAll("^\"|\"$", "").replaceAll("\\\\", "");
-    }
+       String toReturn = toClean.replaceAll("^\"|\"$", "").replaceAll("\\\\", "");
+       if (toReturn.startsWith("\"")) {
+           toReturn = toReturn.substring(1);
+       }
+       if (toReturn.endsWith("\"")) {
+           toReturn = toReturn.substring(0, toReturn.length() -1);
+       }
+       return toReturn;
+   }
 }
