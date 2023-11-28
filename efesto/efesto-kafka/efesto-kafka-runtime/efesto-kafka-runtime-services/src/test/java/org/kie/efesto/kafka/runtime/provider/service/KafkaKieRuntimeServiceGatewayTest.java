@@ -16,6 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.kie.efesto.kafka.runtime.provider.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.kafka.clients.admin.*;
