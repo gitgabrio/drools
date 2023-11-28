@@ -14,15 +14,15 @@
     <name>Efesto :: Kafka :: Runtime</name>
     <description>Runtime implementation of the Kafka-based communication layer</description>
     <modules>
-        <module>efesto-kafka-runtime-provider</module>
-        <module>efesto-kafka-runtime-services</module>
+        <module>efesto-kafka-runtime-gateway</module>
+        <module>efesto-kafka-runtime-service</module>
     </modules>
 
     <dependencyManagement>
         <dependencies>
             <dependency>
                 <groupId>org.kie</groupId>
-                <artifactId>efesto-kafka-runtime-provider</artifactId>
+                <artifactId>efesto-kafka-runtime-gateway</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

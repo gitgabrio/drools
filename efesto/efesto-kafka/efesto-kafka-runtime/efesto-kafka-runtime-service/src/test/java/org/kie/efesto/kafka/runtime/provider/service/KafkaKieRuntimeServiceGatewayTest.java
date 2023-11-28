@@ -45,7 +45,7 @@ import static org.kie.efesto.kafka.api.KafkaConstants.*;
 import static org.kie.efesto.kafka.runtime.provider.service.KafkaRuntimeManagerUtils.rePopulateFirstLevelCache;
 
 /**
- * This is a full IT. The class under test is inside <code>efesto-kafka-runtime-provider</code> module, but it requires
+ * This is a full IT. The class under test is inside <code>efesto-kafka-runtime-gateway</code> module, but it requires
  * classes defined in the current module
  */
 class KafkaKieRuntimeServiceGatewayTest {
