@@ -1,0 +1,40 @@
+@startuml KafkaServiceDiscovery
+' Overall C4-PlantUML binding
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+' Additional C4 macros, like RelIndex
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Dynamic.puml
+
+!include puml_images/Kafka_Images.puml
+skinparam linestyle ortho
+
+title Kafka Service Discover
+
+HIDE_STEREOTYPE()
+
+System(EfestoKafkaService,"Efesto Kafka Service", $sprite="efesto") {
+    Container(KieServicesDiscoverConsumer,"Discover Consumer","",$sprite="person")
+    Container(KieServiceNotificationProducer,"Notification Producer","",$sprite="person")
+    Lay_D(KieServicesDiscoverConsumer,KieServiceNotificationProducer)
+}
+
+System(Topics, "Topics", $sprite="kafka") {
+    Container(DISCOVER_TOPIC,"DISCOVER_TOPIC","",$sprite="person")
+    Container(NOTIFICATION_TOPIC,"NOTIFICATION_TOPIC","",$sprite="person")
+    Lay_D(DISCOVER_TOPIC,NOTIFICATION_TOPIC)
+}
+
+System(EfestoKafkaGateway,"Efesto Kafka Gateway", $sprite="efesto_kafka") {
+    Container(KieServicesDiscoverProducer,"Discover Producer","",$sprite="person")
+    Container(KieServiceNotificationConsumer,"Notification Consumer","",$sprite="person")
+    Lay_D(KieServicesDiscoverProducer,KieServiceNotificationConsumer)
+}
+
+Rel_R(KieServicesDiscoverConsumer,DISCOVER_TOPIC,"subscribe","")
+Rel_L(KieServicesDiscoverProducer,DISCOVER_TOPIC,"publish","")
+Rel_L(DISCOVER_TOPIC,KieServicesDiscoverConsumer,"discover","")
+Rel_D(KieServicesDiscoverConsumer,KieServiceNotificationProducer,"discover","")
+Rel_L(KieServiceNotificationConsumer,NOTIFICATION_TOPIC,"subscribe","")
+Rel_R(KieServiceNotificationProducer,NOTIFICATION_TOPIC,"publish","")
+Rel_R(NOTIFICATION_TOPIC,KieServiceNotificationConsumer,"notify","")
+
+@enduml

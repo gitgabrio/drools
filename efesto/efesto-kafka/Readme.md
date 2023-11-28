@@ -56,12 +56,8 @@ This thread is currently used by:
 3. [EvaluateInputRequestConsumer](./efesto-kafka-runtime/efesto-kafka-runtime-service/src/main/java/org/kie/efesto/kafka/runtime/services/consumer/EvaluateInputRequestConsumer.java) - the service-side listening for internal evaluation request
 
 
-
-
-
-
-
-
+## Kafka Service Discovery
+![Service discovery](./documentation/images/KafkaServiceDiscovery.png)
 
 
 ## Kafka setup
