@@ -1,2 +1,2 @@
 # SPI implementations
-org.kie.efesto.kafka.runtime.services.service.KafkaRuntimeServiceLocalProvider
+org.kie.efesto.kafka.runtime.service.service.KafkaRuntimeServiceLocalProvider

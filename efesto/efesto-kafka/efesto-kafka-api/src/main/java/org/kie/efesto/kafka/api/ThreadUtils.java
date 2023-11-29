@@ -30,6 +30,8 @@ import org.slf4j.LoggerFactory;
 import java.time.Duration;
 import java.util.Collection;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
 public class ThreadUtils {
 
@@ -210,6 +212,52 @@ public class ThreadUtils {
     }
 
     /**
+     * Thread to be used when there is a "Listener" listening on the "Consumer" part, anmd also a "Produce" has to be invoked on received message
+     *
+     * @param consumer
+     * @param giveUp
+     * @param threadName
+     * @param consumerRecordFunction The function to transform a <code>ConsumerRecord</code> to an <code>AbstractEfestoKafkaMessage</code>
+     * @param consumeAndProduceFunction The bi-function that consume the record (using the previous one, produce a record, and return an <code>AbstractEfestoKafkaMessage</code>
+     * @param listeners
+     * @return
+     */
+    public static Thread getConsumeAndProduceAndListenThread(Consumer<Long, JsonNode> consumer,
+                                                             int giveUp,
+                                                             String threadName,
+                                                             Function<ConsumerRecord<Long, JsonNode>, AbstractEfestoKafkaMessage> consumerRecordFunction,
+                                                             BiFunction<ConsumerRecord<Long, JsonNode>, Function<ConsumerRecord<Long, JsonNode>, AbstractEfestoKafkaMessage>, AbstractEfestoKafkaMessage> consumeAndProduceFunction,
+                                                             Collection<EfestoKafkaMessageListener> listeners) {
+        logger.info("Retrieving thread for {}", threadName);
+        return new Thread(threadName) {
+            @Override
+            public void run() {
+                final AtomicInteger noRecordsCount = new AtomicInteger(0);
+                while (true) {
+                    try {
+                        final ConsumerRecords<Long, JsonNode> consumerRecords =
+                                consumer.poll(Duration.ofMillis(100));
+                        if (consumerRecords.count() == 0) {
+                            int currentNoRecordsCount = noRecordsCount.addAndGet(1);
+                            if (currentNoRecordsCount > giveUp) {
+//                            break;
+                            } else {
+                                continue;
+                            }
+                        }
+                        consumerRecords.forEach(record -> consumeAndProduceAndListenRecord(record, consumerRecordFunction, consumeAndProduceFunction, listeners));
+                        consumer.commitAsync();
+                    } catch (Exception e) {
+                        logger.error(e.getMessage(), e);
+                    }
+                }
+//                consumer.close();
+//                logger.info("DONE");
+            }
+        };
+    }
+
+    /**
      * Thread to be used when there is a "Listener" listening on the "Consumer" part
      *
      * @param consumer
@@ -221,7 +269,7 @@ public class ThreadUtils {
     public static Thread getConsumeAndListenThread(Consumer<Long, JsonNode> consumer,
                                                    int giveUp,
                                                    String threadName,
-                                                   java.util.function.Function<ConsumerRecord<Long, JsonNode>, AbstractEfestoKafkaMessage> consumerRecordFunction,
+                                                   Function<ConsumerRecord<Long, JsonNode>, AbstractEfestoKafkaMessage> consumerRecordFunction,
                                                    Collection<EfestoKafkaMessageListener> listeners) {
         logger.info("Retrieving thread for {}", threadName);
         return new Thread(threadName) {
@@ -264,7 +312,9 @@ public class ThreadUtils {
 
     }
 
-    static void consumeAndListenRecord(ConsumerRecord<Long, JsonNode> toConsume, java.util.function.Function<ConsumerRecord<Long, JsonNode>, AbstractEfestoKafkaMessage> consumerRecordFunction, Collection<EfestoKafkaMessageListener> listeners) {
+    static void consumeAndListenRecord(ConsumerRecord<Long, JsonNode> toConsume,
+                                       java.util.function.Function<ConsumerRecord<Long, JsonNode>, AbstractEfestoKafkaMessage> consumerRecordFunction,
+                                       Collection<EfestoKafkaMessageListener> listeners) {
         try {
             logger.info("Consumer Record:({}, {}, {}, {})\n",
                     toConsume.key(), toConsume.value(),
@@ -277,6 +327,23 @@ public class ThreadUtils {
             logger.error(e.getMessage(), e);
         }
 
+    }
+
+    static void consumeAndProduceAndListenRecord(ConsumerRecord<Long, JsonNode> toConsume,
+                                                 Function<ConsumerRecord<Long, JsonNode>, AbstractEfestoKafkaMessage> producerConsumer,
+                                                 BiFunction<ConsumerRecord<Long, JsonNode>, Function<ConsumerRecord<Long, JsonNode>, AbstractEfestoKafkaMessage>, AbstractEfestoKafkaMessage> consumeAndProduceFunction,
+                                                 Collection<EfestoKafkaMessageListener> listeners) {
+        try {
+            logger.info("consumeAndProduceAndListenRecord:({}, {}, {}, {})\n",
+                    toConsume.key(), toConsume.value(),
+                    toConsume.partition(), toConsume.offset());
+            AbstractEfestoKafkaMessage message = consumeAndProduceFunction.apply(toConsume, producerConsumer);
+            if (message != null) {
+                listeners.forEach(listener -> listener.onMessageReceived(message));
+            }
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        }
     }
 
     static void consumeAndProduceRecord(ConsumerRecord<Long, JsonNode> toConsume,

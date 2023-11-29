@@ -4,18 +4,18 @@
 _efesto-kafka_ is exposed through a gateway-service design.
 `efesto-kafka-runtime-gateway` represents the part of the code to be executed _locally_, i.e. inside the same JVM of the main Efesto processor.
 
-[KafkaRuntimeServiceProvider](./efesto-kafka-runtime/efesto-kafka-runtime-gateway/src/main/java/org/kie/efesto/kafka/runtime/provider/service/KafkaRuntimeServiceProvider.java) is the kafka-specific implementation of `RuntimeServiceProvider`. It uses kafka-topics to discover 
+[KafkaRuntimeServiceProvider](./efesto-kafka-runtime/efesto-kafka-runtime-gateway/src/main/java/org/kie/efesto/kafka/runtime/gateway/service/KafkaRuntimeServiceProvider.java) is the kafka-specific implementation of `RuntimeServiceProvider`. It uses kafka-topics to discover 
 remotely-deployed `KieRuntimeService` and return them as `KafkaKieRuntimeServiceGateway`, that will be stored in the `firstLevelCache` of the main Efesto processor.
 
-[KafkaKieRuntimeServiceGateway](./efesto-kafka-runtime/efesto-kafka-runtime-gateway/src/main/java/org/kie/efesto/kafka/runtime/provider/service/KafkaKieRuntimeServiceGateway.java) is the kafka-specific implementation of `KieRuntimeService`. It uses kafka-topics to execute methods on
+[KafkaKieRuntimeServiceGateway](./efesto-kafka-runtime/efesto-kafka-runtime-gateway/src/main/java/org/kie/efesto/kafka/runtime/gateway/service/KafkaKieRuntimeServiceGateway.java) is the kafka-specific implementation of `KieRuntimeService`. It uses kafka-topics to execute methods on
 remotely-deployed `KieRuntimeService`.
 
 
 `efesto-kafka-runtime-service` represents the part of the code to be executed _remotely_, i.e. outside the JVM of the main Efesto processor (the gateway).
 
-[KafkaRuntimeLocalServiceProvider](./efesto-kafka-runtime/efesto-kafka-runtime-service/src/main/java/org/kie/efesto/kafka/runtime/services/service/KafkaRuntimeLocalServiceProvider.java) retrieves the locally discovered `KieServices` and provides them to the kafka topics.
+[KafkaRuntimeLocalServiceProvider](./efesto-kafka-runtime/efesto-kafka-runtime-service/src/main/java/org/kie/efesto/kafka/runtime/service/service/KafkaRuntimeLocalServiceProvider.java) retrieves the locally discovered `KieServices` and provides them to the kafka topics.
 
-[KafkaKieRuntimeService](./efesto-kafka-runtime/efesto-kafka-runtime-service/src/main/java/org/kie/efesto/kafka/runtime/services/service/KafkaKieRuntimeService.java) is the kafka _remote_ implementation of `KieService`:
+[KafkaKieRuntimeService](./efesto-kafka-runtime/efesto-kafka-runtime-service/src/main/java/org/kie/efesto/kafka/runtime/service/service/KafkaKieRuntimeService.java) is the kafka _remote_ implementation of `KieService`:
 1. it wraps the actual, local `KieService`
 2. receive requests from `KafkaKieRuntimeServiceGateway` through Kie-Service-request-specific topic (`ModelLocalUriID`)
 3. execute methods on wrapped `KieService`
@@ -51,9 +51,9 @@ A particular thread is the one retrieved by the `getConsumeAndListenThread` meth
 Inside this thread, every `EfestoKafkaMessageListener` provided will be notified with the message produced by the given function.
 This thread provides the ability to register multiple listeners that will be informed when a given message is produced in response to a request.
 This thread is currently used by: 
-1. [KieServiceNotificationConsumer](./efesto-kafka-runtime/efesto-kafka-runtime-gateway/src/main/java/org/kie/efesto/kafka/runtime/provider/consumer/KieServiceNotificationConsumer.java) - the gateway-side listening for internal notification response
-2. [EvaluateInputResponseConsumer](./efesto-kafka-runtime/efesto-kafka-runtime-gateway/src/main/java/org/kie/efesto/kafka/runtime/provider/consumer/EvaluateInputResponseConsumer.java) - the gateway-side listening for internal evaluation response
-3. [EvaluateInputRequestConsumer](./efesto-kafka-runtime/efesto-kafka-runtime-service/src/main/java/org/kie/efesto/kafka/runtime/services/consumer/EvaluateInputRequestConsumer.java) - the service-side listening for internal evaluation request
+1. [KieServiceNotificationConsumer](./efesto-kafka-runtime/efesto-kafka-runtime-gateway/src/main/java/org/kie/efesto/kafka/runtime/gateway/consumer/KieServiceNotificationConsumer.java) - the gateway-side listening for internal notification response
+2. [EvaluateInputResponseConsumer](./efesto-kafka-runtime/efesto-kafka-runtime-gateway/src/main/java/org/kie/efesto/kafka/runtime/gateway/consumer/EvaluateInputResponseConsumer.java) - the gateway-side listening for internal evaluation response
+3. [EvaluateInputRequestConsumer](./efesto-kafka-runtime/efesto-kafka-runtime-service/src/main/java/org/kie/efesto/kafka/runtime/service/consumer/EvaluateInputRequestConsumer.java) - the service-side listening for internal evaluation request
 
 
 ## Kafka Service Discovery

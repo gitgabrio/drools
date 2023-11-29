@@ -28,7 +28,7 @@ import java.util.Optional;
 /**
  * The compilation-related interface to be implemented by engine-plugin.
  * It will be looked for with SPI, so each engine should declare that implementation inside
- * <code>src/main/resources/META-INF/services/org.kie.efesto.runtimemanager.api.service.KieRuntimeService</code> file
+ * <code>src/main/resources/META-INF/service/org.kie.efesto.runtimemanager.api.service.KieRuntimeService</code> file
  */
 public interface KieRuntimeService<S, U, T extends EfestoInput<S>, E extends EfestoOutput<U>, K extends EfestoRuntimeContext> {
 

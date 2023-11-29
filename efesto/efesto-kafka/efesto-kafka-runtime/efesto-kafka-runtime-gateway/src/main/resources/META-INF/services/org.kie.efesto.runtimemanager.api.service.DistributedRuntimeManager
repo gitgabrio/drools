@@ -1,2 +1,2 @@
 # SPI implementations
-org.kie.efesto.kafka.runtime.provider.service.KafkaRuntimeManagerImpl
+org.kie.efesto.kafka.runtime.gateway.service.KafkaRuntimeManagerImpl

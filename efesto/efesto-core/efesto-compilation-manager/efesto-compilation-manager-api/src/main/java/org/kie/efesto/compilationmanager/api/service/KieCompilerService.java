@@ -27,7 +27,7 @@ import org.kie.efesto.compilationmanager.api.model.EfestoResource;
 /**
  * The compilation-related interface to be implemented by engine-plugin.
  * It will be looked for with SPI, so each engine should declare that implementation inside
- * <code>src/main/resources/META-INF/services/org.kie.efesto.compilationmanager.api.service.KieCompilerService</code> file
+ * <code>src/main/resources/META-INF/service/org.kie.efesto.compilationmanager.api.service.KieCompilerService</code> file
  */
 public interface KieCompilerService<E extends EfestoCompilationOutput, U extends EfestoCompilationContext> {
 
