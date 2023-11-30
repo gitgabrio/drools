@@ -24,7 +24,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 
-import static org.kie.efesto.runtimemanager.core.service.RuntimeManagerUtils.getOptionalOutput;
+import static org.kie.efesto.runtimemanager.core.utils.RuntimeManagerUtils.getOptionalOutput;
 
 /**
  * This is the implementation that runs on local JVM

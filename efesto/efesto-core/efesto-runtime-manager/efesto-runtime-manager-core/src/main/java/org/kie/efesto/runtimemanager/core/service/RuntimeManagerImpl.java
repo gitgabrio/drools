@@ -38,7 +38,7 @@ import java.util.stream.Stream;
 import static org.kie.efesto.common.core.utils.JSONUtils.getObjectMapper;
 import static org.kie.efesto.runtimemanager.api.utils.SPIUtils.getDistributedRuntimeManagers;
 import static org.kie.efesto.runtimemanager.api.utils.SPIUtils.getLocalRuntimeManager;
-import static org.kie.efesto.runtimemanager.core.service.RuntimeManagerUtils.getOptionalInput;
+import static org.kie.efesto.runtimemanager.core.utils.RuntimeManagerUtils.getOptionalInput;
 
 /**
  * This is the implementation of the publicly available API, to be invoked by external, consumer code

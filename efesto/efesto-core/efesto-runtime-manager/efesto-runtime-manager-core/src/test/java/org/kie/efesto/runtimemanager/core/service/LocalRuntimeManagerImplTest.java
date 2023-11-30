@@ -29,6 +29,7 @@ import org.kie.efesto.runtimemanager.core.mocks.MockEfestoInputB;
 import org.kie.efesto.runtimemanager.core.mocks.MockEfestoInputC;
 import org.kie.efesto.runtimemanager.core.mocks.MockEfestoInputD;
 import org.kie.efesto.runtimemanager.core.model.EfestoRuntimeContextUtils;
+import org.kie.efesto.runtimemanager.core.utils.RuntimeManagerUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

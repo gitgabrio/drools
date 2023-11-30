@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.kie.efesto.runtimemanager.core.service;
+package org.kie.efesto.runtimemanager.core.utils;
 
 import org.kie.efesto.common.api.cache.EfestoClassKey;
 import org.kie.efesto.common.api.cache.EfestoIdentifierClassKey;
@@ -42,8 +42,8 @@ public class RuntimeManagerUtils {
 
     private static final Logger logger = LoggerFactory.getLogger(RuntimeManagerUtils.class.getName());
 
-    protected static final Map<EfestoClassKey, List<KieRuntimeService>> firstLevelCache = new HashMap<>();
-    protected static final Map<EfestoIdentifierClassKey, KieRuntimeService> secondLevelCache = new HashMap<>();
+    public static final Map<EfestoClassKey, List<KieRuntimeService>> firstLevelCache = new HashMap<>();
+    public static final Map<EfestoIdentifierClassKey, KieRuntimeService> secondLevelCache = new HashMap<>();
 
     private RuntimeManagerUtils() {
     }
@@ -52,7 +52,7 @@ public class RuntimeManagerUtils {
         init();
     }
 
-    static void init() {
+    public static void init() {
         logger.debug("init");
         populateFirstLevelCache(firstLevelCache);
     }
@@ -61,6 +61,27 @@ public class RuntimeManagerUtils {
         logger.info("addKieRuntimeServiceToFirstLevelCache");
         logger.debug("{}", discoveredKieRuntimeService);
         populateFirstLevelCache(discoveredKieRuntimeService, firstLevelCache);
+    }
+
+    public static Optional<EfestoOutput> getOptionalOutput(EfestoRuntimeContext context, EfestoInput input) {
+        logger.debug("getOptionalOutput");
+        logger.trace("{} {}", context, input);
+        Optional<KieRuntimeService> retrieved = getKieRuntimeServiceLocal(context, input);
+        return retrieved.isPresent() ? retrieved.flatMap(kieRuntimeService -> kieRuntimeService.evaluateInput(input,
+                context)) : Optional.empty();
+    }
+
+    public static Optional<EfestoInput> getOptionalInput(String modelLocalUriIdString, String inputDataString) {
+        logger.debug("getOptionalInput");
+        logger.trace("{} {}", modelLocalUriIdString, inputDataString);
+        List<EfestoInput> efestoInputs = firstLevelCache.values().stream()
+                .flatMap((Function<List<KieRuntimeService>, Stream<KieRuntimeService>>) kieRuntimeServices -> kieRuntimeServices.stream())
+                .map(kieRuntimeService -> (Optional<EfestoInput>) kieRuntimeService.parseJsonInput(modelLocalUriIdString, inputDataString))
+                .filter(optional -> optional.isPresent())
+                .map(optional -> optional.get())
+                .collect(Collectors.toList());
+        return findAtMostOne(efestoInputs,
+                (s1, s2) -> new KieRuntimeServiceException("Found more than one EfestoInput: " + s1 + " and " + s2));
     }
 
     static void populateFirstLevelCache(final Map<EfestoClassKey, List<KieRuntimeService>> toPopulate) {
@@ -166,27 +187,6 @@ public class RuntimeManagerUtils {
             firstLevelCache.put(firstLevelClassKey, stored);
         }
         stored.add(toAdd);
-    }
-
-    static Optional<EfestoOutput> getOptionalOutput(EfestoRuntimeContext context, EfestoInput input) {
-        logger.debug("getOptionalOutput");
-        logger.trace("{} {}", context, input);
-        Optional<KieRuntimeService> retrieved = getKieRuntimeServiceLocal(context, input);
-        return retrieved.isPresent() ? retrieved.flatMap(kieRuntimeService -> kieRuntimeService.evaluateInput(input,
-                context)) : Optional.empty();
-    }
-
-    static Optional<EfestoInput> getOptionalInput(String modelLocalUriIdString, String inputDataString) {
-        logger.debug("getOptionalInput");
-        logger.trace("{} {}", modelLocalUriIdString, inputDataString);
-        List<EfestoInput> efestoInputs = firstLevelCache.values().stream()
-                .flatMap((Function<List<KieRuntimeService>, Stream<KieRuntimeService>>) kieRuntimeServices -> kieRuntimeServices.stream())
-                .map(kieRuntimeService -> (Optional<EfestoInput>) kieRuntimeService.parseJsonInput(modelLocalUriIdString, inputDataString))
-                .filter(optional -> optional.isPresent())
-                .map(optional -> optional.get())
-                .collect(Collectors.toList());
-        return findAtMostOne(efestoInputs,
-                (s1, s2) -> new KieRuntimeServiceException("Found more than one EfestoInput: " + s1 + " and " + s2));
     }
 
 }

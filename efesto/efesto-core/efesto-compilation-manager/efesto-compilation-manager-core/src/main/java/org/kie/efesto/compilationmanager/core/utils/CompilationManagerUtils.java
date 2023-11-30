@@ -18,18 +18,27 @@
  */
 package org.kie.efesto.compilationmanager.core.utils;
 
+import org.kie.efesto.common.api.exceptions.KieEfestoCommonException;
+import org.kie.efesto.common.api.identifiers.ModelLocalUriId;
 import org.kie.efesto.common.api.io.IndexFile;
 import org.kie.efesto.common.api.model.*;
+import org.kie.efesto.common.api.utils.CollectionUtils;
+import org.kie.efesto.common.core.storage.ContextStorage;
 import org.kie.efesto.compilationmanager.api.exceptions.KieCompilerServiceException;
 import org.kie.efesto.compilationmanager.api.model.*;
+import org.kie.efesto.compilationmanager.api.service.CompilationManager;
 import org.kie.efesto.compilationmanager.api.service.KieCompilerService;
+import org.kie.efesto.compilationmanager.api.utils.SPIUtils;
+import org.kie.efesto.compilationmanager.core.model.EfestoCompilationContextImpl;
+import org.kie.efesto.compilationmanager.core.model.EfestoCompilationContextUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.kie.efesto.common.api.constants.Constants.INDEXFILE_DIRECTORY_PROPERTY;
 import static org.kie.efesto.common.api.utils.MemoryFileUtils.getFileFromFileNameOrFilePath;
@@ -42,8 +51,29 @@ public class CompilationManagerUtils {
 
     private static final Logger logger = LoggerFactory.getLogger(CompilationManagerUtils.class.getName());
     private static final String DEFAULT_INDEXFILE_DIRECTORY = "./target/classes";
+    private static final CompilationManager compilationManager;
+
+    static {
+        compilationManager = SPIUtils.getCompilationManager(false).orElseThrow(() -> new RuntimeException("Failed to retrieve CompilationManager"));
+    }
+
 
     private CompilationManagerUtils() {}
+
+    public static ModelLocalUriId compileModel(String toCompile, String fileName) {
+        EfestoInputStreamResource efestoResource = new EfestoInputStreamResource(new ByteArrayInputStream(toCompile.getBytes(StandardCharsets.UTF_8)),
+                fileName);
+        EfestoCompilationContextImpl compilationContext = (EfestoCompilationContextImpl) EfestoCompilationContextUtils.buildWithParentClassLoader(Thread.currentThread().getContextClassLoader());
+        try {
+            compilationManager.processResource(compilationContext, efestoResource);
+            ModelLocalUriId toReturn = getModelLocalUriIdFromGeneratedResourcesMap(compilationContext.getGeneratedResourcesMap());
+            ContextStorage.putEfestoCompilationContext(toReturn, compilationContext);
+            return toReturn;
+        } catch (Exception e) {
+            logger.error("Failed to process {}", fileName, e);
+            throw new KieEfestoCommonException(e);
+        }
+    }
 
     /**
      * Process resources and populate generatedResources into context without writing to IndexFile
@@ -92,6 +122,18 @@ public class CompilationManagerUtils {
         String parentPath = System.getProperty(INDEXFILE_DIRECTORY_PROPERTY, DEFAULT_INDEXFILE_DIRECTORY);
         IndexFile toReturn = new IndexFile(parentPath, compilationOutput.getModelLocalUriId().model());
         return getExistingIndexFile(compilationOutput.getModelLocalUriId().model()).orElseGet(() -> createIndexFile(toReturn));
+    }
+
+    static ModelLocalUriId getModelLocalUriIdFromGeneratedResourcesMap(Map<String, GeneratedResources> generatedResourcesMap) {
+        List<GeneratedResource> generatedResources =
+                generatedResourcesMap.values().stream().flatMap(Collection::stream).collect(Collectors.toList());
+
+        GeneratedExecutableResource generatedExecutableResource = CollectionUtils.findAtMostOne(generatedResources,
+                        generatedResource -> generatedResource instanceof GeneratedExecutableResource,
+                        (s1, s2) -> new KieCompilerServiceException("Found more than one GeneratedExecutableResource: " + s1 + " and " + s2))
+                .map(GeneratedExecutableResource.class::cast)
+                .orElseThrow(() -> new KieCompilerServiceException("Failed to retrieve a GeneratedExecutableResource"));
+        return generatedExecutableResource.getModelLocalUriId();
     }
 
     private static IndexFile createIndexFile(IndexFile toCreate) {
