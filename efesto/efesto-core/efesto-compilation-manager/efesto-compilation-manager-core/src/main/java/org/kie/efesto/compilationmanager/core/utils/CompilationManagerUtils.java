@@ -181,7 +181,10 @@ public class CompilationManagerUtils {
         if (compilationOutput instanceof EfestoRedirectOutput) {
             return new GeneratedRedirectResource(((EfestoRedirectOutput) compilationOutput).getModelLocalUriId(),
                                                  ((EfestoRedirectOutput) compilationOutput).getTargetEngine());
-        } else if (compilationOutput instanceof EfestoCallableOutput) {
+        } else if (compilationOutput instanceof EfestoCallableOutputModelContainer) {
+            return new GeneratedModelResource(((EfestoCallableOutputModelContainer) compilationOutput).getModelLocalUriId(), ((EfestoCallableOutputModelContainer) compilationOutput).getModelSource());
+        }
+        else if (compilationOutput instanceof EfestoCallableOutput) {
             return new GeneratedExecutableResource(((EfestoCallableOutput) compilationOutput).getModelLocalUriId(), ((EfestoCallableOutput) compilationOutput).getFullClassNames());
         } else {
             throw new KieCompilerServiceException("Unmanaged type " + compilationOutput.getClass().getName());

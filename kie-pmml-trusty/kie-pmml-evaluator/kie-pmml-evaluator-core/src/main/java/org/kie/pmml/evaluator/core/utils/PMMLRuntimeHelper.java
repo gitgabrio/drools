@@ -52,7 +52,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static org.kie.efesto.runtimemanager.api.utils.GeneratedResourceUtils.getAllGeneratedExecutableResources;
-import static org.kie.efesto.runtimemanager.api.utils.GeneratedResourceUtils.isPresentExecutableOrRedirect;
+import static org.kie.efesto.runtimemanager.api.utils.GeneratedResourceUtils.isPresentExecutableOrModelOrRedirect;
 import static org.kie.pmml.api.enums.PMML_STEP.*;
 import static org.kie.pmml.commons.Constants.*;
 import static org.kie.pmml.commons.utils.PMMLLoaderUtils.loadKiePMMLModelFactory;
@@ -69,7 +69,7 @@ public class PMMLRuntimeHelper {
     }
 
     public static boolean canManageEfestoInput(EfestoInput toEvaluate, EfestoRuntimeContext runtimeContext) {
-        return isPresentExecutableOrRedirect(toEvaluate.getModelLocalUriId(), runtimeContext);
+        return isPresentExecutableOrModelOrRedirect(toEvaluate.getModelLocalUriId(), runtimeContext);
     }
 
     public static Optional<EfestoOutputPMML> executeEfestoInputPMML(EfestoInputPMML toEvaluate,
