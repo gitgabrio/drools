@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -21,12 +21,8 @@ package org.kie.efesto.kafka.runtime.gateway.consumer;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.kafka.clients.consumer.Consumer;
-import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.apache.kafka.clients.consumer.KafkaConsumer;
-import org.apache.kafka.connect.json.JsonDeserializer;
 import org.kie.efesto.kafka.api.listeners.EfestoKafkaMessageListener;
-import org.kie.efesto.kafka.api.serialization.EfestoLongDeserializer;
 import org.kie.efesto.kafka.runtime.gateway.messages.EfestoKafkaRuntimeEvaluateInputResponseMessage;
 import org.kie.efesto.runtimemanager.api.exceptions.EfestoRuntimeManagerException;
 import org.slf4j.Logger;
@@ -35,9 +31,9 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 
 import static org.kie.efesto.common.core.utils.JSONUtils.getObjectMapper;
-import static org.kie.efesto.kafka.api.KafkaConstants.BOOTSTRAP_SERVERS;
 import static org.kie.efesto.kafka.api.KafkaConstants.RUNTIMESERVICE_EVALUATEINPUTRESPONSE_TOPIC;
 import static org.kie.efesto.kafka.api.ThreadUtils.getConsumeAndListenThread;
+import static org.kie.efesto.kafka.api.utils.KafkaUtils.createConsumer;
 
 public class EvaluateInputResponseConsumer {
 
@@ -67,7 +63,7 @@ public class EvaluateInputResponseConsumer {
             registeredListeners.add(toRegister);
         } else {
             logger.info("Starting EvaluateInputResponseConsumer....");
-            Consumer<Long, JsonNode> consumer = createConsumer();
+            Consumer<Long, JsonNode> consumer = createConsumer(EvaluateInputResponseConsumer.class.getSimpleName(), RUNTIMESERVICE_EVALUATEINPUTRESPONSE_TOPIC);
             registeredListeners = new HashSet<>();
             registeredListeners.add(toRegister);
             startEvaluateConsumer(consumer, registeredListeners);
@@ -113,22 +109,4 @@ public class EvaluateInputResponseConsumer {
         return getObjectMapper().readValue(jsonNode.toString(), EfestoKafkaRuntimeEvaluateInputResponseMessage.class);
     }
 
-    private static Consumer<Long, JsonNode> createConsumer() {
-        final Properties props = new Properties();
-        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG,
-                BOOTSTRAP_SERVERS);
-        props.put(ConsumerConfig.GROUP_ID_CONFIG,
-                EvaluateInputResponseConsumer.class.getSimpleName());
-        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,
-                EfestoLongDeserializer.class.getName());
-        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
-                JsonDeserializer.class.getName());
-
-        // Create the consumer using props.
-        final Consumer<Long, JsonNode> consumer = new KafkaConsumer<>(props);
-
-        // Subscribe to the topic.
-        consumer.subscribe(Collections.singletonList(RUNTIMESERVICE_EVALUATEINPUTRESPONSE_TOPIC));
-        return consumer;
-    }
 }
