@@ -56,8 +56,9 @@ public class ThreadUtils {
                 while (true) {
                     try {
                         final ConsumerRecords<Long, JsonNode> consumerRecords =
-                                consumer.poll(Duration.ofMillis(100));
+                                consumer.poll(Duration.ofMillis(1000));
                         if (consumerRecords.count() > 0) {
+                            logger.info("Consuming {} records from {}", consumerRecords.count(), threadName);
                             consumerRecords.forEach(record -> consumeAndProduceRecord(record, producerConsumer, consumeAndProduceFunction));
                             consumer.commitAsync();
                         }
@@ -89,8 +90,9 @@ public class ThreadUtils {
                 while (true) {
                     try {
                         final ConsumerRecords<Long, JsonNode> consumerRecords =
-                                consumer.poll(Duration.ofMillis(100));
+                                consumer.poll(Duration.ofMillis(1000));
                         if (consumerRecords.count() > 0) {
+                            logger.info("Consuming {} records from {}", consumerRecords.count(), threadName);
                             consumerRecords.forEach(record -> consumeAndProduceRecord(record, producerConsumer, consumeAndProduceFunction));
                             consumer.commitAsync();
                         }
@@ -122,8 +124,9 @@ public class ThreadUtils {
                 while (true) {
                     try {
                         final ConsumerRecords<Long, JsonNode> consumerRecords =
-                                consumer.poll(Duration.ofMillis(100));
+                                consumer.poll(Duration.ofMillis(1000));
                         if (consumerRecords.count() > 0) {
+                            logger.info("Consuming {} records from {}", consumerRecords.count(), threadName);
                             consumerRecords.forEach(record -> consumeAndProduceRecord(record, producerConsumer, consumeAndProduceFunction));
                             consumer.commitAsync();
                         }
@@ -153,8 +156,9 @@ public class ThreadUtils {
                 while (true) {
                     try {
                         final ConsumerRecords<Long, JsonNode> consumerRecords =
-                                consumer.poll(Duration.ofMillis(100));
+                                consumer.poll(Duration.ofMillis(1000));
                         if (consumerRecords.count() > 0) {
+                            logger.info("Consuming {} records from {}", consumerRecords.count(), threadName);
                             consumerRecords.forEach(record -> consumeRecord(record, consumeRecordFunction));
                             consumer.commitAsync();
                         }
@@ -188,8 +192,9 @@ public class ThreadUtils {
                 while (true) {
                     try {
                         final ConsumerRecords<Long, JsonNode> consumerRecords =
-                                consumer.poll(Duration.ofMillis(100));
+                                consumer.poll(Duration.ofMillis(1000));
                         if (consumerRecords.count() > 0) {
+                            logger.info("Consuming {} records from {}", consumerRecords.count(), threadName);
                             consumerRecords.forEach(record -> consumeAndProduceAndListenRecord(record, consumerRecordFunction, consumeAndProduceFunction, listeners));
                             consumer.commitAsync();
                         }
@@ -220,8 +225,9 @@ public class ThreadUtils {
                 while (true) {
                     try {
                         final ConsumerRecords<Long, JsonNode> consumerRecords =
-                                consumer.poll(Duration.ofMillis(100));
+                                consumer.poll(Duration.ofMillis(1000));
                         if (consumerRecords.count() > 0) {
+                            logger.info("Consuming {} records from {}", consumerRecords.count(), threadName);
                             consumerRecords.forEach(record -> consumeAndListenRecord(record, consumerRecordFunction, listeners));
                             consumer.commitAsync();
                         }
