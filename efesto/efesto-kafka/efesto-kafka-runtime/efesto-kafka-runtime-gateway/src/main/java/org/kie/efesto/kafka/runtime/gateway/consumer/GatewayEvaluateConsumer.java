@@ -82,9 +82,8 @@ public class GatewayEvaluateConsumer {
     public static void startEvaluateConsumer(Consumer<Long, JsonNode> consumer,
                                              Collection<EfestoKafkaMessageListener> listeners) {
         logger.info("startEvaluateConsumer....");
-        final int giveUp = 100;
         try {
-            consumerThread = getConsumeAndProduceAndListenThread(consumer, giveUp, GatewayEvaluateConsumer.class.getSimpleName(),
+            consumerThread = getConsumeAndProduceAndListenThread(consumer, GatewayEvaluateConsumer.class.getSimpleName(),
                     GatewayEvaluateConsumer::consumeModel,
                     GatewayEvaluateConsumer::biFunction,
                     listeners);

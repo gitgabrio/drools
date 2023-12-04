@@ -35,7 +35,9 @@ public class KafkaRuntimeManagerUtils {
     private static List<KafkaKieRuntimeService> KIERUNTIMESERVICES;
 
     public static void startRuntime() {
-        logger.info("Strating KieServicesDiscoverConsumer...");
+        logger.info("Publishing services...");
+        KieServicesDiscoverConsumer.notifyServices();
+        logger.info("Starting KieServicesDiscoverConsumer...");
         KieServicesDiscoverConsumer.startEvaluateConsumer();
         KafkaRuntimeServiceLocalProvider runtimeServiceProvider = KafkaSPIUtils.getRuntimeServiceProviders(true)
                 .stream()

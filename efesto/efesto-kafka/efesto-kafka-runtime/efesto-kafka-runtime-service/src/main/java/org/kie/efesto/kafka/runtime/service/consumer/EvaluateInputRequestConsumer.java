@@ -72,9 +72,8 @@ public class EvaluateInputRequestConsumer {
 
     public static void startEvaluateConsumer(Consumer<Long, JsonNode> consumer, Collection<EfestoKafkaMessageListener> listeners) {
         logger.info("starting consumer.... {}", consumer);
-        final int giveUp = 100;
         try {
-            consumerThread = getConsumeAndListenThread(consumer, giveUp, EvaluateInputRequestConsumer.class.getSimpleName(),
+            consumerThread = getConsumeAndListenThread(consumer, EvaluateInputRequestConsumer.class.getSimpleName(),
                     EvaluateInputRequestConsumer::consumeModel,
                     listeners);
             consumerThread.start();

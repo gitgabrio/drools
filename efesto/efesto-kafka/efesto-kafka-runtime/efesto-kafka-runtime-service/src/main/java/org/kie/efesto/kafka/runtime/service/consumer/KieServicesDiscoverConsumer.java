@@ -58,9 +58,8 @@ public class KieServicesDiscoverConsumer {
 
     public static void startEvaluateConsumer(Consumer<Long, JsonNode> consumer, final java.util.function.Supplier kieServiceNotificationSupplier) {
         logger.info("starting consumer.... {}", consumer);
-        final int giveUp = 100;
         try {
-            Thread thread = getConsumeAndProduceThread(consumer, kieServiceNotificationSupplier, giveUp, KieServicesDiscoverConsumer.class.getSimpleName(),
+            Thread thread = getConsumeAndProduceThread(consumer, kieServiceNotificationSupplier, KieServicesDiscoverConsumer.class.getSimpleName(),
                     KieServicesDiscoverConsumer::consumeModelAndProduceRecord);
             thread.start();
         } catch (Exception e) {
@@ -70,6 +69,13 @@ public class KieServicesDiscoverConsumer {
 
     public static List<EfestoKafkaRuntimeServiceDiscoverMessage> receivedMessages() {
         return Collections.unmodifiableList(receivedMessages);
+    }
+
+    public static int notifyServices() {
+        logger.info("notifyServices");
+        List<KafkaKieRuntimeService> kieRuntimeServices = localServiceProvider.getKieRuntimeServices();
+        kieRuntimeServices.forEach(KieServicesDiscoverConsumer::notifyService);
+        return kieRuntimeServices.size();
     }
 
     static Object consumeModelAndProduceRecord(ConsumerRecord<Long, JsonNode> toConsume, final java.util.function.Supplier kieServiceNotificationProducer) {
@@ -86,13 +92,6 @@ public class KieServicesDiscoverConsumer {
             logger.error(errorMessage, e);
             throw new EfestoRuntimeManagerException(errorMessage, e);
         }
-    }
-
-    static int notifyServices() {
-        logger.info("notifyServices");
-        List<KafkaKieRuntimeService> kieRuntimeServices = localServiceProvider.getKieRuntimeServices();
-        kieRuntimeServices.forEach(KieServicesDiscoverConsumer::notifyService);
-        return kieRuntimeServices.size();
     }
 
     static void notifyService(KafkaKieRuntimeService toPublish) {

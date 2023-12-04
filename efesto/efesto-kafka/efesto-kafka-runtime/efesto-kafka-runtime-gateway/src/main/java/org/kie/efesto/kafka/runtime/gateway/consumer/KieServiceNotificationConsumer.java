@@ -73,12 +73,11 @@ public class KieServiceNotificationConsumer {
     public static void startEvaluateConsumer(Consumer<Long, JsonNode> consumer,
                                              Collection<EfestoKafkaMessageListener> listeners) {
         logger.info("starting consumer.... {}", consumer);
-        final int giveUp = 100;
         receivedMessages.clear();
         try {
             registeredListeners = new HashSet<>();
             registeredListeners.addAll(listeners);
-            consumerThread = getConsumeAndListenThread(consumer, giveUp, KieServiceNotificationConsumer.class.getSimpleName(),
+            consumerThread = getConsumeAndListenThread(consumer, KieServiceNotificationConsumer.class.getSimpleName(),
                     KieServiceNotificationConsumer::consumeModel,
                     registeredListeners);
             consumerThread.start();

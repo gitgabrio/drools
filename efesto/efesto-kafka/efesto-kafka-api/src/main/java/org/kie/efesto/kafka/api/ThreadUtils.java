@@ -29,7 +29,6 @@ import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
 import java.util.Collection;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -42,41 +41,30 @@ public class ThreadUtils {
      *
      * @param consumer
      * @param producerConsumer
-     * @param giveUp
      * @param threadName
      * @param consumeAndProduceFunction
      * @return
      */
     public static Thread getConsumeAndProduceThread(Consumer<Long, JsonNode> consumer,
                                                     java.util.function.Supplier producerConsumer,
-                                                    int giveUp,
                                                     String threadName,
                                                     java.util.function.BiConsumer<ConsumerRecord<Long, JsonNode>, java.util.function.Supplier> consumeAndProduceFunction) {
         logger.info("Retrieving thread for {}", threadName);
         return new Thread(threadName) {
             @Override
             public void run() {
-                final AtomicInteger noRecordsCount = new AtomicInteger(0);
                 while (true) {
                     try {
                         final ConsumerRecords<Long, JsonNode> consumerRecords =
                                 consumer.poll(Duration.ofMillis(100));
-                        if (consumerRecords.count() == 0) {
-                            int currentNoRecordsCount = noRecordsCount.addAndGet(1);
-                            if (currentNoRecordsCount > giveUp) {
-//                            break;
-                            } else {
-                                continue;
-                            }
+                        if (consumerRecords.count() > 0) {
+                            consumerRecords.forEach(record -> consumeAndProduceRecord(record, producerConsumer, consumeAndProduceFunction));
+                            consumer.commitAsync();
                         }
-                        consumerRecords.forEach(record -> consumeAndProduceRecord(record, producerConsumer, consumeAndProduceFunction));
-                        consumer.commitAsync();
                     } catch (Exception e) {
                         logger.error(e.getMessage(), e);
                     }
                 }
-//                consumer.close();
-//                logger.info("DONE");
             }
         };
     }
@@ -86,41 +74,30 @@ public class ThreadUtils {
      *
      * @param consumer
      * @param producerConsumer
-     * @param giveUp
      * @param threadName
      * @param consumeAndProduceFunction
      * @return
      */
     public static Thread getConsumeAndProduceThread(Consumer<Long, JsonNode> consumer,
                                                     final java.util.function.BiFunction producerConsumer,
-                                                    int giveUp,
                                                     String threadName,
                                                     java.util.function.BiConsumer<ConsumerRecord<Long, JsonNode>, java.util.function.BiFunction> consumeAndProduceFunction) {
         logger.info("Retrieving thread for {}", threadName);
         return new Thread(threadName) {
             @Override
             public void run() {
-                final AtomicInteger noRecordsCount = new AtomicInteger(0);
                 while (true) {
                     try {
                         final ConsumerRecords<Long, JsonNode> consumerRecords =
                                 consumer.poll(Duration.ofMillis(100));
-                        if (consumerRecords.count() == 0) {
-                            int currentNoRecordsCount = noRecordsCount.addAndGet(1);
-                            if (currentNoRecordsCount > giveUp) {
-//                            break;
-                            } else {
-                                continue;
-                            }
+                        if (consumerRecords.count() > 0) {
+                            consumerRecords.forEach(record -> consumeAndProduceRecord(record, producerConsumer, consumeAndProduceFunction));
+                            consumer.commitAsync();
                         }
-                        consumerRecords.forEach(record -> consumeAndProduceRecord(record, producerConsumer, consumeAndProduceFunction));
-                        consumer.commitAsync();
                     } catch (Exception e) {
                         logger.error(e.getMessage(), e);
                     }
                 }
-//                consumer.close();
-//                logger.info("DONE");
             }
         };
     }
@@ -130,41 +107,30 @@ public class ThreadUtils {
      *
      * @param consumer
      * @param producerConsumer
-     * @param giveUp
      * @param threadName
      * @param consumeAndProduceFunction
      * @return
      */
     public static Thread getConsumeAndProduceThread(Consumer<Long, JsonNode> consumer,
                                                     final java.util.function.Function producerConsumer,
-                                                    int giveUp,
                                                     String threadName,
                                                     java.util.function.BiConsumer<ConsumerRecord<Long, JsonNode>, java.util.function.Function> consumeAndProduceFunction) {
         logger.info("Retrieving thread for {}", threadName);
         return new Thread(threadName) {
             @Override
             public void run() {
-                final AtomicInteger noRecordsCount = new AtomicInteger(0);
                 while (true) {
                     try {
                         final ConsumerRecords<Long, JsonNode> consumerRecords =
                                 consumer.poll(Duration.ofMillis(100));
-                        if (consumerRecords.count() == 0) {
-                            int currentNoRecordsCount = noRecordsCount.addAndGet(1);
-                            if (currentNoRecordsCount > giveUp) {
-//                            break;
-                            } else {
-                                continue;
-                            }
+                        if (consumerRecords.count() > 0) {
+                            consumerRecords.forEach(record -> consumeAndProduceRecord(record, producerConsumer, consumeAndProduceFunction));
+                            consumer.commitAsync();
                         }
-                        consumerRecords.forEach(record -> consumeAndProduceRecord(record, producerConsumer, consumeAndProduceFunction));
-                        consumer.commitAsync();
                     } catch (Exception e) {
                         logger.error(e.getMessage(), e);
                     }
                 }
-//                consumer.close();
-//                logger.info("DONE");
             }
         };
     }
@@ -173,40 +139,29 @@ public class ThreadUtils {
      * Thread to be used when there is only the "Consume" part to be executed
      *
      * @param consumer
-     * @param giveUp
      * @param threadName
      * @param consumeRecordFunction
      * @return
      */
     public static Thread getConsumeThread(Consumer<Long, JsonNode> consumer,
-                                          int giveUp,
                                           String threadName,
                                           java.util.function.Consumer<ConsumerRecord<Long, JsonNode>> consumeRecordFunction) {
         logger.info("Retrieving thread for {}", threadName);
         return new Thread(threadName) {
             @Override
             public void run() {
-                final AtomicInteger noRecordsCount = new AtomicInteger(0);
                 while (true) {
                     try {
                         final ConsumerRecords<Long, JsonNode> consumerRecords =
                                 consumer.poll(Duration.ofMillis(100));
-                        if (consumerRecords.count() == 0) {
-                            int currentNoRecordsCount = noRecordsCount.addAndGet(1);
-                            if (currentNoRecordsCount > giveUp) {
-//                            break;
-                            } else {
-                                continue;
-                            }
+                        if (consumerRecords.count() > 0) {
+                            consumerRecords.forEach(record -> consumeRecord(record, consumeRecordFunction));
+                            consumer.commitAsync();
                         }
-                        consumerRecords.forEach(record -> consumeRecord(record, consumeRecordFunction));
-                        consumer.commitAsync();
                     } catch (Exception e) {
                         logger.error(e.getMessage(), e);
                     }
                 }
-//                consumer.close();
-//                logger.info("DONE");
             }
         };
     }
@@ -215,15 +170,13 @@ public class ThreadUtils {
      * Thread to be used when there is a "Listener" listening on the "Consumer" part, anmd also a "Produce" has to be invoked on received message
      *
      * @param consumer
-     * @param giveUp
      * @param threadName
-     * @param consumerRecordFunction The function to transform a <code>ConsumerRecord</code> to an <code>AbstractEfestoKafkaMessage</code>
+     * @param consumerRecordFunction    The function to transform a <code>ConsumerRecord</code> to an <code>AbstractEfestoKafkaMessage</code>
      * @param consumeAndProduceFunction The bi-function that consume the record (using the previous one, produce a record, and return an <code>AbstractEfestoKafkaMessage</code>
      * @param listeners
      * @return
      */
     public static Thread getConsumeAndProduceAndListenThread(Consumer<Long, JsonNode> consumer,
-                                                             int giveUp,
                                                              String threadName,
                                                              Function<ConsumerRecord<Long, JsonNode>, AbstractEfestoKafkaMessage> consumerRecordFunction,
                                                              BiFunction<ConsumerRecord<Long, JsonNode>, Function<ConsumerRecord<Long, JsonNode>, AbstractEfestoKafkaMessage>, AbstractEfestoKafkaMessage> consumeAndProduceFunction,
@@ -232,27 +185,18 @@ public class ThreadUtils {
         return new Thread(threadName) {
             @Override
             public void run() {
-                final AtomicInteger noRecordsCount = new AtomicInteger(0);
                 while (true) {
                     try {
                         final ConsumerRecords<Long, JsonNode> consumerRecords =
                                 consumer.poll(Duration.ofMillis(100));
-                        if (consumerRecords.count() == 0) {
-                            int currentNoRecordsCount = noRecordsCount.addAndGet(1);
-                            if (currentNoRecordsCount > giveUp) {
-//                            break;
-                            } else {
-                                continue;
-                            }
+                        if (consumerRecords.count() > 0) {
+                            consumerRecords.forEach(record -> consumeAndProduceAndListenRecord(record, consumerRecordFunction, consumeAndProduceFunction, listeners));
+                            consumer.commitAsync();
                         }
-                        consumerRecords.forEach(record -> consumeAndProduceAndListenRecord(record, consumerRecordFunction, consumeAndProduceFunction, listeners));
-                        consumer.commitAsync();
                     } catch (Exception e) {
                         logger.error(e.getMessage(), e);
                     }
                 }
-//                consumer.close();
-//                logger.info("DONE");
             }
         };
     }
@@ -261,13 +205,11 @@ public class ThreadUtils {
      * Thread to be used when there is a "Listener" listening on the "Consumer" part
      *
      * @param consumer
-     * @param giveUp
      * @param threadName
      * @param listeners
      * @return
      */
     public static Thread getConsumeAndListenThread(Consumer<Long, JsonNode> consumer,
-                                                   int giveUp,
                                                    String threadName,
                                                    Function<ConsumerRecord<Long, JsonNode>, AbstractEfestoKafkaMessage> consumerRecordFunction,
                                                    Collection<EfestoKafkaMessageListener> listeners) {
@@ -275,27 +217,18 @@ public class ThreadUtils {
         return new Thread(threadName) {
             @Override
             public void run() {
-                final AtomicInteger noRecordsCount = new AtomicInteger(0);
                 while (true) {
                     try {
                         final ConsumerRecords<Long, JsonNode> consumerRecords =
                                 consumer.poll(Duration.ofMillis(100));
-                        if (consumerRecords.count() == 0) {
-                            int currentNoRecordsCount = noRecordsCount.addAndGet(1);
-                            if (currentNoRecordsCount > giveUp) {
-//                            break;
-                            } else {
-                                continue;
-                            }
+                        if (consumerRecords.count() > 0) {
+                            consumerRecords.forEach(record -> consumeAndListenRecord(record, consumerRecordFunction, listeners));
+                            consumer.commitAsync();
                         }
-                        consumerRecords.forEach(record -> consumeAndListenRecord(record, consumerRecordFunction, listeners));
-                        consumer.commitAsync();
                     } catch (Exception e) {
                         logger.error(e.getMessage(), e);
                     }
                 }
-//                consumer.close();
-//                logger.info("DONE");
             }
         };
     }

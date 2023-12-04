@@ -102,9 +102,12 @@ import org.kie.dmn.model.api.OutputClause;
 import org.kie.dmn.model.api.UnaryTests;
 import org.kie.dmn.model.v1_1.TInformationItem;
 import org.kie.dmn.model.v1_1.extensions.DecisionServices;
+import org.kie.efesto.common.api.model.EfestoCompilationContext;
 import org.kie.internal.io.ResourceFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.kie.efesto.common.core.storage.ContextStorage.getEfestoCompilationContext;
 
 public class DMNCompilerImpl implements DMNCompiler {
 
@@ -256,7 +259,9 @@ public class DMNCompilerImpl implements DMNCompiler {
 
     private void processPMMLImport(DMNModelImpl model, Import i, Function<String, Reader> relativeResolver) {
         ClassLoader rootClassLoader = ((DMNCompilerConfigurationImpl) dmnCompilerConfig).getRootClassLoader();
+        //EfestoCompilationContext compilationContext = getEfestoCompilationContext(rootClassLoader);
         Resource relativeResource = resolveRelativeResource(rootClassLoader, model, i, i, relativeResolver);
+
         try (InputStream pmmlIS = relativeResource.getInputStream()) {
             DMNImportPMMLInfo.from(pmmlIS, (DMNCompilerConfigurationImpl) dmnCompilerConfig, model, i).consume(new PMMLImportErrConsumer(model, i),
                                                                                                                model::addPMMLImportInfo);
