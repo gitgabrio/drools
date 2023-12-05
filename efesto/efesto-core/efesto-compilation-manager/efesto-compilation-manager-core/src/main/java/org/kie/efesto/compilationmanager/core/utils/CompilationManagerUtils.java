@@ -73,7 +73,7 @@ public class CompilationManagerUtils {
     }
 
     public static Optional<String> getCompilationSource(String fileName) {
-        return getKieCompilerServiceWithCompilationSource(fileName, false)
+        return getKieCompilationServiceWithCompilationSource(fileName, false)
                 .map(service -> service.getCompilationSource(fileName));
     }
 
@@ -83,10 +83,10 @@ public class CompilationManagerUtils {
      * @param context the compilation context
      */
     public static void processResourceWithContext(EfestoResource toProcess, EfestoCompilationContext context) {
-        Optional<KieCompilationService> retrieved = getKieCompilerService(toProcess, false);
+        Optional<KieCompilationService> retrieved = getKieCompilationService(toProcess, false);
         if (retrieved.isEmpty()) {
             logger.warn("Cannot find KieCompilationService for {}, trying in context classloader", toProcess.getClass());
-            retrieved = getKieCompilerServiceFromEfestoCompilationContext(toProcess, context);
+            retrieved = getKieCompilationServiceFromEfestoCompilationContext(toProcess, context);
         }
         if (retrieved.isEmpty()) {
             logger.warn("Cannot find KieCompilationService for {}", toProcess.getClass());

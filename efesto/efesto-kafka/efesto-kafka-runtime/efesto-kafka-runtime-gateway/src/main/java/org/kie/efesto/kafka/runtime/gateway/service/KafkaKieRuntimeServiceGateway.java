@@ -54,7 +54,7 @@ public class KafkaKieRuntimeServiceGateway implements KafkaKieRuntimeService {
 
     @Override
     public Optional<EfestoOutput> evaluateInput(String modelLocalUriIdString, String inputDataString) {
-        logger.info("canManageInput");
+        logger.info("evaluateInput");
         logger.trace("{} {}", modelLocalUriIdString, inputDataString);
         CompletableFuture<EfestoOutput> completableFuture = CompletableFuture.supplyAsync(() -> {
             EfestoKafkaRuntimeEvaluateInputResponseMessageListener listener = new EfestoKafkaRuntimeEvaluateInputResponseMessageListener();

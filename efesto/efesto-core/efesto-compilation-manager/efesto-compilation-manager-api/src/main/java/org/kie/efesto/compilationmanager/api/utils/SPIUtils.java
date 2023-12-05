@@ -53,32 +53,32 @@ public class SPIUtils {
     
     private static final ServiceLoader<KieCompilationService> kieCompilerServiceLoader = ServiceLoader.load(KieCompilationService.class);
 
-    private static List<KieCompilationService> kieCompilationServices = getKieCompilerServices(kieCompilerServiceLoader);
+    private static List<KieCompilationService> kieCompilationServices = getKieCompilationServices(kieCompilerServiceLoader);
 
     public static List<KieCompilationService> getLocalDiscoveredKieCompilerServices() {
         return kieCompilationServices;
     }
 
-    public static Optional<KieCompilationService> getKieCompilerService(EfestoResource resource, boolean refresh) {
+    public static Optional<KieCompilationService> getKieCompilationService(EfestoResource resource, boolean refresh) {
         logger.debug("getKieCompilerService {} {}", resource, refresh);
         return findAtMostOne(getServices(refresh), service -> service.canManageResource(resource),
                 (s1, s2) -> new KieCompilationServiceException("Found more than one compiler service: " + s1 + " and " + s2));
     }
 
-    public static Optional<KieCompilationService> getKieCompilerServiceWithCompilationSource(String fileName, boolean refresh) {
+    public static Optional<KieCompilationService> getKieCompilationServiceWithCompilationSource(String fileName, boolean refresh) {
         logger.debug("getKieCompilerService {} {}", fileName, refresh);
         return findAtMostOne(getServices(refresh), service -> service.hasCompilationSource(fileName),
                 (s1, s2) -> new KieCompilationServiceException("Found more than one compiler service: " + s1 + " and " + s2));
     }
 
-    public static Optional<KieCompilationService> getKieCompilerServiceFromEfestoCompilationContext(EfestoResource resource, EfestoCompilationContext context) {
+    public static Optional<KieCompilationService> getKieCompilationServiceFromEfestoCompilationContext(EfestoResource resource, EfestoCompilationContext context) {
         logger.debug("getKieCompilerServiceFromEfestoCompilationContext {} {}", resource, context);
         ServiceLoader<KieCompilationService> contextServiceLoader = context.getKieCompilerServiceLoader();
         return findAtMostOne(contextServiceLoader, service -> service.canManageResource(resource),
                              (s1, s2) -> new KieCompilationServiceException("Found more than one compiler service: " + s1 + " and " + s2));
     }
 
-    public static List<KieCompilationService> getKieCompilerServices(boolean refresh) {
+    public static List<KieCompilationService> getKieCompilationServices(boolean refresh) {
         logger.debug("getKieCompilerServices {}", refresh);
         List<KieCompilationService> toReturn = new ArrayList<>();
         Iterable<KieCompilationService> services = getServices(refresh);
@@ -122,7 +122,7 @@ public class SPIUtils {
         return modelTypes;
     }
 
-    private static List<KieCompilationService> getKieCompilerServices(Iterable<KieCompilationService> serviceIterable) {
+    private static List<KieCompilationService> getKieCompilationServices(Iterable<KieCompilationService> serviceIterable) {
         List<KieCompilationService> toReturn = new ArrayList<>();
         serviceIterable.forEach(toReturn::add);
         if (logger.isTraceEnabled()) {

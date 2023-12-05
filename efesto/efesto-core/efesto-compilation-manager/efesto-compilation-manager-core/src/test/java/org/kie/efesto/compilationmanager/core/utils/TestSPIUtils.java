@@ -41,22 +41,22 @@ class TestSPIUtils {
 
     @Test
     void getKieCompilerService() {
-        Optional<KieCompilationService> retrieved = SPIUtils.getKieCompilerService(new MockEfestoRedirectOutputA(), false);
+        Optional<KieCompilationService> retrieved = SPIUtils.getKieCompilationService(new MockEfestoRedirectOutputA(), false);
         assertThat(retrieved).isPresent();
         assertThat(retrieved.get() instanceof MockKieCompilationServiceAB).isTrue();
-        retrieved = SPIUtils.getKieCompilerService(new MockEfestoRedirectOutputB(), false);
+        retrieved = SPIUtils.getKieCompilationService(new MockEfestoRedirectOutputB(), false);
         assertThat(retrieved).isPresent();
         assertThat(retrieved.get() instanceof MockKieCompilationServiceAB).isTrue();
-        retrieved = SPIUtils.getKieCompilerService(new MockEfestoRedirectOutputC(), false);
+        retrieved = SPIUtils.getKieCompilationService(new MockEfestoRedirectOutputC(), false);
         assertThat(retrieved).isPresent();
         assertThat(retrieved.get() instanceof MockKieCompilationServiceC).isTrue();
-        retrieved = SPIUtils.getKieCompilerService(new MockEfestoRedirectOutputD(), false);
+        retrieved = SPIUtils.getKieCompilationService(new MockEfestoRedirectOutputD(), false);
         assertThat(retrieved).isNotPresent();
     }
 
     @Test
     void getKieCompilerServices() {
-        List<KieCompilationService> retrieved = SPIUtils.getKieCompilerServices(false);
+        List<KieCompilationService> retrieved = SPIUtils.getKieCompilationServices(false);
         assertThat(retrieved).isNotNull().hasSize(KIE_COMPILER_SERVICES.size());
     }
 }

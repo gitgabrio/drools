@@ -31,6 +31,14 @@ public class KafkaConstants {
 
     public final static String ALREADY_COMPILED_TOPIC = "already-compiled-topic";
 
+    public final static String COMPILATIONSERVICE_DISCOVER_TOPIC = "compilationservice_discover_topic";
+
+    public final static String COMPILATIONSERVICE_NOTIFICATION_TOPIC = "compilationservice_notification_topic";
+
+    public final static String COMPILATIONSERVICE_SOURCEREQUEST_TOPIC = "compilationservice_sourcerequest_topic";
+
+    public final static String COMPILATIONSERVICE_SOURCERESPONSE_TOPIC = "compilationservice_sourceresponse_topic";
+
     public final static String EVALUATE_TOPIC = "evaluate-topic";
 
     public final static String EVALUATED_TOPIC = "evaluated-topic";
