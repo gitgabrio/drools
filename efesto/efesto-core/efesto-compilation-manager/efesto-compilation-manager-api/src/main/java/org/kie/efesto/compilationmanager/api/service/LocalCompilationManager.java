@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -24,9 +24,9 @@ import org.kie.efesto.compilationmanager.api.model.EfestoResource;
 import java.util.Optional;
 
 /**
- * This is the publicly available API, to be invoked by external, consumer code
+ * This is the type that run on local JVM
  */
-public interface CompilationManager {
+public interface LocalCompilationManager {
 
     /**
      * Process the given <code>EfestoResource</code>.
@@ -37,10 +37,5 @@ public interface CompilationManager {
      */
     void processResource(EfestoCompilationContext context, EfestoResource... toProcess);
 
-    /**
-     * Retrieve the source of a given model file. Used to retrieve source from remote model (e.g. pmml model deployed in different jvm and looked for by dmn)
-     * @param fileName
-     */
     Optional<String> getCompilationSource(String fileName);
-
 }

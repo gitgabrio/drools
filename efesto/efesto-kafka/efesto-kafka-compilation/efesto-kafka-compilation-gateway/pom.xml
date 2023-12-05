@@ -3,18 +3,20 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+
     <parent>
         <groupId>org.kie</groupId>
-        <artifactId>efesto-kafka-runtime</artifactId>
+        <artifactId>efesto-kafka-compilation</artifactId>
         <version>8.45.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>efesto-kafka-runtime-gateway</artifactId>
-    <name>Efesto :: Kafka :: Runtime :: Gateway</name>
-    <description>Gateway of Runtime implementation of the Kafka-based communication layer</description>
+
+    <artifactId>efesto-kafka-compilation-gateway</artifactId>
+    <name>Efesto :: Kafka :: Compilation :: Gateway</name>
+    <description>Gateway of Compilation implementation of the Kafka-based communication layer</description>
 
     <properties>
-        <java.module.name>org.drools.efesto.core.kafka.runtime.gateway</java.module.name>
+        <java.module.name>org.drools.efesto.core.kafka.compilation.gateway</java.module.name>
         <skip.jdepend>true</skip.jdepend>
     </properties>
 
@@ -28,7 +30,7 @@
         </dependency>
         <dependency>
             <groupId>org.kie</groupId>
-            <artifactId>efesto-runtime-manager-core</artifactId>
+            <artifactId>efesto-compilation-manager-core</artifactId>
             <type>test-jar</type>
             <scope>test</scope>
         </dependency>
@@ -43,5 +45,5 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-
+    
 </project>

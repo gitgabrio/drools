@@ -43,14 +43,18 @@
             <groupId>org.kie</groupId>
             <artifactId>efesto-common-core</artifactId>
         </dependency>
-        <dependency><!-- For unit test logging: configure in src/test/resources/logback-test.xml -->
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-classic</artifactId>
-            <scope>test</scope>
+        <dependency>
+            <groupId>org.kie</groupId>
+            <artifactId>efesto-compilation-manager-api</artifactId>
         </dependency>
         <dependency>
             <groupId>org.kie</groupId>
             <artifactId>efesto-runtime-manager-api</artifactId>
+        </dependency>
+        <dependency><!-- For unit test logging: configure in src/test/resources/logback-test.xml -->
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 

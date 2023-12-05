@@ -30,6 +30,7 @@ import java.util.Map;
 public class ContextStorage {
 
     private static final Map<ModelLocalUriId, EfestoCompilationContext> COMPILATION_CONTEXT_MAP = new HashMap<>();
+    private static final Map<ModelLocalUriId, String> COMPILATION_SOURCE_MAP = new HashMap<>();
     private static final Map<ModelLocalUriId, EfestoRuntimeContext> RUNTIME_CONTEXT_MAP = new HashMap<>();
 
 
@@ -39,6 +40,14 @@ public class ContextStorage {
 
     public static EfestoCompilationContext getEfestoCompilationContext(ModelLocalUriId modelLocalUriId) {
         return COMPILATION_CONTEXT_MAP.get(modelLocalUriId);
+    }
+
+    public static void putEfestoCompilationSource(ModelLocalUriId modelLocalUriId, String content) {
+        COMPILATION_SOURCE_MAP.put(modelLocalUriId, content);
+    }
+
+    public static String getEfestoCompilationSource(ModelLocalUriId modelLocalUriId) {
+        return COMPILATION_SOURCE_MAP.get(modelLocalUriId);
     }
 
     public static Collection<ModelLocalUriId> getAllModelLocalUriIdFromCompilationContext() {

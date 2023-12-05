@@ -18,29 +18,19 @@
  */
 package org.kie.efesto.compilationmanager.api.service;
 
-import org.kie.efesto.common.api.model.EfestoCompilationContext;
-import org.kie.efesto.compilationmanager.api.model.EfestoResource;
 
 import java.util.Optional;
 
 /**
- * This is the publicly available API, to be invoked by external, consumer code
+ * This is the implementation that run on different JVMs
  */
-public interface CompilationManager {
+public interface DistributedCompilationManager {
 
     /**
-     * Process the given <code>EfestoResource</code>.
-     * <code>EfestoCompilationContext</code> will be populated with generated classes
+     * Return an <code>Optional&lt;String&gt;</code> with the source of a given model file. Used to retrieve source from remote model (e.g. pmml model deployed in different jvm and looked for by dmn)
      *
-     * @param context
-     * @param toProcess
-     */
-    void processResource(EfestoCompilationContext context, EfestoResource... toProcess);
-
-    /**
-     * Retrieve the source of a given model file. Used to retrieve source from remote model (e.g. pmml model deployed in different jvm and looked for by dmn)
      * @param fileName
+     * @return
      */
     Optional<String> getCompilationSource(String fileName);
-
 }

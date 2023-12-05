@@ -24,13 +24,16 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.kie.efesto.common.api.model.EfestoCompilationContext;
 import org.kie.efesto.common.utils.PackageClassNameUtils;
 import org.kie.efesto.compilationmanager.api.model.EfestoCompilationOutput;
 import org.kie.efesto.compilationmanager.api.model.EfestoFileResource;
+import org.kie.memorycompiler.KieMemoryCompiler;
 import org.kie.pmml.api.compilation.PMMLCompilationContext;
 import org.kie.pmml.api.exceptions.ExternalException;
 import org.kie.pmml.api.exceptions.KiePMMLException;
 import org.kie.pmml.commons.model.KiePMMLModel;
+import org.kie.pmml.compiler.PMMLCompilationContextImpl;
 import org.kie.pmml.compiler.executor.PMMLCompiler;
 import org.kie.pmml.compiler.executor.PMMLCompilerImpl;
 import org.slf4j.Logger;
@@ -54,11 +57,18 @@ public class PMMLCompilerServicePMMLFile {
     }
 
     public static List<EfestoCompilationOutput> getEfestoCompilationOutputPMML(EfestoFileResource resource,
-                                                                               PMMLCompilationContext pmmlContext) {
-
+                                                                               EfestoCompilationContext efestoCompilationContext) {
+        PMMLCompilationContext pmmlContext = getPMMLCompilationContext(resource.getContent().getName(), efestoCompilationContext);
         List<KiePMMLModel> kiePmmlModels = getKiePMMLModelsFromFileResourcesWithConfigurationsWithSources(pmmlContext,
                                                                                                                  Collections.singletonList(resource));
         return getEfestoFinalOutputPMML(kiePmmlModels, resource.getContent().getName(), pmmlContext);
+    }
+
+    static PMMLCompilationContext getPMMLCompilationContext(String fileName, EfestoCompilationContext compilationContext) {
+        PMMLCompilationContext toReturn = new PMMLCompilationContextImpl(fileName,
+                new KieMemoryCompiler.MemoryCompilerClassLoader(Thread.currentThread().getContextClassLoader()));
+        toReturn.getGeneratedResourcesMap().putAll(compilationContext.getGeneratedResourcesMap());
+        return toReturn;
     }
 
     /**

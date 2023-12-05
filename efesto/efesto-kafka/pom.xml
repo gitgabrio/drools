@@ -99,6 +99,7 @@
     <modules>
         <module>efesto-kafka-api</module>
         <module>efesto-kafka-runtime</module>
+        <module>efesto-kafka-compilation</module>
     </modules>
 
 </project>

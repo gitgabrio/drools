@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -35,6 +35,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -44,8 +45,7 @@ import static org.kie.efesto.common.api.constants.Constants.INDEXFILE_DIRECTORY_
 import static org.kie.efesto.common.api.utils.MemoryFileUtils.getFileFromFileNameOrFilePath;
 import static org.kie.efesto.common.core.utils.JSONUtils.getGeneratedResourcesObject;
 import static org.kie.efesto.common.core.utils.JSONUtils.writeGeneratedResourcesObject;
-import static org.kie.efesto.compilationmanager.api.utils.SPIUtils.getKieCompilerService;
-import static org.kie.efesto.compilationmanager.api.utils.SPIUtils.getKieCompilerServiceFromEfestoCompilationContext;
+import static org.kie.efesto.compilationmanager.api.utils.SPIUtils.*;
 
 public class CompilationManagerUtils {
 
@@ -58,21 +58,23 @@ public class CompilationManagerUtils {
     }
 
 
-    private CompilationManagerUtils() {}
+    private CompilationManagerUtils() {
+    }
+
+    public static ModelLocalUriId compileModel(File toCompile) {
+        EfestoFileResource efestoResource = new EfestoFileResource(toCompile);
+        return compileModel(efestoResource);
+    }
 
     public static ModelLocalUriId compileModel(String toCompile, String fileName) {
         EfestoInputStreamResource efestoResource = new EfestoInputStreamResource(new ByteArrayInputStream(toCompile.getBytes(StandardCharsets.UTF_8)),
                 fileName);
-        EfestoCompilationContextImpl compilationContext = (EfestoCompilationContextImpl) EfestoCompilationContextUtils.buildWithParentClassLoader(Thread.currentThread().getContextClassLoader());
-        try {
-            compilationManager.processResource(compilationContext, efestoResource);
-            ModelLocalUriId toReturn = getModelLocalUriIdFromGeneratedResourcesMap(compilationContext.getGeneratedResourcesMap());
-            ContextStorage.putEfestoCompilationContext(toReturn, compilationContext);
-            return toReturn;
-        } catch (Exception e) {
-            logger.error("Failed to process {}", fileName, e);
-            throw new KieEfestoCommonException(e);
-        }
+        return compileModel(efestoResource);
+    }
+
+    public static Optional<String> getCompilationSource(String fileName) {
+        return getKieCompilerServiceWithCompilationSource(fileName, false)
+                .map(service -> service.getCompilationSource(fileName));
     }
 
     /**
@@ -99,6 +101,19 @@ public class CompilationManagerUtils {
         return getFileFromFileNameOrFilePath(toReturn.getName(), toReturn.getAbsolutePath()).map(IndexFile::new);
     }
 
+    static ModelLocalUriId compileModel(EfestoResource efestoResource) {
+        EfestoCompilationContextImpl compilationContext = (EfestoCompilationContextImpl) EfestoCompilationContextUtils.buildWithParentClassLoader(Thread.currentThread().getContextClassLoader());
+        try {
+            compilationManager.processResource(compilationContext, efestoResource);
+            ModelLocalUriId toReturn = getModelLocalUriIdFromGeneratedResourcesMap(compilationContext.getGeneratedResourcesMap());
+            ContextStorage.putEfestoCompilationContext(toReturn, compilationContext);
+            return toReturn;
+        } catch (Exception e) {
+            logger.error("Failed to process {}", efestoResource, e);
+            throw new KieEfestoCommonException(e);
+        }
+    }
+
     static void processResources(KieCompilerService kieCompilerService, EfestoResource toProcess, EfestoCompilationContext context) {
         List<EfestoCompilationOutput> efestoCompilationOutputList = kieCompilerService.processResource(toProcess, context);
         for (EfestoCompilationOutput compilationOutput : efestoCompilationOutputList) {
@@ -109,7 +124,7 @@ public class CompilationManagerUtils {
                             (EfestoCallableOutputClassesContainer) compilationOutput;
                     context.loadClasses(classesContainer.getCompiledClassesMap());
                     context.addGeneratedClasses(classesContainer.getModelLocalUriId().asModelLocalUriId(),
-                                                classesContainer.getCompiledClassesMap());
+                            classesContainer.getCompiledClassesMap());
                 }
             }
             if (compilationOutput instanceof EfestoResource) {
@@ -138,7 +153,7 @@ public class CompilationManagerUtils {
 
     private static IndexFile createIndexFile(IndexFile toCreate) {
         try {
-            logger.debug("Writing file {} {}", toCreate.getAbsolutePath() , toCreate.getName());
+            logger.debug("Writing file {} {}", toCreate.getAbsolutePath(), toCreate.getName());
             if (!toCreate.createNewFile()) {
                 throw new KieCompilerServiceException("Failed to create (" + toCreate.getAbsolutePath() + ") " + toCreate.getName());
             }
@@ -180,11 +195,10 @@ public class CompilationManagerUtils {
     static GeneratedResource getGeneratedResource(EfestoCompilationOutput compilationOutput) {
         if (compilationOutput instanceof EfestoRedirectOutput) {
             return new GeneratedRedirectResource(((EfestoRedirectOutput) compilationOutput).getModelLocalUriId(),
-                                                 ((EfestoRedirectOutput) compilationOutput).getTargetEngine());
+                    ((EfestoRedirectOutput) compilationOutput).getTargetEngine());
         } else if (compilationOutput instanceof EfestoCallableOutputModelContainer) {
             return new GeneratedModelResource(((EfestoCallableOutputModelContainer) compilationOutput).getModelLocalUriId(), ((EfestoCallableOutputModelContainer) compilationOutput).getModelSource());
-        }
-        else if (compilationOutput instanceof EfestoCallableOutput) {
+        } else if (compilationOutput instanceof EfestoCallableOutput) {
             return new GeneratedExecutableResource(((EfestoCallableOutput) compilationOutput).getModelLocalUriId(), ((EfestoCallableOutput) compilationOutput).getFullClassNames());
         } else {
             throw new KieCompilerServiceException("Unmanaged type " + compilationOutput.getClass().getName());

@@ -16,16 +16,23 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.kie.pmml.api.identifiers;
+package org.kie.efesto.compilationmanager.core.service;
 
-public class PmmlIdFactory implements PmmlComponentRoot {
+import org.kie.efesto.compilationmanager.api.service.CompilationServiceProvider;
+import org.kie.efesto.compilationmanager.api.service.KieCompilerService;
 
-    public LocalComponentIdPmml get(String fileName, String name) {
-        return new LocalComponentIdPmml(fileName, name);
-    }
+import java.util.List;
 
-    public LocalCompilationSourceIdPmml get(String fileName) {
-        return new LocalCompilationSourceIdPmml(fileName);
+import static org.kie.efesto.compilationmanager.api.utils.SPIUtils.getLocalDiscoveredKieCompilerServices;
+
+/**
+ * This is the default, JVM-local, implementation of the communication layer abstraction API, to be invoked internally by the framework.
+ */
+public class LocalCompilationServiceProviderImpl implements CompilationServiceProvider {
+
+    @Override
+    public List<KieCompilerService> getKieCompilerServices() {
+        return getLocalDiscoveredKieCompilerServices();
     }
 
 }

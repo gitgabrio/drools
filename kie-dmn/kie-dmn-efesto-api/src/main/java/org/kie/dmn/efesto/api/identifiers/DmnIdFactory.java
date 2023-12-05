@@ -32,4 +32,14 @@ public class DmnIdFactory implements DmnComponentRoot {
         return new LocalComponentIdDmn(fileName, modelName);
     }
 
+    public LocalCompilationSourceIdDmn get(String fileName) {
+        if (fileName.contains(LocalUri.SLASH)) {
+            fileName = fileName.substring(fileName.lastIndexOf(LocalUri.SLASH) + 1);
+        }
+        if (fileName.contains(".")) {
+            fileName = fileName.substring(0, fileName.lastIndexOf('.'));
+        }
+        return new LocalCompilationSourceIdDmn(fileName);
+    }
+
 }

@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -16,31 +16,33 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.kie.efesto.compilationmanager.api.service;
+package org.kie.efesto.compilationmanager.core.service;
 
 import org.kie.efesto.common.api.model.EfestoCompilationContext;
 import org.kie.efesto.compilationmanager.api.model.EfestoResource;
+import org.kie.efesto.compilationmanager.api.service.LocalCompilationManager;
+import org.kie.efesto.compilationmanager.core.utils.CompilationManagerUtils;
 
 import java.util.Optional;
 
+import static org.kie.efesto.compilationmanager.core.utils.CompilationManagerUtils.processResourceWithContext;
+
+
 /**
- * This is the publicly available API, to be invoked by external, consumer code
+ * This is the implementation that runs on local JVM
  */
-public interface CompilationManager {
+public class LocalCompilationManagerImpl implements LocalCompilationManager {
 
-    /**
-     * Process the given <code>EfestoResource</code>.
-     * <code>EfestoCompilationContext</code> will be populated with generated classes
-     *
-     * @param context
-     * @param toProcess
-     */
-    void processResource(EfestoCompilationContext context, EfestoResource... toProcess);
+    @Override
+    public void processResource(EfestoCompilationContext context, EfestoResource... toProcess) {
+        for (EfestoResource efestoInput : toProcess) {
+            processResourceWithContext(efestoInput, context);
+        }
+    }
 
-    /**
-     * Retrieve the source of a given model file. Used to retrieve source from remote model (e.g. pmml model deployed in different jvm and looked for by dmn)
-     * @param fileName
-     */
-    Optional<String> getCompilationSource(String fileName);
+    @Override
+    public Optional<String> getCompilationSource(String fileName) {
+        return CompilationManagerUtils.getCompilationSource(fileName);
+    }
 
 }
