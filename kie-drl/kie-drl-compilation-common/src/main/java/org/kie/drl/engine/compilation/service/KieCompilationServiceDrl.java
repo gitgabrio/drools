@@ -23,15 +23,15 @@ import java.util.List;
 
 import org.kie.drl.engine.compilation.model.DrlCompilationContext;
 import org.kie.drl.engine.compilation.model.DrlFileSetResource;
-import org.kie.efesto.compilationmanager.api.exceptions.KieCompilerServiceException;
+import org.kie.efesto.compilationmanager.api.exceptions.KieCompilationServiceException;
 import org.kie.efesto.common.api.model.EfestoCompilationContext;
 import org.kie.efesto.compilationmanager.api.model.EfestoCompilationOutput;
 import org.kie.efesto.compilationmanager.api.model.EfestoResource;
-import org.kie.efesto.compilationmanager.api.service.KieCompilerService;
+import org.kie.efesto.compilationmanager.api.service.KieCompilationService;
 
 import static org.kie.drl.engine.compilation.utils.DrlCompilerHelper.drlToPackageDescrs;
 
-public class KieCompilerServiceDrl implements KieCompilerService<EfestoCompilationOutput,
+public class KieCompilationServiceDrl implements KieCompilationService<EfestoCompilationOutput,
         EfestoCompilationContext> {
 
     @Override
@@ -42,12 +42,12 @@ public class KieCompilerServiceDrl implements KieCompilerService<EfestoCompilati
     @Override
     public List<EfestoCompilationOutput> processResource(EfestoResource toProcess, EfestoCompilationContext context) {
         if (!canManageResource(toProcess)) {
-            throw new KieCompilerServiceException(String.format("%s can not process %s",
+            throw new KieCompilationServiceException(String.format("%s can not process %s",
                                                                 this.getClass().getName(),
                                                                 toProcess.getClass().getName()));
         }
         if (!(context instanceof DrlCompilationContext)) {
-            throw new KieCompilerServiceException("context has to be DrlCompilationContext");
+            throw new KieCompilationServiceException("context has to be DrlCompilationContext");
         }
         return Collections.singletonList(drlToPackageDescrs((DrlFileSetResource) toProcess, (DrlCompilationContext) context));
     }

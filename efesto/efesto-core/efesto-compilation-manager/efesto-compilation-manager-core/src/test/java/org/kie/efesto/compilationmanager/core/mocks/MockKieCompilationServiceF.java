@@ -16,44 +16,28 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.kie.drl.engine.compilation.service;
+package org.kie.efesto.compilationmanager.core.mocks;
 
 import java.util.Collections;
 import java.util.List;
 
-import org.kie.drl.engine.compilation.model.DecisionTableFileSetResource;
-import org.kie.drl.engine.compilation.model.DrlCompilationContext;
-import org.kie.efesto.compilationmanager.api.exceptions.KieCompilerServiceException;
+import org.kie.efesto.compilationmanager.api.exceptions.KieCompilationServiceException;
 import org.kie.efesto.common.api.model.EfestoCompilationContext;
 import org.kie.efesto.compilationmanager.api.model.EfestoCompilationOutput;
 import org.kie.efesto.compilationmanager.api.model.EfestoResource;
-import org.kie.efesto.compilationmanager.api.service.KieCompilerService;
 
-import static org.kie.drl.engine.compilation.utils.DrlCompilerHelper.dTableToDrl;
-
-public class KieCompilerServiceDecisionTable implements KieCompilerService<EfestoCompilationOutput,
-        EfestoCompilationContext> {
+public class MockKieCompilationServiceF extends AbstractMockKieCompilationService {
 
     @Override
     public boolean canManageResource(EfestoResource toProcess) {
-        return toProcess instanceof DecisionTableFileSetResource;
+        return toProcess instanceof MockEfestoInputF;
     }
 
     @Override
     public List<EfestoCompilationOutput> processResource(EfestoResource toProcess, EfestoCompilationContext context) {
         if (!canManageResource(toProcess)) {
-            throw new KieCompilerServiceException(String.format("%s can not process %s",
-                    this.getClass().getName(),
-                    toProcess.getClass().getName()));
+            throw new KieCompilationServiceException(String.format("Unmanaged resource %s", toProcess.getClass()));
         }
-        if (!(context instanceof DrlCompilationContext)) {
-            throw new KieCompilerServiceException("context has to be DrlCompilationContext");
-        }
-        return Collections.singletonList(dTableToDrl((DecisionTableFileSetResource) toProcess, (DrlCompilationContext) context));
-    }
-
-    @Override
-    public String getModelType() {
-        return "drl";
+        return Collections.singletonList(new MockEfestoRedirectOutputE());
     }
 }

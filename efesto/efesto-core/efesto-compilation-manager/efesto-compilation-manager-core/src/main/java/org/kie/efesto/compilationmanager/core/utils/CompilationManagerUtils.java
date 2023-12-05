@@ -24,10 +24,10 @@ import org.kie.efesto.common.api.io.IndexFile;
 import org.kie.efesto.common.api.model.*;
 import org.kie.efesto.common.api.utils.CollectionUtils;
 import org.kie.efesto.common.core.storage.ContextStorage;
-import org.kie.efesto.compilationmanager.api.exceptions.KieCompilerServiceException;
+import org.kie.efesto.compilationmanager.api.exceptions.KieCompilationServiceException;
 import org.kie.efesto.compilationmanager.api.model.*;
 import org.kie.efesto.compilationmanager.api.service.CompilationManager;
-import org.kie.efesto.compilationmanager.api.service.KieCompilerService;
+import org.kie.efesto.compilationmanager.api.service.KieCompilationService;
 import org.kie.efesto.compilationmanager.api.utils.SPIUtils;
 import org.kie.efesto.compilationmanager.core.model.EfestoCompilationContextImpl;
 import org.kie.efesto.compilationmanager.core.model.EfestoCompilationContextUtils;
@@ -83,13 +83,13 @@ public class CompilationManagerUtils {
      * @param context the compilation context
      */
     public static void processResourceWithContext(EfestoResource toProcess, EfestoCompilationContext context) {
-        Optional<KieCompilerService> retrieved = getKieCompilerService(toProcess, false);
+        Optional<KieCompilationService> retrieved = getKieCompilerService(toProcess, false);
         if (retrieved.isEmpty()) {
-            logger.warn("Cannot find KieCompilerService for {}, trying in context classloader", toProcess.getClass());
+            logger.warn("Cannot find KieCompilationService for {}, trying in context classloader", toProcess.getClass());
             retrieved = getKieCompilerServiceFromEfestoCompilationContext(toProcess, context);
         }
         if (retrieved.isEmpty()) {
-            logger.warn("Cannot find KieCompilerService for {}", toProcess.getClass());
+            logger.warn("Cannot find KieCompilationService for {}", toProcess.getClass());
             return;
         }
         processResources(retrieved.get(), toProcess, context);
@@ -114,8 +114,8 @@ public class CompilationManagerUtils {
         }
     }
 
-    static void processResources(KieCompilerService kieCompilerService, EfestoResource toProcess, EfestoCompilationContext context) {
-        List<EfestoCompilationOutput> efestoCompilationOutputList = kieCompilerService.processResource(toProcess, context);
+    static void processResources(KieCompilationService kieCompilationService, EfestoResource toProcess, EfestoCompilationContext context) {
+        List<EfestoCompilationOutput> efestoCompilationOutputList = kieCompilationService.processResource(toProcess, context);
         for (EfestoCompilationOutput compilationOutput : efestoCompilationOutputList) {
             if (compilationOutput instanceof EfestoCallableOutput) {
                 populateContext(context, (EfestoCallableOutput) compilationOutput);
@@ -145,9 +145,9 @@ public class CompilationManagerUtils {
 
         GeneratedExecutableResource generatedExecutableResource = CollectionUtils.findAtMostOne(generatedResources,
                         generatedResource -> generatedResource instanceof GeneratedExecutableResource,
-                        (s1, s2) -> new KieCompilerServiceException("Found more than one GeneratedExecutableResource: " + s1 + " and " + s2))
+                        (s1, s2) -> new KieCompilationServiceException("Found more than one GeneratedExecutableResource: " + s1 + " and " + s2))
                 .map(GeneratedExecutableResource.class::cast)
-                .orElseThrow(() -> new KieCompilerServiceException("Failed to retrieve a GeneratedExecutableResource"));
+                .orElseThrow(() -> new KieCompilationServiceException("Failed to retrieve a GeneratedExecutableResource"));
         return generatedExecutableResource.getModelLocalUriId();
     }
 
@@ -155,12 +155,12 @@ public class CompilationManagerUtils {
         try {
             logger.debug("Writing file {} {}", toCreate.getAbsolutePath(), toCreate.getName());
             if (!toCreate.createNewFile()) {
-                throw new KieCompilerServiceException("Failed to create (" + toCreate.getAbsolutePath() + ") " + toCreate.getName());
+                throw new KieCompilationServiceException("Failed to create (" + toCreate.getAbsolutePath() + ") " + toCreate.getName());
             }
         } catch (IOException e) {
             String errorMessage = (e.getMessage() != null && !e.getMessage().isEmpty()) ? e.getMessage() : e.getClass().getName();
             logger.error("Failed to create {} {} due to {}", toCreate.getAbsolutePath(), toCreate.getName(), errorMessage);
-            throw new KieCompilerServiceException("Failed to create (" + toCreate.getAbsolutePath() + ") " + toCreate.getName(), e);
+            throw new KieCompilationServiceException("Failed to create (" + toCreate.getAbsolutePath() + ") " + toCreate.getName(), e);
         }
         return toCreate;
     }
@@ -171,7 +171,7 @@ public class CompilationManagerUtils {
             populateGeneratedResources(generatedResources, compilationOutput);
             writeGeneratedResourcesObject(generatedResources, toPopulate);
         } catch (Exception e) {
-            throw new KieCompilerServiceException(e);
+            throw new KieCompilationServiceException(e);
         }
     }
 
@@ -181,7 +181,7 @@ public class CompilationManagerUtils {
             GeneratedResources generatedResources = (GeneratedResources) context.getGeneratedResourcesMap().computeIfAbsent(model, key -> new GeneratedResources());
             populateGeneratedResources(generatedResources, compilationOutput);
         } catch (Exception e) {
-            throw new KieCompilerServiceException(e);
+            throw new KieCompilationServiceException(e);
         }
     }
 
@@ -201,7 +201,7 @@ public class CompilationManagerUtils {
         } else if (compilationOutput instanceof EfestoCallableOutput) {
             return new GeneratedExecutableResource(((EfestoCallableOutput) compilationOutput).getModelLocalUriId(), ((EfestoCallableOutput) compilationOutput).getFullClassNames());
         } else {
-            throw new KieCompilerServiceException("Unmanaged type " + compilationOutput.getClass().getName());
+            throw new KieCompilationServiceException("Unmanaged type " + compilationOutput.getClass().getName());
         }
     }
 

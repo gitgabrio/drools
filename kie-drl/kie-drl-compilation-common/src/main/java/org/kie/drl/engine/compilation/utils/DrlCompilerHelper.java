@@ -40,7 +40,7 @@ import org.kie.drl.engine.compilation.model.DrlFileSetResource;
 import org.kie.drl.engine.compilation.model.DrlPackageDescrSetResource;
 import org.kie.drl.engine.compilation.model.ExecutableModelClassesContainer;
 import org.kie.efesto.common.api.identifiers.EfestoAppRoot;
-import org.kie.efesto.compilationmanager.api.exceptions.KieCompilerServiceException;
+import org.kie.efesto.compilationmanager.api.exceptions.KieCompilationServiceException;
 import org.kie.efesto.compilationmanager.api.model.EfestoSetResource;
 import org.kie.internal.builder.KnowledgeBuilderFactory;
 import org.kie.internal.builder.KnowledgeBuilderResult;
@@ -67,7 +67,7 @@ public class DrlCompilerHelper {
 
     public static ExecutableModelClassesContainer dTableToDrl(DecisionTableFileSetResource resources, DrlCompilationContext context) {
         // TODO {mfusco}
-        throw new KieCompilerServiceException("Not implemented, yet");
+        throw new KieCompilationServiceException("Not implemented, yet");
     }
 
     public static DrlPackageDescrSetResource drlToPackageDescrs(DrlFileSetResource resources, DrlCompilationContext context) {
@@ -151,7 +151,7 @@ public class DrlCompilerHelper {
         try {
             return drlResourceHandler.process(resource);
         } catch (DroolsParserException | IOException e) {
-            throw new KieCompilerServiceException(e);
+            throw new KieCompilationServiceException(e);
         }
     }
 }

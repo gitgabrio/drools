@@ -1,0 +1,3 @@
+# SPI implementations
+org.kie.pmml.compiler.service.KieCompilationServicePMMLFile
+org.kie.pmml.compiler.service.KieCompilationServicePMMLInputStream

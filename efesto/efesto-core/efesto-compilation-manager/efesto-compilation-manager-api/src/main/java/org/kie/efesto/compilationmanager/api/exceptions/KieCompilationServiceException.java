@@ -16,20 +16,26 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.kie.efesto.compilationmanager.core.mocks;
+package org.kie.efesto.compilationmanager.api.exceptions;
 
-import java.util.Arrays;
-import java.util.List;
+public class KieCompilationServiceException extends RuntimeException {
 
-import org.kie.efesto.compilationmanager.api.model.EfestoResource;
-
-public class MockKieCompilerServiceAB extends AbstractMockKieCompilerService {
-
-    private static List<Class<? extends AbstractMockOutput>> managedResources = Arrays.asList(MockEfestoRedirectOutputA.class, MockEfestoRedirectOutputB.class);
-
-    @Override
-    public boolean canManageResource(EfestoResource toProcess) {
-        return managedResources.contains(toProcess.getClass());
+    public KieCompilationServiceException() {
     }
 
+    public KieCompilationServiceException(String message) {
+        super(message);
+    }
+
+    public KieCompilationServiceException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public KieCompilationServiceException(Throwable cause) {
+        super(cause);
+    }
+
+    public KieCompilationServiceException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+        super(message, cause, enableSuppression, writableStackTrace);
+    }
 }

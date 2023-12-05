@@ -1,0 +1,4 @@
+# SPI implementations
+org.kie.efesto.compilationmanager.core.mocks.MockKieCompilationServiceAB
+org.kie.efesto.compilationmanager.core.mocks.MockKieCompilationServiceC
+org.kie.efesto.compilationmanager.core.mocks.MockKieCompilationServiceE

@@ -34,11 +34,11 @@ import org.kie.efesto.common.api.model.GeneratedResources;
 import org.kie.efesto.compilationmanager.api.model.EfestoCallableOutputClassesContainer;
 import org.kie.efesto.common.api.model.EfestoCompilationContext;
 import org.kie.efesto.compilationmanager.api.model.EfestoResource;
-import org.kie.efesto.compilationmanager.api.service.KieCompilerService;
+import org.kie.efesto.compilationmanager.api.service.KieCompilationService;
 import org.kie.efesto.compilationmanager.core.mocks.MockEfestoInputF;
 import org.kie.efesto.compilationmanager.core.mocks.MockEfestoRedirectOutputE;
-import org.kie.efesto.compilationmanager.core.mocks.MockKieCompilerServiceE;
-import org.kie.efesto.compilationmanager.core.mocks.MockKieCompilerServiceF;
+import org.kie.efesto.compilationmanager.core.mocks.MockKieCompilationServiceE;
+import org.kie.efesto.compilationmanager.core.mocks.MockKieCompilationServiceF;
 import org.kie.efesto.compilationmanager.core.model.EfestoCompilationContextUtils;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -59,22 +59,22 @@ class CompilationManagerUtilsTest {
 
     @Test
     void processResourcesWithoutRedirect() {
-        KieCompilerService kieCompilerServiceMock = mock(MockKieCompilerServiceE.class);
+        KieCompilationService kieCompilationServiceMock = mock(MockKieCompilationServiceE.class);
         EfestoResource toProcess = new MockEfestoRedirectOutputE();
         EfestoCompilationContext context =
                 EfestoCompilationContextUtils.buildWithParentClassLoader(Thread.currentThread().getContextClassLoader());
-        CompilationManagerUtils.processResources(kieCompilerServiceMock, toProcess, context);
-        verify(kieCompilerServiceMock, times(1)).processResource(toProcess, context);
+        CompilationManagerUtils.processResources(kieCompilationServiceMock, toProcess, context);
+        verify(kieCompilationServiceMock, times(1)).processResource(toProcess, context);
     }
 
     @Test
     void processResourcesWithRedirect() {
-        KieCompilerService kieCompilerServiceMock = mock(MockKieCompilerServiceF.class);
+        KieCompilationService kieCompilationServiceMock = mock(MockKieCompilationServiceF.class);
         EfestoResource toProcess = new MockEfestoInputF();
         EfestoCompilationContext context =
                 EfestoCompilationContextUtils.buildWithParentClassLoader(Thread.currentThread().getContextClassLoader());
-        CompilationManagerUtils.processResources(kieCompilerServiceMock, toProcess, context);
-        verify(kieCompilerServiceMock, times(1)).processResource(toProcess, context);
+        CompilationManagerUtils.processResources(kieCompilationServiceMock, toProcess, context);
+        verify(kieCompilationServiceMock, times(1)).processResource(toProcess, context);
     }
 
     @Test

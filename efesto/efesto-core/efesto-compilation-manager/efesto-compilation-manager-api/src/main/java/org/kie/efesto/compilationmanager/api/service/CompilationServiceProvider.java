@@ -27,9 +27,9 @@ import java.util.List;
 public interface CompilationServiceProvider {
 
     /**
-     * Return all the <code>KieCompilerService</code>s exposed by the actual implementation
+     * Return all the <code>KieCompilationService</code>s exposed by the actual implementation
      * @return
      */
-    List<KieCompilerService> getKieCompilerServices();
+    List<KieCompilationService> getKieCompilerServices();
 
 }

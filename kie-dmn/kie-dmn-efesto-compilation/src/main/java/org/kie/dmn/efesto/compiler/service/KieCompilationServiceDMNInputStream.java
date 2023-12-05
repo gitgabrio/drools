@@ -26,11 +26,11 @@ import org.kie.dmn.validation.DMNValidator;
 import org.kie.dmn.validation.DMNValidatorFactory;
 import org.kie.efesto.common.api.model.EfestoCompilationContext;
 import org.kie.efesto.compilationmanager.api.exceptions.EfestoCompilationManagerException;
-import org.kie.efesto.compilationmanager.api.exceptions.KieCompilerServiceException;
+import org.kie.efesto.compilationmanager.api.exceptions.KieCompilationServiceException;
 import org.kie.efesto.compilationmanager.api.model.EfestoCompilationOutput;
 import org.kie.efesto.compilationmanager.api.model.EfestoInputStreamResource;
 import org.kie.efesto.compilationmanager.api.model.EfestoResource;
-import org.kie.efesto.compilationmanager.api.service.KieCompilerService;
+import org.kie.efesto.compilationmanager.api.service.KieCompilationService;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -45,7 +45,7 @@ import static org.kie.dmn.efesto.compiler.utils.DmnCompilerUtils.getDMNModel;
 /**
  * For the moment being, use this for DMN "validation", since DMN does not have a code-generation phase
  */
-public class KieCompilerServiceDMNInputStream implements KieCompilerService<EfestoCompilationOutput, EfestoCompilationContext> {
+public class KieCompilationServiceDMNInputStream implements KieCompilationService<EfestoCompilationOutput, EfestoCompilationContext> {
 
     static final DMNValidator validator = DMNValidatorFactory.newValidator(Arrays.asList(new ExtendedDMNProfile()));
 
@@ -57,7 +57,7 @@ public class KieCompilerServiceDMNInputStream implements KieCompilerService<Efes
     @Override
     public List<EfestoCompilationOutput> processResource(EfestoResource toProcess, EfestoCompilationContext context) {
         if (!canManageResource(toProcess)) {
-            throw new KieCompilerServiceException(String.format("%s can not process %s",
+            throw new KieCompilationServiceException(String.format("%s can not process %s",
                     this.getClass().getName(),
                     toProcess.getClass().getName()));
         }

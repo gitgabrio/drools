@@ -16,40 +16,30 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.kie.pmml.compiler.service;
+package org.kie.efesto.compilationmanager.core.mocks;
 
+import java.util.Collections;
 import java.util.List;
 
-import org.kie.efesto.compilationmanager.api.exceptions.KieCompilerServiceException;
+import org.kie.efesto.compilationmanager.api.exceptions.KieCompilationServiceException;
 import org.kie.efesto.common.api.model.EfestoCompilationContext;
 import org.kie.efesto.compilationmanager.api.model.EfestoCompilationOutput;
-import org.kie.efesto.compilationmanager.api.model.EfestoInputStreamResource;
 import org.kie.efesto.compilationmanager.api.model.EfestoResource;
-import org.kie.efesto.compilationmanager.api.service.KieCompilerService;
+import org.kie.efesto.compilationmanager.api.service.KieCompilationService;
 
-import static org.kie.pmml.commons.Constants.PMML_STRING;
-import static org.kie.pmml.compiler.service.PMMLCompilerServicePMMLInputStream.getEfestoCompilationOutputPMML;
-
-public class KieCompilerServicePMMLInputStream implements KieCompilerService<EfestoCompilationOutput,
-        EfestoCompilationContext> {
+public abstract class AbstractMockKieCompilationService implements KieCompilationService<EfestoCompilationOutput, EfestoCompilationContext> {
 
     @Override
-    public boolean canManageResource(EfestoResource toProcess) {
-        return toProcess instanceof EfestoInputStreamResource && ((EfestoInputStreamResource) toProcess).getModelType().equalsIgnoreCase(PMML_STRING);
-    }
-
-    @Override
+    @SuppressWarnings("unchecked")
     public List<EfestoCompilationOutput> processResource(EfestoResource toProcess, EfestoCompilationContext context) {
         if (!canManageResource(toProcess)) {
-            throw new KieCompilerServiceException(String.format("%s can not process %s",
-                                                                this.getClass().getName(),
-                                                                toProcess.getClass().getName()));
+            throw new KieCompilationServiceException(String.format("Unmanaged resource %s", toProcess.getClass()));
         }
-        return getEfestoCompilationOutputPMML((EfestoInputStreamResource) toProcess, context);
+        return Collections.singletonList(new MockEfestoCallableOutput());
     }
 
     @Override
     public String getModelType() {
-        return PMML_STRING;
+        return "mock";
     }
 }

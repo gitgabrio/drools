@@ -28,7 +28,7 @@ import org.kie.efesto.common.api.model.EfestoCompilationContext;
 import org.kie.efesto.compilationmanager.api.model.EfestoCompilationOutput;
 import org.kie.efesto.compilationmanager.api.model.EfestoFileResource;
 import org.kie.efesto.compilationmanager.api.model.EfestoInputStreamResource;
-import org.kie.efesto.compilationmanager.api.service.KieCompilerService;
+import org.kie.efesto.compilationmanager.api.service.KieCompilationService;
 import org.kie.efesto.compilationmanager.core.model.EfestoCompilationContextUtils;
 import org.kie.efesto.compilationmanager.core.utils.CompilationManagerUtils;
 
@@ -45,11 +45,11 @@ import static org.kie.efesto.common.api.utils.MemoryFileUtils.getFileFromFileNam
 
 public class KieCompilerServiceDMNFileTest {
 
-    private static KieCompilerService kieCompilerService;
+    private static KieCompilationService kieCompilationService;
 
     @BeforeClass
     public static void setUp() {
-        kieCompilerService = new KieCompilerServiceDMNFile();
+        kieCompilationService = new KieCompilationServiceDMNFile();
     }
 
     @Test
@@ -57,9 +57,9 @@ public class KieCompilerServiceDMNFileTest {
         String fileName = "0001-input-data-string.dmn";
         File dmnFile = getFileFromFileName(fileName).orElseThrow(() -> new RuntimeException("Failed to get dmn file"));
         EfestoFileResource toProcess = new EfestoFileResource(dmnFile);
-        assertThat(kieCompilerService.canManageResource(toProcess)).isTrue();
+        assertThat(kieCompilationService.canManageResource(toProcess)).isTrue();
         EfestoInputStreamResource notToProcess = new EfestoInputStreamResource(Files.newInputStream(dmnFile.toPath()), fileName);
-        assertThat(kieCompilerService.canManageResource(notToProcess)).isFalse();
+        assertThat(kieCompilationService.canManageResource(notToProcess)).isFalse();
     }
 
     @Test
@@ -68,7 +68,7 @@ public class KieCompilerServiceDMNFileTest {
         String fileName = String.format("%s.dmn", modelName);
         File dmnFile = getFileFromFileName(fileName).orElseThrow(() -> new RuntimeException("Failed to get dmn file"));
         EfestoFileResource toProcess = new EfestoFileResource(dmnFile);
-        List<EfestoCompilationOutput> retrieved = kieCompilerService.processResource(toProcess, DmnCompilationContext.buildWithParentClassLoader(Thread.currentThread().getContextClassLoader()));
+        List<EfestoCompilationOutput> retrieved = kieCompilationService.processResource(toProcess, DmnCompilationContext.buildWithParentClassLoader(Thread.currentThread().getContextClassLoader()));
         assertNotNull(retrieved);
         assertEquals(1, retrieved.size());
         EfestoCompilationOutput retrievedOutput = retrieved.get(0);

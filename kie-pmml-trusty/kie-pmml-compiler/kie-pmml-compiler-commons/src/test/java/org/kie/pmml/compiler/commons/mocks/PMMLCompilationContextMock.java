@@ -23,7 +23,7 @@ import java.util.ServiceLoader;
 import java.util.Set;
 
 import org.kie.efesto.common.api.identifiers.ModelLocalUriId;
-import org.kie.efesto.compilationmanager.api.service.KieCompilerService;
+import org.kie.efesto.compilationmanager.api.service.KieCompilationService;
 import org.kie.memorycompiler.KieMemoryCompiler;
 import org.kie.memorycompiler.KieMemoryCompilerException;
 import org.kie.pmml.api.compilation.PMMLCompilationContext;
@@ -90,8 +90,8 @@ public class PMMLCompilationContextMock implements PMMLCompilationContext {
     }
 
     @Override
-    public ServiceLoader<KieCompilerService> getKieCompilerServiceLoader() {
-        return ServiceLoader.load(KieCompilerService.class, memoryCompilerClassLoader);
+    public ServiceLoader<KieCompilationService> getKieCompilerServiceLoader() {
+        return ServiceLoader.load(KieCompilationService.class, memoryCompilerClassLoader);
     }
 
     @Override

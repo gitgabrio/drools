@@ -26,18 +26,18 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.kie.efesto.compilationmanager.api.model.EfestoFileResource;
 import org.kie.efesto.compilationmanager.api.model.EfestoInputStreamResource;
-import org.kie.efesto.compilationmanager.api.service.KieCompilerService;
+import org.kie.efesto.compilationmanager.api.service.KieCompilationService;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.kie.efesto.common.api.utils.MemoryFileUtils.getFileFromFileName;
 
 class KieCompilerServicePMMLFileTest {
 
-    private static KieCompilerService kieCompilerService;
+    private static KieCompilationService kieCompilationService;
 
     @BeforeAll
     static void setUp() {
-        kieCompilerService = new KieCompilerServicePMMLFile();
+        kieCompilationService = new KieCompilationServicePMMLFile();
     }
 
     @Test
@@ -45,9 +45,9 @@ class KieCompilerServicePMMLFileTest {
         String fileName = "LinearRegressionSample.pmml";
         File pmmlFile = getFileFromFileName(fileName).orElseThrow(() -> new RuntimeException("Failed to get pmmlFIle"));
         EfestoFileResource toProcess = new EfestoFileResource(pmmlFile);
-        assertThat(kieCompilerService.canManageResource(toProcess)).isTrue();
+        assertThat(kieCompilationService.canManageResource(toProcess)).isTrue();
         EfestoInputStreamResource notToProcess = new EfestoInputStreamResource(Files.newInputStream(pmmlFile.toPath()), fileName);
-        assertThat(kieCompilerService.canManageResource(notToProcess)).isFalse();
+        assertThat(kieCompilationService.canManageResource(notToProcess)).isFalse();
     }
 
 }

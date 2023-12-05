@@ -21,11 +21,11 @@ package org.kie.pmml.compiler.service;
 import org.kie.efesto.common.api.identifiers.EfestoAppRoot;
 import org.kie.efesto.common.api.model.EfestoCompilationContext;
 import org.kie.efesto.common.core.storage.ContextStorage;
-import org.kie.efesto.compilationmanager.api.exceptions.KieCompilerServiceException;
+import org.kie.efesto.compilationmanager.api.exceptions.KieCompilationServiceException;
 import org.kie.efesto.compilationmanager.api.model.EfestoCompilationOutput;
 import org.kie.efesto.compilationmanager.api.model.EfestoFileResource;
 import org.kie.efesto.compilationmanager.api.model.EfestoResource;
-import org.kie.efesto.compilationmanager.api.service.KieCompilerService;
+import org.kie.efesto.compilationmanager.api.service.KieCompilationService;
 import org.kie.pmml.api.identifiers.KiePmmlComponentRoot;
 import org.kie.pmml.api.identifiers.LocalCompilationSourceIdPmml;
 import org.kie.pmml.api.identifiers.PmmlIdFactory;
@@ -37,7 +37,7 @@ import java.util.List;
 import static org.kie.pmml.commons.Constants.PMML_STRING;
 import static org.kie.pmml.compiler.service.PMMLCompilerServicePMMLFile.getEfestoCompilationOutputPMML;
 
-public class KieCompilerServicePMMLFile implements KieCompilerService<EfestoCompilationOutput, EfestoCompilationContext> {
+public class KieCompilationServicePMMLFile implements KieCompilationService<EfestoCompilationOutput, EfestoCompilationContext> {
 
     @Override
     public boolean canManageResource(EfestoResource toProcess) {
@@ -47,7 +47,7 @@ public class KieCompilerServicePMMLFile implements KieCompilerService<EfestoComp
     @Override
     public List<EfestoCompilationOutput> processResource(EfestoResource toProcess, EfestoCompilationContext context) {
         if (!canManageResource(toProcess)) {
-            throw new KieCompilerServiceException(String.format("%s can not process %s",
+            throw new KieCompilationServiceException(String.format("%s can not process %s",
                     this.getClass().getName(),
                     toProcess.getClass().getName()));
         }

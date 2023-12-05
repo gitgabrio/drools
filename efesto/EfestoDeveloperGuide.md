@@ -46,7 +46,7 @@ Currently, this file is written on the `target` directory, but this may be overr
 The plugins, in turns, are composed on a *compilation* component and a *runtime* component.
 To maintain clear dependency separation, those two components should be in separated modules.
 If a common class is needed by both, it should be put in a third module. In that case, this third module should not depend on any *core* components, because otherwise it would create an indirect binding between all the components.
-The plugin should implement **org.kie.efesto.compilationmanager.api.service.KieCompilerService** and/or **org.kie.efesto.runtimemanager.api.KieRuntimeService**, that are discovered at execution with SPI.
+The plugin should implement **org.kie.efesto.compilationmanager.api.service.KieCompilationService** and/or **org.kie.efesto.runtimemanager.api.KieRuntimeService**, that are discovered at execution with SPI.
 
 ### Steps
 1. create a **pom** container module
@@ -58,8 +58,8 @@ The plugin should implement **org.kie.efesto.compilationmanager.api.service.KieC
 
 ### Compilation module
 
-1. create an implementation of **org.kie.efesto.compilationmanager.api.service.KieCompilerService**
-2. inside `src/main/resources/META-INF/services`, write the `org.kie.efesto.compilationmanager.api.service.KieCompilerService` file, with the full class name of the implementing class
+1. create an implementation of **org.kie.efesto.compilationmanager.api.service.KieCompilationService**
+2. inside `src/main/resources/META-INF/services`, write the `org.kie.efesto.compilationmanager.api.service.KieCompilationService` file, with the full class name of the implementing class
 
 There are two methods to implement:
 1. `<T extends EfestoResource> boolean canManageResource(T toProcess);`
@@ -75,7 +75,7 @@ The second method is responsible to actually process the resource.
 The `T` parameter is actually an `org.kie.efesto.compilationmanager.api.model.EfestoResource`.
 The `E` parameter is actually an `org.kie.efesto.compilationmanager.api.model.EfestoCompilationOutput`.
 
-Beside implementing those two methods, there are no strict rules to follow. For example, it is possible that one single engine is able to manage different format of inputs (e.g. the rule engine). In this case, it is possible to create one single implementation to the different kind of inputs, or it is possible to create one implementation for every kind of input (in which case, anyone of them should be defined in the `org.kie.efesto.compilationmanager.api.service.KieCompilerService` SPI file).
+Beside implementing those two methods, there are no strict rules to follow. For example, it is possible that one single engine is able to manage different format of inputs (e.g. the rule engine). In this case, it is possible to create one single implementation to the different kind of inputs, or it is possible to create one implementation for every kind of input (in which case, anyone of them should be defined in the `org.kie.efesto.compilationmanager.api.service.KieCompilationService` SPI file).
 
 #### EfestoResource
 

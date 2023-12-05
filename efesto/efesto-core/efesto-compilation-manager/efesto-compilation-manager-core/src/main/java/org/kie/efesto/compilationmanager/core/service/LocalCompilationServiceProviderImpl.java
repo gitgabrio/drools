@@ -19,7 +19,7 @@
 package org.kie.efesto.compilationmanager.core.service;
 
 import org.kie.efesto.compilationmanager.api.service.CompilationServiceProvider;
-import org.kie.efesto.compilationmanager.api.service.KieCompilerService;
+import org.kie.efesto.compilationmanager.api.service.KieCompilationService;
 
 import java.util.List;
 
@@ -31,7 +31,7 @@ import static org.kie.efesto.compilationmanager.api.utils.SPIUtils.getLocalDisco
 public class LocalCompilationServiceProviderImpl implements CompilationServiceProvider {
 
     @Override
-    public List<KieCompilerService> getKieCompilerServices() {
+    public List<KieCompilationService> getKieCompilerServices() {
         return getLocalDiscoveredKieCompilerServices();
     }
 

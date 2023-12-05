@@ -16,28 +16,40 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.kie.efesto.compilationmanager.core.mocks;
+package org.kie.pmml.compiler.service;
 
-import java.util.Collections;
 import java.util.List;
 
-import org.kie.efesto.compilationmanager.api.exceptions.KieCompilerServiceException;
+import org.kie.efesto.compilationmanager.api.exceptions.KieCompilationServiceException;
 import org.kie.efesto.common.api.model.EfestoCompilationContext;
 import org.kie.efesto.compilationmanager.api.model.EfestoCompilationOutput;
+import org.kie.efesto.compilationmanager.api.model.EfestoInputStreamResource;
 import org.kie.efesto.compilationmanager.api.model.EfestoResource;
+import org.kie.efesto.compilationmanager.api.service.KieCompilationService;
 
-public class MockKieCompilerServiceF extends AbstractMockKieCompilerService {
+import static org.kie.pmml.commons.Constants.PMML_STRING;
+import static org.kie.pmml.compiler.service.PMMLCompilerServicePMMLInputStream.getEfestoCompilationOutputPMML;
+
+public class KieCompilationServicePMMLInputStream implements KieCompilationService<EfestoCompilationOutput,
+        EfestoCompilationContext> {
 
     @Override
     public boolean canManageResource(EfestoResource toProcess) {
-        return toProcess instanceof MockEfestoInputF;
+        return toProcess instanceof EfestoInputStreamResource && ((EfestoInputStreamResource) toProcess).getModelType().equalsIgnoreCase(PMML_STRING);
     }
 
     @Override
     public List<EfestoCompilationOutput> processResource(EfestoResource toProcess, EfestoCompilationContext context) {
         if (!canManageResource(toProcess)) {
-            throw new KieCompilerServiceException(String.format("Unmanaged resource %s", toProcess.getClass()));
+            throw new KieCompilationServiceException(String.format("%s can not process %s",
+                                                                this.getClass().getName(),
+                                                                toProcess.getClass().getName()));
         }
-        return Collections.singletonList(new MockEfestoRedirectOutputE());
+        return getEfestoCompilationOutputPMML((EfestoInputStreamResource) toProcess, context);
+    }
+
+    @Override
+    public String getModelType() {
+        return PMML_STRING;
     }
 }

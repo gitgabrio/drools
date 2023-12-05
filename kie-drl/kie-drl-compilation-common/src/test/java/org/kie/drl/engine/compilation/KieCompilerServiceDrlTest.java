@@ -31,21 +31,21 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.kie.drl.engine.compilation.model.DrlCompilationContext;
 import org.kie.drl.engine.compilation.model.DrlFileSetResource;
-import org.kie.drl.engine.compilation.service.KieCompilerServiceDrl;
+import org.kie.drl.engine.compilation.service.KieCompilationServiceDrl;
 import org.kie.efesto.compilationmanager.api.model.EfestoCompilationOutput;
 import org.kie.efesto.compilationmanager.api.model.EfestoResource;
-import org.kie.efesto.compilationmanager.api.service.KieCompilerService;
+import org.kie.efesto.compilationmanager.api.service.KieCompilationService;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 class KieCompilerServiceDrlTest {
 
-    private static KieCompilerService kieCompilerService;
+    private static KieCompilationService kieCompilationService;
     private static DrlCompilationContext context;
 
     @BeforeAll
     static void setUp() {
-        kieCompilerService = new KieCompilerServiceDrl();
+        kieCompilationService = new KieCompilationServiceDrl();
         context = DrlCompilationContext.buildWithParentClassLoader(Thread.currentThread().getContextClassLoader());
     }
 
@@ -58,9 +58,9 @@ class KieCompilerServiceDrlTest {
                 .collect(Collectors.toSet());
         EfestoResource<Set<File>> toProcess = new DrlFileSetResource(files, "BasePath");
         // this is really only testing the constant field "drl" so it is always true...
-        assertThat(kieCompilerService.canManageResource(toProcess)).isTrue();
+        assertThat(kieCompilationService.canManageResource(toProcess)).isTrue();
         EfestoResource<String> toProcess2 = () -> "EfestoResource";
-        assertThat(kieCompilerService.canManageResource(toProcess2)).isFalse();
+        assertThat(kieCompilationService.canManageResource(toProcess2)).isFalse();
     }
 
 
@@ -71,7 +71,7 @@ class KieCompilerServiceDrlTest {
                 .filter(File::isFile)
                 .collect(Collectors.toSet());
         EfestoResource<Set<File>> toProcess = new DrlFileSetResource(files, "BasePath");
-        List<EfestoCompilationOutput> retrieved = kieCompilerService.processResource(toProcess, context);
+        List<EfestoCompilationOutput> retrieved = kieCompilationService.processResource(toProcess, context);
         assertThat(retrieved).isNotNull().hasSize(1);
     }
 

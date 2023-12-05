@@ -31,7 +31,7 @@ import org.kie.efesto.common.api.model.GeneratedResources;
 import org.kie.efesto.common.core.utils.JSONUtils;
 import org.kie.efesto.compilationmanager.api.exceptions.EfestoCompilationManagerException;
 import org.kie.efesto.common.api.model.EfestoCompilationContext;
-import org.kie.efesto.compilationmanager.api.service.KieCompilerService;
+import org.kie.efesto.compilationmanager.api.service.KieCompilationService;
 import org.kie.efesto.compilationmanager.api.utils.SPIUtils;
 import org.kie.memorycompiler.JavaConfiguration;
 import org.kie.memorycompiler.KieMemoryCompiler;
@@ -100,8 +100,8 @@ public class EfestoCompilationContextImpl<T extends EfestoListener> implements E
     }
 
     @Override
-    public ServiceLoader<KieCompilerService> getKieCompilerServiceLoader() {
-        return ServiceLoader.load(KieCompilerService.class, memoryCompilerClassLoader);
+    public ServiceLoader<KieCompilationService> getKieCompilerServiceLoader() {
+        return ServiceLoader.load(KieCompilationService.class, memoryCompilerClassLoader);
     }
 
     @Override

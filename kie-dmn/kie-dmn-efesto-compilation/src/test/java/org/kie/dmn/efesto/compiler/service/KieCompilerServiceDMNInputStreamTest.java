@@ -23,7 +23,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.kie.efesto.compilationmanager.api.model.EfestoFileResource;
 import org.kie.efesto.compilationmanager.api.model.EfestoInputStreamResource;
-import org.kie.efesto.compilationmanager.api.service.KieCompilerService;
+import org.kie.efesto.compilationmanager.api.service.KieCompilationService;
 
 import java.io.File;
 import java.io.IOException;
@@ -34,11 +34,11 @@ import static org.kie.efesto.common.api.utils.MemoryFileUtils.getFileFromFileNam
 
 public class KieCompilerServiceDMNInputStreamTest {
 
-    private static KieCompilerService kieCompilerService;
+    private static KieCompilationService kieCompilationService;
 
     @BeforeClass
     public static void setUp() {
-        kieCompilerService = new KieCompilerServiceDMNInputStream();
+        kieCompilationService = new KieCompilationServiceDMNInputStream();
     }
 
     @Test
@@ -46,9 +46,9 @@ public class KieCompilerServiceDMNInputStreamTest {
         String fileName = "0001-input-data-string.dmn";
         File dmnFile = getFileFromFileName(fileName).orElseThrow(() -> new RuntimeException("Failed to get dmn file"));
         EfestoInputStreamResource toProcess = new EfestoInputStreamResource(Files.newInputStream(dmnFile.toPath()), fileName);
-        assertThat(kieCompilerService.canManageResource(toProcess)).isTrue();
+        assertThat(kieCompilationService.canManageResource(toProcess)).isTrue();
         EfestoFileResource notToProcess = new EfestoFileResource(dmnFile);
-        assertThat(kieCompilerService.canManageResource(notToProcess)).isFalse();
+        assertThat(kieCompilationService.canManageResource(notToProcess)).isFalse();
     }
 
 }

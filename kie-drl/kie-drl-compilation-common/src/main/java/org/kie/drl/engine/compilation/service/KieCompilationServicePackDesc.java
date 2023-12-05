@@ -22,12 +22,12 @@ import org.drools.drl.ast.descr.PackageDescr;
 import org.kie.drl.engine.compilation.model.DrlCompilationContext;
 import org.kie.drl.engine.compilation.model.DrlPackageDescrSetResource;
 import org.kie.efesto.common.api.model.EfestoCompilationContext;
-import org.kie.efesto.compilationmanager.api.exceptions.KieCompilerServiceException;
+import org.kie.efesto.compilationmanager.api.exceptions.KieCompilationServiceException;
 import org.kie.efesto.compilationmanager.api.model.EfestoCompilationOutput;
 import org.kie.efesto.compilationmanager.api.model.EfestoRedirectOutput;
 import org.kie.efesto.compilationmanager.api.model.EfestoResource;
 import org.kie.efesto.compilationmanager.api.model.EfestoSetResource;
-import org.kie.efesto.compilationmanager.api.service.KieCompilerService;
+import org.kie.efesto.compilationmanager.api.service.KieCompilationService;
 import org.kie.efesto.compilationmanager.core.model.EfestoCompilationContextImpl;
 
 import java.util.Collections;
@@ -36,7 +36,7 @@ import java.util.Set;
 
 import static org.kie.drl.engine.compilation.utils.DrlCompilerHelper.pkgDescrToExecModel;
 
-public class KieCompilerServicePackDesc implements KieCompilerService<EfestoCompilationOutput, EfestoCompilationContext> {
+public class KieCompilationServicePackDesc implements KieCompilationService<EfestoCompilationOutput, EfestoCompilationContext> {
 
     @Override
     public boolean canManageResource(EfestoResource toProcess) {
@@ -48,7 +48,7 @@ public class KieCompilerServicePackDesc implements KieCompilerService<EfestoComp
     @Override
     public List<EfestoCompilationOutput> processResource(EfestoResource toProcess, EfestoCompilationContext context) {
         if (!canManageResource(toProcess)) {
-            throw new KieCompilerServiceException(String.format("%s can not process %s",
+            throw new KieCompilationServiceException(String.format("%s can not process %s",
                     this.getClass().getName(),
                     toProcess.getClass().getName()));
         }
@@ -66,7 +66,7 @@ public class KieCompilerServicePackDesc implements KieCompilerService<EfestoComp
 
     private DrlCompilationContext getDrlCompilationContext(EfestoCompilationContext context) {
         if (!(context instanceof EfestoCompilationContextImpl)) {
-            throw new KieCompilerServiceException("Expected an EfestoCompilationContextImpl, but got " + context.getClass().getCanonicalName());
+            throw new KieCompilationServiceException("Expected an EfestoCompilationContextImpl, but got " + context.getClass().getCanonicalName());
         }
         return DrlCompilationContext.buildWithEfestoCompilationContext((EfestoCompilationContextImpl) context);
     }
