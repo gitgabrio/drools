@@ -506,7 +506,10 @@ public class ConstraintParser {
         Expression withThis = DrlxParseUtil.prepend(new NameExpr(THIS_PLACEHOLDER), converted.getExpression());
 
         if (hasBind) {
-            return new SingleDrlxParseSuccess(patternType, bindingId, null, converted.getType() )
+//            return new SingleDrlxParseSuccess(patternType, bindingId, null, converted.getType() )
+//                    .setLeft( new TypedExpression( withThis, converted.getType() ) )
+//                    .addReactOnProperty( lcFirstForBean(nameExpr.getNameAsString()) );
+            return new SingleDrlxParseSuccess(patternType, bindingId, withThis, converted.getType() )
                     .setLeft( new TypedExpression( withThis, converted.getType() ) )
                     .addReactOnProperty( lcFirstForBean(nameExpr.getNameAsString()) );
         } else if (context.hasDeclaration( expression )) {
