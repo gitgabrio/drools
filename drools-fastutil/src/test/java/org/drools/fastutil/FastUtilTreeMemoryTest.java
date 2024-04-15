@@ -21,16 +21,17 @@ package org.drools.fastutil;
 import org.drools.base.base.ValueResolver;
 import org.drools.base.base.ValueType;
 import org.drools.base.base.extractors.BaseObjectClassFieldReader;
+import org.drools.base.rule.accessor.RightTupleValueExtractor;
 import org.drools.core.common.DefaultFactHandle;
 import org.drools.core.common.InternalFactHandle;
 import org.drools.base.reteoo.BaseTuple;
-import org.drools.core.reteoo.AbstractTuple;
-import org.drools.core.reteoo.JoinNodeLeftTuple;
+import org.drools.core.reteoo.TupleImpl;
+import org.drools.core.reteoo.LeftTuple;
 import org.drools.core.reteoo.Tuple;
 import org.drools.base.rule.accessor.ReadAccessor;
 import org.drools.base.rule.accessor.TupleValueExtractor;
 import org.drools.core.util.FastIterator;
-import org.drools.base.util.FieldIndex;
+import org.drools.base.util.IndexedValueReader;
 import org.drools.fastutil.FastUtilTreeMemory.TreeFastIterator;
 import org.drools.base.util.index.ConstraintTypeOperator;
 import org.junit.Test;
@@ -42,23 +43,23 @@ public class FastUtilTreeMemoryTest {
     @Test
     public void testMocks() {
         TupleValueExtractor leftValueExtractor = getTupleValueExtractor();
-        ReadAccessor rightValueExtractor = getRightExtractor();
+        TupleValueExtractor rightValueExtractor = getRightExtractor();
 
-        Tuple tuple10 = getLeftTuple(10);
+        TupleImpl tuple10 = getLeftTuple(10);
 
-        FieldIndex fieldIndex = new FieldIndex(rightValueExtractor, leftValueExtractor);
+        IndexedValueReader fieldIndex = new IndexedValueReader(leftValueExtractor, rightValueExtractor);
         assertThat(fieldIndex.getLeftExtractor().getValue(tuple10)).isEqualTo(10);
     }
 
     @Test
     public void testGreaterThan() {
-        FieldIndex fieldIndex = new FieldIndex(getRightExtractor(), getTupleValueExtractor());
+        IndexedValueReader fieldIndex = new IndexedValueReader(getTupleValueExtractor(), getRightExtractor());
         FastUtilTreeMemory treeMemory = new FastUtilTreeMemory(ConstraintTypeOperator.GREATER_THAN, fieldIndex, !true);
 
-        Tuple tuple10 = getLeftTuple(10);
-        Tuple tuple20 = getLeftTuple(20);
-        Tuple tuple30 = getLeftTuple(30);
-        Tuple tuple40 = getLeftTuple(40);
+        TupleImpl tuple10 = getLeftTuple(10);
+        TupleImpl tuple20 = getLeftTuple(20);
+        TupleImpl tuple30 = getLeftTuple(30);
+        TupleImpl tuple40 = getLeftTuple(40);
 
         treeMemory.add(tuple10);
         treeMemory.add(tuple20);
@@ -75,22 +76,22 @@ public class FastUtilTreeMemoryTest {
 
         // checks key before first
         it = (TreeFastIterator) treeMemory.fastIterator();
-        Tuple tuple = assertThatEquals(it, 5, 10);
+        TupleImpl tuple = assertThatEquals(it, 5, 10);
         tuple = assertThatEquals(tuple, it, 20);
         tuple = assertThatEquals(tuple, it, 30);
         tuple = assertThatEquals(tuple, it, 40);
-        assertThat(it.next((AbstractTuple) tuple)).isNull();
+        assertThat(it.next((TupleImpl) tuple)).isNull();
     }
 
     @Test
     public void testGreaterOrEqual() {
-        FieldIndex fieldIndex = new FieldIndex(getRightExtractor(), getTupleValueExtractor());
+        IndexedValueReader fieldIndex = new IndexedValueReader(getTupleValueExtractor(), getRightExtractor());
         FastUtilTreeMemory treeMemory = new FastUtilTreeMemory(ConstraintTypeOperator.GREATER_OR_EQUAL, fieldIndex, !true);
 
-        Tuple tuple10 = getLeftTuple(10);
-        Tuple tuple20 = getLeftTuple(20);
-        Tuple tuple30 = getLeftTuple(30);
-        Tuple tuple40 = getLeftTuple(40);
+        TupleImpl tuple10 = getLeftTuple(10);
+        TupleImpl tuple20 = getLeftTuple(20);
+        TupleImpl tuple30 = getLeftTuple(30);
+        TupleImpl tuple40 = getLeftTuple(40);
 
         treeMemory.add(tuple10);
         treeMemory.add(tuple20);
@@ -107,22 +108,22 @@ public class FastUtilTreeMemoryTest {
 
         // checks key before first
         it = (TreeFastIterator) treeMemory.fastIterator();
-        Tuple tuple = assertThatEquals(it, 5, 10);
+        TupleImpl tuple = assertThatEquals(it, 5, 10);
         tuple = assertThatEquals(tuple, it, 20);
         tuple = assertThatEquals(tuple, it, 30);
         tuple = assertThatEquals(tuple, it, 40);
-        assertThat(it.next((AbstractTuple) tuple)).isNull();
+        assertThat(it.next((TupleImpl) tuple)).isNull();
     }
 
     @Test
     public void testLessOrEqual() {
-        FieldIndex fieldIndex = new FieldIndex(getRightExtractor(), getTupleValueExtractor());
+        IndexedValueReader fieldIndex = new IndexedValueReader(getTupleValueExtractor(), getRightExtractor());
         FastUtilTreeMemory treeMemory = new FastUtilTreeMemory(ConstraintTypeOperator.LESS_OR_EQUAL, fieldIndex, !true);
 
-        Tuple tuple10 = getLeftTuple(10);
-        Tuple tuple20 = getLeftTuple(20);
-        Tuple tuple30 = getLeftTuple(30);
-        Tuple tuple40 = getLeftTuple(40);
+        TupleImpl tuple10 = getLeftTuple(10);
+        TupleImpl tuple20 = getLeftTuple(20);
+        TupleImpl tuple30 = getLeftTuple(30);
+        TupleImpl tuple40 = getLeftTuple(40);
 
         treeMemory.add(tuple10);
         treeMemory.add(tuple20);
@@ -135,21 +136,21 @@ public class FastUtilTreeMemoryTest {
 
         // check gets 10, but nothing more
         it = (TreeFastIterator) treeMemory.fastIterator();
-        Tuple tuple = assertThatEquals(it, 10, 10);
-        assertThat(it.next((AbstractTuple) tuple)).isNull();
+        TupleImpl tuple = assertThatEquals(it, 10, 10);
+        assertThat(it.next((TupleImpl) tuple)).isNull();
 
         // check gets 10 and 20, but nothing more
         it = (TreeFastIterator) treeMemory.fastIterator();
         tuple = assertThatEquals(it, 20, 10);
         tuple = assertThatEquals(tuple, it, 20);
-        assertThat(it.next((AbstractTuple) tuple)).isNull();
+        assertThat(it.next((TupleImpl) tuple)).isNull();
 
         // check gets 10, 20 and 30 but nothing more
         it = (TreeFastIterator) treeMemory.fastIterator();
         tuple = assertThatEquals(it, 30, 10);
         tuple = assertThatEquals(tuple, it, 20);
         tuple = assertThatEquals(tuple, it, 30);
-        assertThat(it.next((AbstractTuple) tuple)).isNull();
+        assertThat(it.next((TupleImpl) tuple)).isNull();
 
 
         // check gets 10, 20 and 30 but nothing more
@@ -157,7 +158,7 @@ public class FastUtilTreeMemoryTest {
         tuple = assertThatEquals(it, 35, 10);
         tuple = assertThatEquals(tuple, it, 20);
         tuple = assertThatEquals(tuple, it, 30);
-        assertThat(it.next((AbstractTuple) tuple)).isNull();
+        assertThat(it.next((TupleImpl) tuple)).isNull();
 
         // check key after last
         it = (TreeFastIterator) treeMemory.fastIterator();
@@ -165,18 +166,18 @@ public class FastUtilTreeMemoryTest {
         tuple = assertThatEquals(tuple, it, 20);
         tuple = assertThatEquals(tuple, it, 30);
         tuple = assertThatEquals(tuple, it, 40);
-        assertThat(it.next((AbstractTuple) tuple)).isNull();
+        assertThat(it.next((TupleImpl) tuple)).isNull();
     }
 
     @Test
     public void testLessThan() {
-        FieldIndex fieldIndex = new FieldIndex(getRightExtractor(), getTupleValueExtractor());
+        IndexedValueReader fieldIndex = new IndexedValueReader(getTupleValueExtractor(), getRightExtractor());
         FastUtilTreeMemory treeMemory = new FastUtilTreeMemory(ConstraintTypeOperator.LESS_THAN, fieldIndex, !true);
 
-        Tuple tuple10 = getLeftTuple(10);
-        Tuple tuple20 = getLeftTuple(20);
-        Tuple tuple30 = getLeftTuple(30);
-        Tuple tuple40 = getLeftTuple(40);
+        TupleImpl tuple10 = getLeftTuple(10);
+        TupleImpl tuple20 = getLeftTuple(20);
+        TupleImpl tuple30 = getLeftTuple(30);
+        TupleImpl tuple40 = getLeftTuple(40);
 
         treeMemory.add(tuple10);
         treeMemory.add(tuple20);
@@ -193,14 +194,14 @@ public class FastUtilTreeMemoryTest {
 
         // check gets 10 but nothing more
         it = (TreeFastIterator) treeMemory.fastIterator();
-        Tuple tuple = assertThatEquals(it, 20, 10);
-        assertThat(it.next((AbstractTuple) tuple)).isNull();
+        TupleImpl tuple = assertThatEquals(it, 20, 10);
+        assertThat(it.next((TupleImpl) tuple)).isNull();
 
         // check gets 10 and 20  but nothing more
         it = (TreeFastIterator) treeMemory.fastIterator();
         tuple = assertThatEquals(it, 30, 10);
         tuple = assertThatEquals(tuple, it, 20);
-        assertThat(it.next((AbstractTuple) tuple)).isNull();
+        assertThat(it.next((TupleImpl) tuple)).isNull();
 
 
         // check gets 10, 20 and 30 but nothing more
@@ -208,7 +209,7 @@ public class FastUtilTreeMemoryTest {
         tuple = assertThatEquals(it, 35, 10);
         tuple = assertThatEquals(tuple, it, 20);
         tuple = assertThatEquals(tuple, it, 30);
-        assertThat(it.next((AbstractTuple) tuple)).isNull();
+        assertThat(it.next((TupleImpl) tuple)).isNull();
 
         // check key after last
         it = (TreeFastIterator) treeMemory.fastIterator();
@@ -216,20 +217,20 @@ public class FastUtilTreeMemoryTest {
         tuple = assertThatEquals(tuple, it, 20);
         tuple = assertThatEquals(tuple, it, 30);
         tuple = assertThatEquals(tuple, it, 40);
-        assertThat(it.next((AbstractTuple) tuple)).isNull();
+        assertThat(it.next((TupleImpl) tuple)).isNull();
     }
 
     @Test
     public void testSharedFirstBucket() {
-        FieldIndex fieldIndex = new FieldIndex(getRightExtractor(), getTupleValueExtractor());
-        FastUtilTreeMemory  treeMemory = new FastUtilTreeMemory(ConstraintTypeOperator.GREATER_THAN, fieldIndex, !true);
+        IndexedValueReader fieldIndex = new IndexedValueReader(getTupleValueExtractor(), getRightExtractor());
+        FastUtilTreeMemory treeMemory = new FastUtilTreeMemory(ConstraintTypeOperator.GREATER_THAN, fieldIndex, !true);
 
-        Tuple tuple10_1 = getLeftTuple(10);
-        Tuple tuple10_2 = getLeftTuple(10);
-        Tuple tuple10_3 = getLeftTuple(10);
-        Tuple tuple20 = getLeftTuple(20);
-        Tuple tuple30 = getLeftTuple(30);
-        Tuple tuple40 = getLeftTuple(40);
+        TupleImpl tuple10_1 = getLeftTuple(10);
+        TupleImpl tuple10_2 = getLeftTuple(10);
+        TupleImpl tuple10_3 = getLeftTuple(10);
+        TupleImpl tuple20 = getLeftTuple(20);
+        TupleImpl tuple30 = getLeftTuple(30);
+        TupleImpl tuple40 = getLeftTuple(40);
 
         treeMemory.add(tuple10_1);
         treeMemory.add(tuple10_2);
@@ -240,7 +241,7 @@ public class FastUtilTreeMemoryTest {
 
         // checks key before first
         TreeFastIterator it = (TreeFastIterator) treeMemory.fastIterator();
-        Tuple tuple = assertThatEquals(it, 5, 10);
+        TupleImpl tuple = assertThatEquals(it, 5, 10);
         assertThat(tuple).isSameAs(tuple10_1);
         tuple = assertThatEquals(tuple, it, 10);
         assertThat(tuple).isSameAs(tuple10_2);
@@ -249,7 +250,7 @@ public class FastUtilTreeMemoryTest {
         tuple = assertThatEquals(tuple, it, 20);
         tuple = assertThatEquals(tuple, it, 30);
         tuple = assertThatEquals(tuple, it, 40);
-        assertThat(it.next((AbstractTuple) tuple)).isNull();
+        assertThat(it.next((TupleImpl) tuple)).isNull();
 
         // Check full iterator
         FastIterator fullit = treeMemory.fullFastIterator();
@@ -267,15 +268,15 @@ public class FastUtilTreeMemoryTest {
 
     @Test
     public void testSharedLastBucket() {
-        FieldIndex fieldIndex = new FieldIndex(getRightExtractor(), getTupleValueExtractor());
+        IndexedValueReader fieldIndex = new IndexedValueReader(getTupleValueExtractor(), getRightExtractor());
         FastUtilTreeMemory treeMemory = new FastUtilTreeMemory(ConstraintTypeOperator.GREATER_THAN, fieldIndex, !true);
 
-        Tuple tuple10 = getLeftTuple(10);
-        Tuple tuple20 = getLeftTuple(20);
-        Tuple tuple30 = getLeftTuple(30);
-        Tuple tuple40_1 = getLeftTuple(40);
-        Tuple tuple40_2 = getLeftTuple(40);
-        Tuple tuple40_3 = getLeftTuple(40);
+        TupleImpl tuple10 = getLeftTuple(10);
+        TupleImpl tuple20 = getLeftTuple(20);
+        TupleImpl tuple30 = getLeftTuple(30);
+        TupleImpl tuple40_1 = getLeftTuple(40);
+        TupleImpl tuple40_2 = getLeftTuple(40);
+        TupleImpl tuple40_3 = getLeftTuple(40);
 
         treeMemory.add(tuple10);
         treeMemory.add(tuple20);
@@ -286,7 +287,7 @@ public class FastUtilTreeMemoryTest {
 
         // checks key before first
         TreeFastIterator it = (TreeFastIterator) treeMemory.fastIterator();
-        Tuple tuple = assertThatEquals(it, 5, 10);
+        TupleImpl tuple = assertThatEquals(it, 5, 10);
         tuple = assertThatEquals(tuple, it, 20);
         tuple = assertThatEquals(tuple, it, 30);
         tuple = assertThatEquals(tuple, it, 40);
@@ -295,7 +296,7 @@ public class FastUtilTreeMemoryTest {
         assertThat(tuple).isSameAs(tuple40_2);
         tuple = assertThatEquals(tuple, it, 40);
         assertThat(tuple).isSameAs(tuple40_3);
-        assertThat(it.next((AbstractTuple) tuple)).isNull();
+        assertThat(it.next((TupleImpl) tuple)).isNull();
 
 
         // check full iterator
@@ -312,32 +313,32 @@ public class FastUtilTreeMemoryTest {
         assertThat(fullit.next(tuple)).isNull();
     }
 
-    private static Tuple assertThatEquals(Tuple tuple, TreeFastIterator it, int expected) {
-        tuple = (Tuple) it.next((AbstractTuple) tuple);
+    private static TupleImpl assertThatEquals(TupleImpl tuple, TreeFastIterator it, int expected) {
+        tuple = it.next(tuple);
         return assertThatEquals(tuple, expected);
     }
 
-    private static Tuple assertThatEquals(Tuple tuple, FastIterator it, int expected) {
-        tuple = (Tuple) it.next(tuple);
+    private static TupleImpl assertThatEquals(TupleImpl tuple, FastIterator<TupleImpl> it, int expected) {
+        tuple = it.next(tuple);
         return assertThatEquals(tuple, expected);
     }
 
-    private static Tuple assertThatEquals(TreeFastIterator it, int first, int expected) {
-        Tuple tuple =  it.getFirst((AbstractTuple) getLeftTuple(first));
+    private static TupleImpl assertThatEquals(TreeFastIterator it, int first, int expected) {
+        TupleImpl tuple =  it.getFirst((TupleImpl) getLeftTuple(first));
         return assertThatEquals(tuple, expected);
     }
 
-    private static Tuple assertThatEquals(FastIterator it, int expected) {
-        Tuple tuple =  (Tuple) it.next(null);
+    private static TupleImpl assertThatEquals(FastIterator it, int expected) {
+        TupleImpl tuple =  (TupleImpl) it.next(null);
         return assertThatEquals(tuple, expected);
     }
 
     private static void assertThatIsNull(TreeFastIterator it, int first) {
-        Tuple tuple =  it.getFirst((AbstractTuple) getLeftTuple(first));
+        TupleImpl tuple =  it.getFirst((TupleImpl) getLeftTuple(first));
         assertThat(tuple).isNull();
     }
 
-    private static Tuple assertThatEquals(Tuple tuple, int expected) {
+    private static TupleImpl assertThatEquals(TupleImpl tuple, int expected) {
         assertThat(tuple.getFactHandle().getObject()).isEqualTo(expected);
         return tuple;
     }
@@ -346,8 +347,8 @@ public class FastUtilTreeMemoryTest {
         return new DefaultFactHandle(number);
     }
 
-    public static Tuple getLeftTuple(int number) {
-        JoinNodeLeftTuple tuple = new JoinNodeLeftTuple();
+    public static TupleImpl getLeftTuple(int number) {
+        TupleImpl tuple = new LeftTuple();
         tuple.setFactHandle(getFactHandle(number));
         return tuple;
     };
@@ -373,7 +374,7 @@ public class FastUtilTreeMemoryTest {
         return extractor;
     }
 
-    public static ReadAccessor getRightExtractor() {
+    public static TupleValueExtractor getRightExtractor() {
         ReadAccessor readAccessor = new BaseObjectClassFieldReader() {
             @Override
             public Object getValue(ValueResolver valueResolver, Object object) {
@@ -381,6 +382,8 @@ public class FastUtilTreeMemoryTest {
             }
         };
 
-        return readAccessor;
+        RightTupleValueExtractor rightTupleValueExtractor = new RightTupleValueExtractor(readAccessor);
+
+        return rightTupleValueExtractor;
     }
 }

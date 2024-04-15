@@ -27,6 +27,7 @@ import org.kie.api.conf.DeclarativeAgendaOption;
 import org.kie.api.conf.EqualityBehaviorOption;
 import org.kie.api.conf.EventProcessingOption;
 import org.kie.api.conf.KieBaseMutabilityOption;
+import org.kie.api.conf.PrototypesOption;
 import org.kie.api.conf.SequentialOption;
 import org.kie.api.conf.SessionsPoolOption;
 
@@ -111,6 +112,17 @@ public interface KieBaseModel {
     KieBaseModel setEqualsBehavior(EqualityBehaviorOption equalsBehaviour);
 
     /**
+     * Sets the PrototypesOption for this KieBaseModel.
+     * Default is PrototypesOption.DISABLED
+     */
+    PrototypesOption getPrototypes();
+
+    /**
+     * Returns the PrototypesOption of this KieBaseModel
+     */
+    KieBaseModel setPrototypes(PrototypesOption prototypes);
+
+    /**
      * Returns the KieBaseMutabilityOption of this KieBaseModel
      */
     KieBaseMutabilityOption getMutability();
@@ -183,7 +195,7 @@ public interface KieBaseModel {
 
     /**
      * Returns the CDI scope of this KieBaseModel
-     * Default is javax.enterprise.context.ApplicationScoped
+     * Default is jakarta.enterprise.context.ApplicationScoped
      */
     String getScope();
 

@@ -18,6 +18,22 @@
  */
 package org.drools.model.codegen.execmodel;
 
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
+
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.ImportDeclaration;
@@ -29,7 +45,6 @@ import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.InitializerDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.TypeDeclaration;
-import com.github.javaparser.ast.comments.JavadocComment;
 import com.github.javaparser.ast.expr.AssignExpr;
 import com.github.javaparser.ast.expr.ClassExpr;
 import com.github.javaparser.ast.expr.Expression;
@@ -50,6 +65,7 @@ import org.drools.codegen.common.DroolsModelBuildContext;
 import org.drools.compiler.builder.impl.BuildResultCollector;
 import org.drools.compiler.builder.impl.KnowledgeBuilderConfigurationImpl;
 import org.drools.compiler.builder.impl.KnowledgeBuilderImpl;
+import org.drools.compiler.builder.impl.KnowledgeBuilderRulesConfigurationImpl;
 import org.drools.compiler.builder.impl.TypeDeclarationContext;
 import org.drools.compiler.builder.impl.TypeDeclarationUtils;
 import org.drools.compiler.compiler.DialectCompiletimeRegistry;
@@ -71,30 +87,18 @@ import org.drools.model.codegen.execmodel.generator.QueryGenerator;
 import org.drools.model.codegen.execmodel.generator.QueryParameter;
 import org.drools.model.codegen.execmodel.generator.TypedExpression;
 import org.drools.model.codegen.execmodel.generator.WindowReferenceGenerator;
+import org.drools.model.codegen.execmodel.generator.operatorspec.CustomOperatorSpec;
 import org.drools.model.codegen.execmodel.util.lambdareplace.CreatedClass;
 import org.drools.model.functions.PredicateInformation;
 import org.drools.modelcompiler.util.StringUtil;
 import org.drools.util.StringUtils;
 import org.drools.util.TypeResolver;
 import org.kie.api.builder.ReleaseId;
+import org.kie.api.conf.PrototypesOption;
 import org.kie.api.runtime.rule.AccumulateFunction;
+import org.kie.internal.builder.conf.ReproducibleExecutableModelGenerationOption;
 import org.kie.internal.ruleunit.RuleUnitDescription;
 import org.kie.internal.ruleunit.RuleUnitVariable;
-
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 import static com.github.javaparser.StaticJavaParser.parseBodyDeclaration;
 import static com.github.javaparser.ast.Modifier.finalModifier;
@@ -153,7 +157,7 @@ public class PackageModel {
     private final List<TypeDeclaration> generatedPOJOs = new ArrayList<>();
     private final List<GeneratedClassWithPackage> generatedAccumulateClasses = new ArrayList<>();
 
-    private final Set<Class<?>> domainClasses = new HashSet<>();
+    private final Set<Class<?>> domainClasses = new LinkedHashSet<>();
     private final Map<Class<?>, ClassDefinition> classDefinitionsMap = new HashMap<>();
     
     private final Set<Class<?>> otnsClasses = new HashSet<>();
@@ -182,8 +186,12 @@ public class PackageModel {
     private final String executableRulesClass;
     private final Collection<String> executableRulesClasses = new HashSet<>();
 
+    private final boolean prototypesAllowed;
+
+    private final CustomOperatorSpec customOperatorSpec = new CustomOperatorSpec();
+
     private PackageModel( ReleaseId releaseId, String name, KnowledgeBuilderConfigurationImpl configuration, DialectCompiletimeRegistry dialectCompiletimeRegistry, DRLIdGenerator exprIdGenerator) {
-        this(name, configuration, dialectCompiletimeRegistry, exprIdGenerator, getPkgUUID(releaseId, name));
+        this(name, configuration, dialectCompiletimeRegistry, exprIdGenerator, getPkgUUID(configuration, releaseId, name));
     }
 
     public PackageModel(String gav, String name, KnowledgeBuilderConfigurationImpl configuration, DialectCompiletimeRegistry dialectCompiletimeRegistry, DRLIdGenerator exprIdGenerator) {
@@ -197,8 +205,9 @@ public class PackageModel {
         this.configuration = configuration;
         this.exprIdGenerator = exprIdGenerator;
         this.dialectCompiletimeRegistry = dialectCompiletimeRegistry;
-        executableRulesClass = name + "."  + rulesFileName;
-        executableRulesClasses.add(executableRulesClass);
+        this.executableRulesClass = name + "."  + rulesFileName;
+        this.executableRulesClasses.add(executableRulesClass);
+        this.prototypesAllowed = configuration != null && configuration.as(KnowledgeBuilderRulesConfigurationImpl.KEY).getPrototypesOption() == PrototypesOption.ALLOWED;
     }
 
     public static PackageModel createPackageModel(KnowledgeBuilderConfigurationImpl configuration, PackageDescr packageDescr, PackageRegistry pkgRegistry, String pkgName, ReleaseId releaseId, DRLIdGenerator exprIdGenerator) {
@@ -228,8 +237,19 @@ public class PackageModel {
      * @param packageName
      * @return
      */
-    public static String getPkgUUID(ReleaseId releaseId, String packageName) {
+    public static String getPkgUUID(KnowledgeBuilderConfigurationImpl configuration, ReleaseId releaseId, String packageName) {
+        if (isReproducibleExecutableModelGeneration(configuration)) {
+            return StringUtils.getPkgUUID(releaseId != null ? releaseId.toString() : "", packageName);
+        }
         return (releaseId != null && !releaseId.isSnapshot()) ? StringUtils.getPkgUUID(releaseId.toString(), packageName) : StringUtils.generateUUID();
+    }
+
+    public boolean isReproducibleExecutableModelGeneration() {
+        return isReproducibleExecutableModelGeneration(configuration);
+    }
+
+    private static boolean isReproducibleExecutableModelGeneration(KnowledgeBuilderConfigurationImpl configuration) {
+        return configuration != null && configuration.getOption(ReproducibleExecutableModelGenerationOption.KEY).isReproducibleExecutableModelGeneration();
     }
 
     public Map<String, CreatedClass> getLambdaClasses() {
@@ -274,6 +294,10 @@ public class PackageModel {
     
     public DRLIdGenerator getExprIdGenerator() {
         return exprIdGenerator;
+    }
+
+    public CustomOperatorSpec getCustomOperatorSpec() {
+        return customOperatorSpec;
     }
 
     public void addImports(Collection<String> imports) {
@@ -401,8 +425,7 @@ public class PackageModel {
     }
 
     public void putQueryVariable(String queryName, QueryParameter qp) {
-        this.queryVariables.computeIfAbsent(queryName, k -> new ArrayList<>());
-        this.queryVariables.get(queryName).add(qp);
+        this.queryVariables.computeIfAbsent(queryName, k -> new ArrayList<>()).add(qp);
     }
 
     public List<QueryParameter> queryVariables(String queryName) {
@@ -596,6 +619,8 @@ public class PackageModel {
 
         rulesClass.addMember( generateListField("org.drools.model.Global", "globals", globals.isEmpty() && !hasRuleUnit) );
 
+        customOperatorSpec.getOperatorDeclarations().forEach( op -> rulesClass.addMember( parseBodyDeclaration( op ) ) );
+
         if ( !typeMetaDataExpressions.isEmpty() ) {
             BodyDeclaration<?> typeMetaDatasList = parseBodyDeclaration("java.util.List<org.drools.model.TypeMetaData> typeMetaDatas = new java.util.ArrayList<>();");
             rulesClass.addMember(typeMetaDatasList);
@@ -736,7 +761,7 @@ public class PackageModel {
 
         int ruleCount = ruleMethodsInUnit.size();
         boolean requiresMultipleRulesLists = ruleCount >= RULES_DECLARATION_PER_CLASS-1;
-        boolean parallelRulesLoad = ruleCount >= (RULES_DECLARATION_PER_CLASS*3-1);
+        boolean parallelRulesLoad = !isReproducibleExecutableModelGeneration() && ruleCount >= (RULES_DECLARATION_PER_CLASS*3-1);
         MethodCallExpr parallelRulesGetter = null;
 
 
@@ -756,9 +781,7 @@ public class PackageModel {
 
         ruleMethodsInUnit.parallelStream().forEach( DrlxParseUtil::transformDrlNameExprToNameExpr);
 
-        int maxLength = ruleMethodsInUnit
-                .parallelStream()
-                .map( MethodDeclaration::toString ).mapToInt( String::length ).max().orElse( 1 );
+        int maxLength = ruleMethodsInUnit.parallelStream().map( MethodDeclaration::toString ).mapToInt( String::length ).max().orElse( 1 );
         int rulesPerClass = oneClassPerRule ? 1 : Math.max( 50000 / maxLength, 1 );
 
         // each method per Drlx parser result
@@ -807,13 +830,6 @@ public class PackageModel {
                         "    }\n"
         );
         rulesClass.addMember( getRulesMethod );
-
-        StringBuilder sb = new StringBuilder("\n");
-        sb.append("With the following expression ID:\n");
-        sb.append(exprIdGenerator.toString());
-        sb.append("\n");
-        JavadocComment exprIdComment = new JavadocComment(sb.toString());
-        getRulesMethod.setComment(exprIdComment);
     }
 
     private CompilationUnit createCompilationUnit(RuleSourceResult results ) {
@@ -942,6 +958,10 @@ public class PackageModel {
         return otnsClasses;
     }
 
+    public boolean arePrototypesAllowed() {
+        return prototypesAllowed;
+    }
+
     public String getDomainClassesMetadataSource() {
         StringBuilder sb = new StringBuilder(
                 "package " + name + ";\n" +
@@ -1047,5 +1067,10 @@ public class PackageModel {
         final Map<Integer, MethodDeclaration> ruleMethods = Collections.synchronizedMap( new TreeMap<>() );
         final Map<String, java.lang.reflect.Type> globals = new HashMap<>();
         final Set<String> entryPoints = new HashSet<>();
+    }
+
+    @Override
+    public String toString() {
+        return pkg.toString();
     }
 }

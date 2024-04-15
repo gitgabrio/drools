@@ -34,11 +34,11 @@ import java.util.Random;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlElements;
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlElements;
 
-import org.drools.core.ClassObjectFilter;
+import org.kie.api.runtime.ClassObjectFilter;
 import org.drools.core.ClassObjectSerializationFilter;
 import org.drools.core.base.RuleNameEndsWithAgendaFilter;
 import org.drools.core.base.RuleNameEqualsAgendaFilter;

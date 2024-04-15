@@ -64,7 +64,7 @@ public class DMNImportPMMLInfo extends PMMLInfo<DMNPMMLModelInfo> {
             final PMML pmml = org.jpmml.model.PMMLUtil.unmarshal(is);
             PMMLHeaderInfo h = PMMLInfo.pmmlToHeaderInfo(pmml, pmml.getHeader());
             for (DataField df : pmml.getDataDictionary().getDataFields()) {
-                String dfName = df.getName().getValue();
+                String dfName =df.getName();
                 BuiltInType ft = getBuiltInTypeByDataType(df.getDataType());
                 List<FEELProfile> helperFEELProfiles = cc.getFeelProfiles();
                 DMNFEELHelper feel = new DMNFEELHelper(cc.getRootClassLoader(), helperFEELProfiles);
@@ -94,7 +94,7 @@ public class DMNImportPMMLInfo extends PMMLInfo<DMNPMMLModelInfo> {
                         av.addAll(ut);
                     }
                 }
-                DMNType type = new SimpleTypeImpl(i.getNamespace(), dfName, null, false, av, model.getTypeRegistry().resolveType(model.getDefinitions().getURIFEEL(), ft.getName()), ft);
+                DMNType type = new SimpleTypeImpl(i.getNamespace(), dfName, null, false, av, null, model.getTypeRegistry().resolveType(model.getDefinitions().getURIFEEL(), ft.getName()), ft);
                 model.getTypeRegistry().registerType(type);
             }
 
@@ -120,14 +120,13 @@ public class DMNImportPMMLInfo extends PMMLInfo<DMNPMMLModelInfo> {
                 // register <import name>.<pmml MODEL name>, being a composite type of the different model outputs fields
                 Map<String, DMNType> typeMap = new HashMap<>();
                 outputFields.stream().forEach(field -> {
-                    String fieldName = field.getName().getValue();
+                    String fieldName =field.getName();
                     BuiltInType ft = getBuiltInTypeByDataType(field.getDataType());
-                    DMNType type = new SimpleTypeImpl(i.getNamespace(), fieldName, null, false, null, dmnModel.getTypeRegistry().resolveType(dmnModel.getDefinitions().getURIFEEL(), ft.getName()), ft);
+                    DMNType type = new SimpleTypeImpl(i.getNamespace(), fieldName, null, false, null, null, dmnModel.getTypeRegistry().resolveType(dmnModel.getDefinitions().getURIFEEL(), ft.getName()), ft);
                     typeMap.put(fieldName, type);
                 });
                 DMNType compositeType = new CompositeTypeImpl(i.getNamespace(), modelName, null, false, typeMap, null, null);
                 dmnModel.getTypeRegistry().registerType(compositeType);
-                return;
             } else {
                 // Case of multiple/complex output AND model without name, raise a Warning from the compilation/engine side (for the editor to use FEEL Any as the typeRef in the BKM)
                 LOG.warn("PMML modelName is not provided, while output is a composite / multiple fields. Unable to synthesize CompositeType for DMN side.");

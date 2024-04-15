@@ -25,13 +25,13 @@ import java.io.ObjectOutput;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlSchemaType;
-import javax.xml.bind.annotation.XmlSeeAlso;
+import jakarta.xml.bind.annotation.XmlAccessType;
+import jakarta.xml.bind.annotation.XmlAccessorType;
+import jakarta.xml.bind.annotation.XmlAttribute;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlSchemaType;
+import jakarta.xml.bind.annotation.XmlSeeAlso;
 
 import org.drools.base.factmodel.traits.TraitTypeEnum;
 import org.drools.base.rule.EntryPointId;
@@ -40,7 +40,7 @@ import org.drools.core.base.ArrayElements;
 import org.drools.core.base.DroolsQueryImpl;
 import org.drools.core.reteoo.LeftTuple;
 import org.drools.core.reteoo.RightTuple;
-import org.drools.core.reteoo.Tuple;
+import org.drools.core.reteoo.TupleImpl;
 import org.kie.api.runtime.rule.FactHandle;
 
 @XmlRootElement(name="disconnected-fact-handle")
@@ -175,13 +175,13 @@ public class DisconnectedFactHandle
         return false;
     }
 
-    public void forEachRightTuple( Consumer<RightTuple> rightTupleConsumer ) { }
+    public void forEachRightTuple( Consumer<TupleImpl> rightTupleConsumer) { }
 
     @Override
-    public void forEachLeftTuple( Consumer<LeftTuple> leftTupleConsumer) { }
+    public void forEachLeftTuple( Consumer<TupleImpl> leftTupleConsumer) { }
 
     @Override
-    public LeftTuple findFirstLeftTuple(Predicate<LeftTuple> lefttTuplePredicate ) {
+    public LeftTuple findFirstLeftTuple(Predicate<TupleImpl> lefttTuplePredicate ) {
         return null;
     }
 
@@ -315,15 +315,15 @@ public class DisconnectedFactHandle
         return toExternalForm();
     }
 
-    public LeftTuple getFirstLeftTuple() {
+    public TupleImpl getFirstLeftTuple() {
         throw new UnsupportedOperationException(UNSUPPORTED_OPERATION_ERROR_MESSAGE);
     }
 
-    public RightTuple getFirstRightTuple() {
+    public TupleImpl getFirstRightTuple() {
         throw new UnsupportedOperationException(UNSUPPORTED_OPERATION_ERROR_MESSAGE);
     }
 
-    public RightTuple getLastRightTuple() {
+    public TupleImpl getLastRightTuple() {
         throw new UnsupportedOperationException(UNSUPPORTED_OPERATION_ERROR_MESSAGE);
     }
 
@@ -339,15 +339,15 @@ public class DisconnectedFactHandle
         throw new UnsupportedOperationException( "Not supported yet." );
     }
 
-    public void addFirstLeftTuple(LeftTuple leftTuple) {
+    public void addFirstLeftTuple(TupleImpl leftTuple) {
         throw new UnsupportedOperationException(UNSUPPORTED_OPERATION_ERROR_MESSAGE);
     }
 
-    public void addLastLeftTuple(LeftTuple leftTuple) {
+    public void addLastLeftTuple(TupleImpl leftTuple) {
         throw new UnsupportedOperationException(UNSUPPORTED_OPERATION_ERROR_MESSAGE);
     }
 
-    public void removeLeftTuple(LeftTuple leftTuple) {
+    public void removeLeftTuple(TupleImpl leftTuple) {
         throw new UnsupportedOperationException(UNSUPPORTED_OPERATION_ERROR_MESSAGE);
     }
 
@@ -359,15 +359,11 @@ public class DisconnectedFactHandle
         throw new UnsupportedOperationException(UNSUPPORTED_OPERATION_ERROR_MESSAGE);
     }
 
-    public void addLastRightTuple(RightTuple rightTuple) {
+    public void addLastRightTuple(TupleImpl rightTuple) {
         throw new UnsupportedOperationException(UNSUPPORTED_OPERATION_ERROR_MESSAGE);
     }
 
-    public void addTupleInPosition(Tuple rightTuple) {
-        throw new UnsupportedOperationException(UNSUPPORTED_OPERATION_ERROR_MESSAGE);
-    }
-
-    public void removeRightTuple(RightTuple rightTuple) {
+    public void removeRightTuple(TupleImpl rightTuple) {
         throw new UnsupportedOperationException(UNSUPPORTED_OPERATION_ERROR_MESSAGE);
     }
 

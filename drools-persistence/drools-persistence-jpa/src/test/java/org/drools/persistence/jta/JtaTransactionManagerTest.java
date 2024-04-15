@@ -23,10 +23,10 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.transaction.RollbackException;
-import javax.transaction.UserTransaction;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.transaction.RollbackException;
+import jakarta.transaction.UserTransaction;
 
 import org.drools.commands.impl.CommandBasedStatefulKnowledgeSessionImpl;
 import org.drools.kiesession.rulebase.InternalKnowledgeBase;
@@ -35,7 +35,6 @@ import org.drools.persistence.PersistableRunner;
 import org.drools.persistence.api.TransactionManager;
 import org.drools.persistence.jpa.JpaPersistenceContextManager;
 import org.drools.persistence.util.DroolsPersistenceUtil;
-import org.hibernate.TransientObjectException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -150,7 +149,7 @@ public class JtaTransactionManagerTest {
             tx.commit();
         }
         catch( Exception e ) { 
-            if( e instanceof RollbackException || e.getCause() instanceof TransientObjectException ) {
+            if ( e instanceof RollbackException  ) {
                 rollBackExceptionthrown = true;
 
                 if( tx.getStatus() == 1 ) {

@@ -1,17 +1,21 @@
-/*
- * Copyright 2016 Red Hat, Inc. and/or its affiliates.
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
-*/
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 
 package org.kie.dmn.validation.DMNv1x;
 
@@ -25,6 +29,7 @@ import org.kie.dmn.feel.runtime.events.SyntaxErrorEvent;
 import org.kie.dmn.api.feel.runtime.events.FEELEvent;
 import org.kie.dmn.core.util.Msg;
 import org.kie.dmn.core.compiler.ImportDMNResolverUtil;
+import org.kie.dmn.validation.ValidatorUtil;
 
 import function org.kie.dmn.validation.ValidatorUtil.rightOfHash;
 import function org.kie.dmn.validation.ValidatorUtil.getRootItemDef;
@@ -37,7 +42,7 @@ rule MISSING_IMPORT_p1
 when
   $elemRef : Import( ImportDMNResolverUtil.whichImportType(this) == ImportDMNResolverUtil.ImportType.DMN,
                      $importedNS : namespace,
-                     getAdditionalAttributes().get(org.kie.dmn.model.v1_1.TImport.MODELNAME_QNAME) == null )
+                     getAdditionalAttributes().get(ValidatorUtil.KIE_MODEL_NAME_QNAME) == null )
   not( Definitions( namespace == $importedNS ) from entry-point "DMNImports" )
 then
   reporter.report(DMNMessage.Severity.ERROR, $elemRef, Msg.IMPORT_NOT_FOUND_FOR_NODE, $importedNS, $elemRef.getIdentifierString());
@@ -47,8 +52,8 @@ rule MISSING_IMPORT_p2
 when
   $elemRef : Import( ImportDMNResolverUtil.whichImportType(this) == ImportDMNResolverUtil.ImportType.DMN,
                      $importedNS : namespace,
-                     getAdditionalAttributes().get(org.kie.dmn.model.v1_1.TImport.MODELNAME_QNAME) != null,
-                     $importedName : getAdditionalAttributes().get(org.kie.dmn.model.v1_1.TImport.MODELNAME_QNAME) )
+                     getAdditionalAttributes().get(ValidatorUtil.KIE_MODEL_NAME_QNAME) != null,
+                     $importedName : getAdditionalAttributes().get(ValidatorUtil.KIE_MODEL_NAME_QNAME) )
   not( Definitions( namespace == $importedNS, name == $importedName ) from entry-point "DMNImports" )
 then
   reporter.report(DMNMessage.Severity.ERROR, $elemRef, Msg.IMPORT_NOT_FOUND_FOR_NODE, $importedNS + $importedName, $elemRef.getIdentifierString());
@@ -61,6 +66,17 @@ then
     reporter.report( DMNMessage.Severity.WARN, $b, Msg.MISSING_EXPRESSION_FOR_PARAM_OF_INVOCATION,
                      $b.getParameter() != null ? $b.getParameter().getIdentifierString() : "[unnamed]",
                      $b.getParentDRDElement().getIdentifierString() );
+end
+
+rule NAME_EMPTY
+when
+    $ne : NamedElement( !(this instanceof Import),
+                        !FEELParser.isVariableNameEmpty( name ) )
+then
+    java.util.List<FEELEvent> errors = FEELParser.checkVariableNameEmpty( $ne.getName() );
+    if ( ! errors.isEmpty() ) {
+        reporter.report( DMNMessage.Severity.ERROR,  $ne , Msg.INVALID_NAME, $ne.getName(), errors.get( 0 ).getMessage() );
+    }
 end
 
 rule NAME_INVALID

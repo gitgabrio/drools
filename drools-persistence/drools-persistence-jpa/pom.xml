@@ -26,7 +26,7 @@
   <parent>
     <groupId>org.drools</groupId>
     <artifactId>drools-persistence</artifactId>
-    <version>8.45.0-SNAPSHOT</version>
+    <version>999-SNAPSHOT</version>
   </parent>
 
   <artifactId>drools-persistence-jpa</artifactId>
@@ -39,7 +39,6 @@
 
     <!-- These are properties used in the database profiles. Some of them must be initialized
          to be empty so that Maven applies their values via filtering to the resources. -->
-    <maven.hibernate.dialect>org.hibernate.dialect.H2Dialect</maven.hibernate.dialect>
     <maven.datasource.classname>org.h2.jdbcx.JdbcDataSource</maven.datasource.classname>
     <maven.jdbc.driver.class>org.h2.Driver</maven.jdbc.driver.class>
     <maven.jdbc.db.name/>
@@ -74,6 +73,7 @@
           <additionalClasspathElements>
             <additionalClasspathElement>${maven.jdbc.driver.jar}</additionalClasspathElement>
           </additionalClasspathElements>
+          <argLine>-javaagent:${settings.localRepository}/org/apache/openjpa/openjpa/${version.org.apache.openjpa}/openjpa-${version.org.apache.openjpa}.jar</argLine>
         </configuration>
       </plugin>
     </plugins>
@@ -124,11 +124,6 @@
     </dependency>
     <dependency>
       <groupId>com.sun.xml.bind</groupId>
-      <artifactId>jaxb-impl</artifactId>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.sun.xml.bind</groupId>
       <artifactId>jaxb-xjc</artifactId>
       <scope>provided</scope>
     </dependency>
@@ -166,29 +161,14 @@
       <scope>test</scope>
     </dependency>
 
-    <!-- Hibernate -->
     <dependency>
-      <groupId>org.hibernate</groupId>
-      <artifactId>hibernate-entitymanager</artifactId>
+      <groupId>org.apache.openjpa</groupId>
+      <artifactId>openjpa</artifactId>
       <scope>test</scope>
     </dependency>
+
     <dependency>
-      <groupId>org.hibernate</groupId>
-      <artifactId>hibernate-core</artifactId>
-      <scope>test</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>org.glassfish.jaxb</groupId>
-          <artifactId>jaxb-runtime</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.jboss</groupId>
-          <artifactId>jandex</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>${jandex.group-id}</groupId>
+      <groupId>io.smallrye</groupId>
       <artifactId>jandex</artifactId>
       <scope>test</scope>
     </dependency>
@@ -203,12 +183,18 @@
       <artifactId>logback-classic</artifactId>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.jboss.logging</groupId>
+      <artifactId>jboss-logging</artifactId>
+      <scope>test</scope>
+    </dependency>
 
     <dependency>
       <groupId>com.h2database</groupId>
       <artifactId>h2</artifactId>
       <scope>test</scope>
     </dependency>
+
     <dependency>
       <groupId>org.jboss.narayana.jta</groupId>
       <artifactId>narayana-jta</artifactId>

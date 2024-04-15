@@ -20,25 +20,17 @@ package org.drools.fastutil;
 
 import it.unimi.dsi.fastutil.Hash.Strategy;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
-import org.drools.core.reteoo.AbstractTuple;
+import org.drools.core.reteoo.TupleImpl;
 import org.drools.core.reteoo.Tuple;
 import org.drools.core.reteoo.TupleMemory;
-import org.drools.core.util.AbstractHashTable.DoubleCompositeIndex;
-import org.drools.base.util.FieldIndex;
 import org.drools.core.util.AbstractHashTable.HashEntry;
 import org.drools.core.util.AbstractHashTable.Index;
-import org.drools.core.util.AbstractHashTable.SingleIndex;
-import org.drools.core.util.AbstractHashTable.TripleCompositeIndex;
 import org.drools.core.util.FastIterator;
 import org.drools.core.util.Iterator;
 import org.drools.core.util.LinkedList;
 import org.drools.core.util.index.TupleList;
 
 public class FastUtilHashTupleMemory implements TupleMemory {
-
-    public static final int                    PRIME            = 31;
-
-    private int                                startResult;
 
     private int                                factSize;
 
@@ -68,7 +60,7 @@ public class FastUtilHashTupleMemory implements TupleMemory {
         }
     }
 
-    public FastUtilHashTupleMemory(FieldIndex[] index,
+    public FastUtilHashTupleMemory(Index index,
                                    boolean left) {
         this.set = new FastUtilMergableHashSet<>(HashStrategy.get());
 
@@ -76,38 +68,16 @@ public class FastUtilHashTupleMemory implements TupleMemory {
 
         fullFastIterator = new FullFastIterator(set);
 
-        this.startResult = PRIME;
-        for ( FieldIndex i : index ) {
-            this.startResult += PRIME * this.startResult + i.getRightExtractor().getIndex();
-        }
-
-        switch ( index.length ) {
-            case 0 :
-                throw new IllegalArgumentException( "FieldIndexHashTable cannot use an index[] of length  0" );
-            case 1 :
-                this.index = new SingleIndex(index,
-                                             this.startResult );
-                break;
-            case 2 :
-                this.index = new DoubleCompositeIndex(index,
-                                                      this.startResult );
-                break;
-            case 3 :
-                this.index = new TripleCompositeIndex(index,
-                                                      this.startResult );
-                break;
-            default :
-                throw new IllegalArgumentException( "FieldIndexHashTable cannot use an index[] of length  great than 3" );
-        }
+        this.index = index;
     }
 
     @Override
-    public Tuple getFirst(Tuple tuple) {
+    public TupleImpl getFirst(TupleImpl tuple) {
         TupleList bucket = get( tuple, !left );
         return bucket != null ? bucket.getFirst() : null;
     }
 
-    private TupleList get(final Tuple tuple, boolean left) {
+    private TupleList get(final TupleImpl tuple, boolean left) {
         HashEntry hashEntry = this.index.hashCodeOf(tuple, left);
 
         TupleList tupleList = (TupleList) set.get(hashEntry);
@@ -116,7 +86,7 @@ public class FastUtilHashTupleMemory implements TupleMemory {
     }
 
     @Override
-    public void removeAdd(Tuple tuple) {
+    public void removeAdd(TupleImpl tuple) {
         IndexTupleList tupleList = (IndexTupleList) tuple.getMemory();
         tupleList.remove( tuple );
 
@@ -137,7 +107,7 @@ public class FastUtilHashTupleMemory implements TupleMemory {
     }
 
     @Override
-    public void add(Tuple tuple) {
+    public void add(TupleImpl tuple) {
         HashEntry hashEntry = this.index.hashCodeOf( tuple, left );
 
         final TupleList entry = getOrCreate(hashEntry);
@@ -157,7 +127,7 @@ public class FastUtilHashTupleMemory implements TupleMemory {
     }
 
     @Override
-    public void remove(Tuple tuple) {
+    public void remove(TupleImpl tuple) {
         IndexTupleList memory = (IndexTupleList) tuple.getMemory();
 
         memory.remove( tuple );
@@ -179,42 +149,26 @@ public class FastUtilHashTupleMemory implements TupleMemory {
         return factSize;
     }
 
-    @Override
-    public Iterator iterator() {
-        return new FullIterator( new FullFastIterator(set));
-    }
+//    @Override
+//    public Iterator<TupleImpl> iterator() {
+//        return new FullIterator( new FullFastIterator(set));
+//    }
 
     @Override
-    public FastIterator<AbstractTuple> fastIterator() {
+    public FastIterator<TupleImpl> fastIterator() {
         return LinkedList.fastIterator;
     }
 
     @Override
-    public FastIterator<AbstractTuple> fullFastIterator() {
+    public FastIterator<TupleImpl> fullFastIterator() {
         fullFastIterator.reset();
         return fullFastIterator;
     }
 
     @Override
-    public FastIterator<AbstractTuple> fullFastIterator(AbstractTuple tuple) {
+    public FastIterator<TupleImpl> fullFastIterator(TupleImpl tuple) {
         fullFastIterator.resume(tuple);
         return fullFastIterator;
-    }
-
-    @Override
-    public Tuple[] toArray() {
-        Tuple[] result = new Tuple[size()];
-        int index = 0;
-
-        for ( HashEntry hash : set) {
-            Tuple tuple = ((TupleList)hash).getFirst();
-            while (tuple != null) {
-                result[index++] = tuple;
-                tuple = tuple.getNext();
-            }
-        }
-
-        return result;
     }
 
     @Override
@@ -230,7 +184,6 @@ public class FastUtilHashTupleMemory implements TupleMemory {
     @Override
     public void clear() {
         set.clear();
-        this.startResult = PRIME;
         this.factSize = 0;
     }
 
@@ -269,7 +222,7 @@ public class FastUtilHashTupleMemory implements TupleMemory {
     }
 
 
-    public static class FullIterator implements Iterator<AbstractTuple> {
+    public static class FullIterator implements Iterator<TupleImpl> {
         private FullFastIterator fullFastIterator;
         private Tuple tuple;
 
@@ -278,13 +231,13 @@ public class FastUtilHashTupleMemory implements TupleMemory {
         }
 
         @Override
-        public AbstractTuple next() {
-            this.tuple = fullFastIterator.next((AbstractTuple) tuple);
-            return (AbstractTuple) this.tuple;
+        public TupleImpl next() {
+            this.tuple = fullFastIterator.next((TupleImpl) tuple);
+            return (TupleImpl) this.tuple;
         }
     }
 
-    public static class FullFastIterator implements FastIterator<AbstractTuple> {
+    public static class FullFastIterator implements FastIterator<TupleImpl> {
 
         private FastUtilMergableHashSet<HashEntry> set;
 
@@ -298,7 +251,7 @@ public class FastUtilHashTupleMemory implements TupleMemory {
          * This only seems to be used in tests, so is not performance sensitive
          * @param target
          */
-        public void resume(AbstractTuple target) {
+        public void resume(TupleImpl target) {
             reset();
 
             TupleList targetMemory = target.getMemory(); // not ideal as this is a linear search to find the resume point
@@ -310,8 +263,8 @@ public class FastUtilHashTupleMemory implements TupleMemory {
             }
         }
 
-        public AbstractTuple next(AbstractTuple tuple) {
-            AbstractTuple next = null;
+        public TupleImpl next(TupleImpl tuple) {
+            TupleImpl next = null;
             if (tuple != null) {
                 next = tuple.getNext();
                 if (next != null) {
@@ -320,7 +273,7 @@ public class FastUtilHashTupleMemory implements TupleMemory {
             }
 
             if (it.hasNext()) {
-                next = (AbstractTuple) ((TupleList)it.next()).getFirst();
+                next = (TupleImpl) ((TupleList)it.next()).getFirst();
             }
             return next;
         }

@@ -19,27 +19,27 @@
 package org.drools.core.util.index;
 
 import org.drools.base.rule.ContextEntry;
-import org.drools.base.rule.constraint.BetaNodeFieldConstraint;
 import org.drools.base.util.index.ConstraintTypeOperator;
 import org.drools.core.RuleBaseConfiguration;
 import org.drools.core.reteoo.BetaMemory;
 import org.drools.core.reteoo.TupleMemory;
+import org.drools.base.rule.constraint.BetaConstraint;
 
 public interface IndexFactory {
 
-    static BetaMemory createBetaMemory(RuleBaseConfiguration config, short nodeType, BetaNodeFieldConstraint... constraints) {
+    static BetaMemory createBetaMemory(RuleBaseConfiguration config, int nodeType, BetaConstraint... constraints) {
         if (config.getCompositeKeyDepth() < 1) {
-            return new BetaMemory( config.isSequential() ? null : new TupleList(),
-                    new TupleList(),
-                    createContext(constraints),
-                    nodeType );
+            return new BetaMemory(config.isSequential() ? null : new TupleList(),
+                                  new TupleList(),
+                                  createContext(constraints),
+                                  nodeType );
         }
 
         IndexSpec indexSpec = new IndexSpec(nodeType, constraints, config);
-        return new BetaMemory( createLeftMemory(config, indexSpec),
-                createRightMemory(config, indexSpec),
-                createContext(constraints),
-                nodeType );
+        return new BetaMemory(createLeftMemory(config, indexSpec),
+                              createRightMemory(config, indexSpec),
+                              createContext(constraints),
+                              nodeType );
     }
 
     private static TupleMemory createRightMemory(RuleBaseConfiguration config, IndexSpec indexSpec) {
@@ -77,10 +77,15 @@ public interface IndexFactory {
         return new TupleList();
     }
 
-    private static ContextEntry[] createContext(BetaNodeFieldConstraint... constraints) {
-        ContextEntry[] entries = new ContextEntry[constraints.length];
+    private static Object createContext(BetaConstraint... constraints) {
+        if (constraints.length == 1) {
+            // no array needed
+            return constraints[0].createContext();
+        }
+
+        Object[] entries = new ContextEntry[constraints.length];
         for (int i = 0; i < constraints.length; i++) {
-            entries[i] = constraints[i].createContextEntry();
+            entries[i] = constraints[i].createContext();
         }
         return entries;
     }

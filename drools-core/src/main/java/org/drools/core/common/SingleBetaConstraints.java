@@ -25,10 +25,12 @@ import java.util.List;
 import java.util.Optional;
 
 import org.drools.base.base.ObjectType;
+import org.drools.base.base.ValueResolver;
+import org.drools.base.reteoo.BaseTuple;
 import org.drools.base.rule.ContextEntry;
 import org.drools.base.rule.MutableTypeConstraint;
 import org.drools.base.rule.Pattern;
-import org.drools.base.rule.constraint.BetaNodeFieldConstraint;
+import org.drools.base.rule.constraint.BetaConstraint;
 import org.drools.base.util.index.IndexUtil;
 import org.drools.core.RuleBaseConfiguration;
 import org.drools.core.reteoo.BetaMemory;
@@ -40,11 +42,11 @@ import org.kie.api.runtime.rule.FactHandle;
 
 public class SingleBetaConstraints
     implements
-    BetaConstraints {
+    BetaConstraints<ContextEntry> {
 
     private static final long serialVersionUID = 510l;
 
-    protected BetaNodeFieldConstraint constraint;
+    protected BetaConstraint<ContextEntry> constraint;
 
     protected boolean indexed;
 
@@ -54,28 +56,28 @@ public class SingleBetaConstraints
 
     }
 
-    public SingleBetaConstraints(final BetaNodeFieldConstraint[] constraint,
+    public SingleBetaConstraints(final BetaConstraint[] constraint,
                                  final RuleBaseConfiguration conf) {
         this(constraint[0],
              conf,
              false);
     }
 
-    public SingleBetaConstraints(final BetaNodeFieldConstraint constraint,
+    public SingleBetaConstraints(final BetaConstraint constraint,
                                  final RuleBaseConfiguration conf) {
         this(constraint,
              conf,
              false);
     }
 
-    public SingleBetaConstraints(final BetaNodeFieldConstraint constraint,
+    public SingleBetaConstraints(final BetaConstraint constraint,
                                  final RuleBaseConfiguration conf,
                                  final boolean disableIndex) {
         this.constraint = constraint;
         this.disableIndex = disableIndex;
     }
 
-    public void init(BuildContext context, short betaNodeType) {
+    public void init(BuildContext context, int betaNodeType) {
         RuleBaseConfiguration config = context.getRuleBase().getRuleBaseConfiguration();
 
         if ((disableIndex) || (!config.isIndexLeftBetaMemory() && !config.isIndexRightBetaMemory())) {
@@ -85,12 +87,12 @@ public class SingleBetaConstraints
         }
     }
 
-    public void initIndexes(int depth, short betaNodeType, RuleBaseConfiguration config) {
+    public void initIndexes(int depth, int betaNodeType, RuleBaseConfiguration config) {
         indexed = depth >= 1 && IndexUtil.isIndexableForNode(betaNodeType, constraint, config);
     }
 
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-        constraint = (BetaNodeFieldConstraint) in.readObject();
+        constraint = (BetaConstraint) in.readObject();
         indexed = in.readBoolean();
 
     }
@@ -102,50 +104,53 @@ public class SingleBetaConstraints
 
     public SingleBetaConstraints cloneIfInUse() {
         if (constraint instanceof MutableTypeConstraint && ((MutableTypeConstraint) constraint).setInUse()) {
-            SingleBetaConstraints clone = new SingleBetaConstraints(constraint.cloneIfInUse(), null, disableIndex);
-            clone.indexed = indexed;
-            return clone;
+            return clone();
         }
         return this;
     }
 
-    public ContextEntry[] createContext() {
-        return new ContextEntry[]{this.constraint.createContextEntry()};
+    public SingleBetaConstraints clone() {
+        SingleBetaConstraints clone = new SingleBetaConstraints(constraint.cloneIfInUse(), null, disableIndex);
+        clone.indexed = indexed;
+        return clone;
+    }
+
+    public ContextEntry createContext() {
+        return this.constraint.createContext();
     }
 
     /* (non-Javadoc)
      * @see org.kie.common.BetaNodeConstraints#updateFromTuple(org.kie.reteoo.ReteTuple)
      */
-    public void updateFromTuple(final ContextEntry[] context,
-                                final ReteEvaluator reteEvaluator,
+    public void updateFromTuple(final ContextEntry context,
+                                final ValueResolver valueResolver,
                                 final Tuple tuple) {
-        context[0].updateFromTuple(reteEvaluator, tuple);
+        context.updateFromTuple(valueResolver, tuple);
     }
 
     /* (non-Javadoc)
      * @see org.kie.common.BetaNodeConstraints#updateFromFactHandle(org.kie.common.InternalFactHandle)
      */
-    public void updateFromFactHandle(final ContextEntry[] context,
-                                     final ReteEvaluator reteEvaluator,
+    public void updateFromFactHandle(final ContextEntry context,
+                                     final ValueResolver valueResolver,
                                      final FactHandle handle) {
-        context[0].updateFromFactHandle(reteEvaluator, handle);
+        context.updateFromFactHandle(valueResolver, handle);
     }
 
     /* (non-Javadoc)
      * @see org.kie.common.BetaNodeConstraints#isAllowedCachedLeft(java.lang.Object)
      */
-    public boolean isAllowedCachedLeft(final ContextEntry[] context,
+    public boolean isAllowedCachedLeft(final ContextEntry context,
                                        final FactHandle handle) {
-        return this.indexed || this.constraint.isAllowedCachedLeft(context[0],
+        return this.indexed || this.constraint.isAllowedCachedLeft(context,
                                                                    handle);
     }
 
     /* (non-Javadoc)
      * @see org.kie.common.BetaNodeConstraints#isAllowedCachedRight(org.kie.reteoo.ReteTuple)
      */
-    public boolean isAllowedCachedRight(final ContextEntry[] context,
-                                        final Tuple tuple) {
-        return this.constraint.isAllowedCachedRight(tuple, context[0]);
+    public boolean isAllowedCachedRight(final BaseTuple tuple, final ContextEntry context) {
+        return this.constraint.isAllowedCachedRight(tuple, context);
     }
 
     public boolean isIndexed() {
@@ -161,7 +166,7 @@ public class SingleBetaConstraints
     }
 
     public BetaMemory createBetaMemory(final RuleBaseConfiguration config,
-                                       final short nodeType) {
+                                       final int nodeType) {
         return IndexFactory.createBetaMemory(config, nodeType, constraint);
     }
 
@@ -169,15 +174,15 @@ public class SingleBetaConstraints
         return this.constraint.hashCode();
     }
 
-    public BetaNodeFieldConstraint getConstraint() {
+    public BetaConstraint getConstraint() {
         return this.constraint;
     }
 
     /* (non-Javadoc)
      * @see org.kie.common.BetaNodeConstraints#getConstraints()
      */
-    public BetaNodeFieldConstraint[] getConstraints() {
-        return new BetaNodeFieldConstraint[]{this.constraint};
+    public BetaConstraint[] getConstraints() {
+        return new BetaConstraint[]{this.constraint};
     }
 
     /**
@@ -201,12 +206,12 @@ public class SingleBetaConstraints
         return this.constraint == other.constraint || this.constraint.equals(other.constraint);
     }
 
-    public void resetFactHandle(ContextEntry[] context) {
-        context[0].resetFactHandle();
+    public void resetFactHandle(ContextEntry context) {
+        context.resetFactHandle();
     }
 
-    public void resetTuple(ContextEntry[] context) {
-        context[0].resetTuple();
+    public void resetTuple(ContextEntry context) {
+        context.resetTuple();
     }
 
     public BetaConstraints getOriginalConstraint() {

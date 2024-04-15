@@ -35,6 +35,7 @@ import org.drools.core.reteoo.AsyncSendNode;
 import org.drools.core.reteoo.AsyncSendNode.AsyncSendMemory;
 import org.drools.core.reteoo.BetaMemory;
 import org.drools.core.reteoo.LeftTuple;
+import org.drools.core.reteoo.TupleImpl;
 import org.kie.internal.concurrent.ExecutorProviderFactory;
 
 public class PhreakAsyncSendNode {
@@ -46,7 +47,7 @@ public class PhreakAsyncSendNode {
     public void doNode(AsyncSendNode node,
                        AsyncSendMemory memory,
                        ReteEvaluator reteEvaluator,
-                       TupleSets<LeftTuple> srcLeftTuples) {
+                       TupleSets srcLeftTuples) {
 
         if (srcLeftTuples.getInsertFirst() != null) {
             doLeftInserts(node, memory, reteEvaluator, srcLeftTuples);
@@ -58,17 +59,17 @@ public class PhreakAsyncSendNode {
     public void doLeftInserts(AsyncSendNode node,
                               AsyncSendMemory memory,
                               ReteEvaluator reteEvaluator,
-                              TupleSets<LeftTuple> srcLeftTuples) {
+                              TupleSets srcLeftTuples) {
 
         BetaMemory bm = memory.getBetaMemory();
-        ContextEntry[] context = bm.getContext();
+        Object context = bm.getContext();
         BetaConstraints betaConstraints = node.getBetaConstraints();
         AlphaNodeFieldConstraint[] alphaConstraints = node.getAlphaConstraints();
         DataProvider dataProvider = node.getDataProvider();
         Class<?> resultClass = node.getResultClass();
 
-        for (LeftTuple leftTuple = srcLeftTuples.getInsertFirst(); leftTuple != null; ) {
-            LeftTuple next = leftTuple.getStagedNext();
+        for (TupleImpl leftTuple = srcLeftTuples.getInsertFirst(); leftTuple != null; ) {
+            TupleImpl next = leftTuple.getStagedNext();
 
             PropagationContext propagationContext = leftTuple.getPropagationContext();
 
@@ -81,7 +82,7 @@ public class PhreakAsyncSendNode {
 
             betaConstraints.updateFromTuple(context, reteEvaluator, leftTuple);
 
-            LeftTuple finalLeftTuple = leftTuple;
+            TupleImpl finalLeftTuple = leftTuple;
 
             executor().execute( () -> {
                 // TODO context is not thread safe, it needs to be cloned
@@ -96,8 +97,8 @@ public class PhreakAsyncSendNode {
     }
 
     private void fetchAndSendResults(AsyncSendNode node, AsyncSendMemory memory, ReteEvaluator reteEvaluator,
-                                     ContextEntry[] context, BetaConstraints betaConstraints, AlphaNodeFieldConstraint[] alphaConstraints,
-                                     DataProvider dataProvider, Class<?> resultClass, LeftTuple leftTuple, PropagationContext propagationContext ) {
+                                     Object context, BetaConstraints betaConstraints, AlphaNodeFieldConstraint[] alphaConstraints,
+                                     DataProvider dataProvider, Class<?> resultClass, TupleImpl leftTuple, PropagationContext propagationContext ) {
         for (final java.util.Iterator<?> it = dataProvider.getResults(leftTuple,
                                                                       reteEvaluator,
                                                                       memory.providerContext); it.hasNext(); ) {
@@ -131,7 +132,7 @@ public class PhreakAsyncSendNode {
                            ReteEvaluator reteEvaluator,
                            InternalFactHandle factHandle,
                            BetaConstraints betaConstraints,
-                           ContextEntry[] context ) {
+                           Object context ) {
         if (betaConstraints.isAllowedCachedLeft(context, factHandle)) {
             AsyncMessagesCoordinator.get().propagate( node.getMessageId(), new AsyncMessage( reteEvaluator, factHandle.getObject() ) );
         }

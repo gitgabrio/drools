@@ -26,11 +26,13 @@ import java.util.List;
 import java.util.Optional;
 
 import org.drools.base.base.ObjectType;
+import org.drools.base.base.ValueResolver;
+import org.drools.base.reteoo.BaseTuple;
 import org.drools.base.rule.ContextEntry;
 import org.drools.base.rule.IndexableConstraint;
 import org.drools.base.rule.MutableTypeConstraint;
 import org.drools.base.rule.Pattern;
-import org.drools.base.rule.constraint.BetaNodeFieldConstraint;
+import org.drools.base.rule.constraint.BetaConstraint;
 import org.drools.core.RuleBaseConfiguration;
 import org.drools.core.reteoo.BetaMemory;
 import org.drools.core.reteoo.Tuple;
@@ -47,13 +49,13 @@ import static org.drools.base.util.index.IndexUtil.isIndexableForNode;
 
 public class DefaultBetaConstraints
     implements
-    BetaConstraints {
+    BetaConstraints<ContextEntry[]> {
 
     private static final long serialVersionUID = 510l;
 
     protected transient boolean           disableIndexing;
 
-    protected BetaNodeFieldConstraint[]   constraints;
+    protected BetaConstraint<ContextEntry>[] constraints;
 
     protected IndexPrecedenceOption       indexPrecedenceOption;
 
@@ -64,7 +66,7 @@ public class DefaultBetaConstraints
     public DefaultBetaConstraints() {
 
     }
-    public DefaultBetaConstraints(final BetaNodeFieldConstraint[] constraints,
+    public DefaultBetaConstraints(final BetaConstraint[] constraints,
                                   final RuleBaseConfiguration conf) {
         this( constraints,
               conf,
@@ -72,7 +74,7 @@ public class DefaultBetaConstraints
 
     }
 
-    public DefaultBetaConstraints(final BetaNodeFieldConstraint[] constraints,
+    public DefaultBetaConstraints(final BetaConstraint[] constraints,
                                   final RuleBaseConfiguration conf,
                                   final boolean disableIndexing) {
         this.constraints = constraints;
@@ -82,7 +84,7 @@ public class DefaultBetaConstraints
 
     public DefaultBetaConstraints cloneIfInUse() {
         if (constraints[0] instanceof MutableTypeConstraint && ((MutableTypeConstraint)constraints[0]).setInUse()) {
-            BetaNodeFieldConstraint[] clonedConstraints = new BetaNodeFieldConstraint[constraints.length];
+            BetaConstraint[] clonedConstraints = new BetaConstraint[constraints.length];
             for (int i = 0; i < constraints.length; i++) {
                 clonedConstraints[i] = constraints[i].cloneIfInUse();
             }
@@ -96,7 +98,7 @@ public class DefaultBetaConstraints
         return this;
     }
 
-    public void init(BuildContext context, short betaNodeType) {
+    public void init(BuildContext context, int betaNodeType) {
         RuleBaseConfiguration config = context.getRuleBase().getRuleBaseConfiguration();
 
         if ( disableIndexing || (!config.isIndexLeftBetaMemory() && !config.isIndexRightBetaMemory()) ) {
@@ -112,7 +114,7 @@ public class DefaultBetaConstraints
         }
     }
 
-    public void initIndexes(int depth, short betaNodeType, RuleBaseConfiguration config) {
+    public void initIndexes(int depth, int betaNodeType, RuleBaseConfiguration config) {
         indexed = 0;
         boolean[] indexable = isIndexableForNode(indexPrecedenceOption, betaNodeType, depth, constraints, config);
         for (boolean i : indexable) {
@@ -125,7 +127,7 @@ public class DefaultBetaConstraints
     }
 
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-        constraints = (BetaNodeFieldConstraint[])in.readObject();
+        constraints = (BetaConstraint[])in.readObject();
         indexed     = in.readInt();
         indexPrecedenceOption = (IndexPrecedenceOption) in.readObject();
     }
@@ -139,7 +141,7 @@ public class DefaultBetaConstraints
     public ContextEntry[] createContext() {
         ContextEntry[] entries = new ContextEntry[constraints.length];
         for (int i = 0; i < constraints.length; i++) {
-            entries[i] = constraints[i].createContextEntry();
+            entries[i] = constraints[i].createContext();
         }
         return entries;
     }
@@ -148,10 +150,10 @@ public class DefaultBetaConstraints
      * @see org.kie.common.BetaNodeConstraints#updateFromTuple(org.kie.reteoo.ReteTuple)
      */
     public void updateFromTuple(final ContextEntry[] context,
-                                final ReteEvaluator reteEvaluator,
+                                final ValueResolver valueResolver,
                                 final Tuple tuple) {
         for (ContextEntry aContext : context) {
-            aContext.updateFromTuple(reteEvaluator, tuple);
+            aContext.updateFromTuple(valueResolver, tuple);
         }
     }
 
@@ -159,10 +161,10 @@ public class DefaultBetaConstraints
      * @see org.kie.common.BetaNodeConstraints#updateFromFactHandle(org.kie.common.InternalFactHandle)
      */
     public void updateFromFactHandle(final ContextEntry[] context,
-                                     final ReteEvaluator reteEvaluator,
+                                     final ValueResolver valueResolver,
                                      final FactHandle handle) {
         for (ContextEntry aContext : context) {
-            aContext.updateFromFactHandle(reteEvaluator, handle);
+            aContext.updateFromFactHandle(valueResolver, handle);
         }
     }
 
@@ -194,8 +196,8 @@ public class DefaultBetaConstraints
     /* (non-Javadoc)
      * @see org.kie.common.BetaNodeConstraints#isAllowedCachedRight(org.kie.reteoo.ReteTuple)
      */
-    public boolean isAllowedCachedRight(final ContextEntry[] context,
-                                        final Tuple tuple) {
+    public boolean isAllowedCachedRight(final BaseTuple tuple,
+                                        final ContextEntry[] context) {
         for (int i = indexed; i < constraints.length; i++) {
             if ( !constraints[i].isAllowedCachedRight(tuple, context[i]) ) {
                 return false;
@@ -217,7 +219,7 @@ public class DefaultBetaConstraints
     }
 
     public BetaMemory createBetaMemory(final RuleBaseConfiguration config,
-                                       final short nodeType ) {
+                                       final int nodeType) {
         return IndexFactory.createBetaMemory(config, nodeType, constraints);
     }
 
@@ -228,7 +230,7 @@ public class DefaultBetaConstraints
     /* (non-Javadoc)
      * @see org.kie.common.BetaNodeConstraints#getConstraints()
      */
-    public BetaNodeFieldConstraint[] getConstraints() {
+    public BetaConstraint[] getConstraints() {
         return constraints;
     }
 
@@ -268,7 +270,7 @@ public class DefaultBetaConstraints
 
     public BitMask getListenedPropertyMask(Pattern pattern, ObjectType modifiedType, List<String> settableProperties) {
         BitMask mask = getEmptyPropertyReactiveMask(settableProperties.size());
-        for (BetaNodeFieldConstraint constraint : constraints) {
+        for (BetaConstraint constraint : constraints) {
             mask = mask.setAll(constraint.getListenedPropertyMask(Optional.of(pattern), modifiedType, settableProperties));
         }
         return mask;
@@ -282,7 +284,7 @@ public class DefaultBetaConstraints
     }
 
     private boolean calcLeftUpdateOptimizationAllowed() {
-        for (BetaNodeFieldConstraint constraint : constraints) {
+        for (BetaConstraint constraint : constraints) {
             if ( !(constraint instanceof IndexableConstraint && ((IndexableConstraint)constraint).getConstraintType().isEquality()) ) {
                 return false;
             }

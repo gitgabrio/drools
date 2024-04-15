@@ -24,7 +24,9 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
@@ -41,8 +43,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.TimeZone;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BiPredicate;
 import java.util.stream.Stream;
 
@@ -150,33 +150,39 @@ public class EvalHelper {
     }
 
     public static BigDecimal getBigDecimalOrNull(Object value) {
-        if (!(value instanceof Number
-              || value instanceof String)
-            || (value instanceof Double
-                && (value.toString().equals("NaN") || value.toString().equals("Infinity") || value.toString().equals("-Infinity")))) {
-            return null;
+        if ( value instanceof BigDecimal ) {
+            return (BigDecimal) value;
         }
-        if ( !BigDecimal.class.isAssignableFrom( value.getClass() ) ) {
-            if ( value instanceof Long || value instanceof Integer || value instanceof Short || value instanceof Byte ||
-                 value instanceof AtomicLong || value instanceof AtomicInteger ) {
-                value = new BigDecimal( ((Number) value).longValue(), MathContext.DECIMAL128 );
-            } else if ( value instanceof BigInteger ) {
-                value = new BigDecimal( (BigInteger) value, MathContext.DECIMAL128 );
-            } else if ( value instanceof String ) {
-                try {
-                    // we need to remove leading zeros to prevent octal conversion
-                    value = new BigDecimal( ((String) value).replaceFirst("^0+(?!$)", ""), MathContext.DECIMAL128 );
-                } catch (NumberFormatException e) {
-                    return null;
-                }
-            } else {
-                // doubleValue() sometimes produce rounding errors, so we need to use toString() instead
-                // We also need to remove trailing zeros, if there are some so for 10d we get BigDecimal.valueOf(10)
-                // instead of BigDecimal.valueOf(10.0).
-                value = new BigDecimal( removeTrailingZeros(value.toString()), MathContext.DECIMAL128 );
+
+        if ( value instanceof BigInteger ) {
+            return new BigDecimal((BigInteger) value, MathContext.DECIMAL128);
+        }
+
+        if ( value instanceof Double || value instanceof Float ) {
+            String stringVal = value.toString();
+            if (stringVal.equals("NaN") || stringVal.equals("Infinity") || stringVal.equals("-Infinity")) {
+                return null;
+            }
+            // doubleValue() sometimes produce rounding errors, so we need to use toString() instead
+            // We also need to remove trailing zeros, if there are some so for 10d we get BigDecimal.valueOf(10)
+            // instead of BigDecimal.valueOf(10.0).
+            return new BigDecimal( removeTrailingZeros(value.toString()), MathContext.DECIMAL128 );
+        }
+
+        if ( value instanceof Number ) {
+            return new BigDecimal( ((Number) value).longValue(), MathContext.DECIMAL128 );
+        }
+
+        if ( value instanceof String ) {
+            try {
+                // we need to remove leading zeros to prevent octal conversion
+                return new BigDecimal(((String) value).replaceFirst("^0+(?!$)", ""), MathContext.DECIMAL128);
+            } catch (NumberFormatException e) {
+                return null;
             }
         }
-        return (BigDecimal) value;
+
+        return null;
     }
 
     public static Object coerceNumber(Object value) {
@@ -185,6 +191,10 @@ public class EvalHelper {
         } else {
             return value;
         }
+    }
+
+    public static ZonedDateTime coerceDateTime(final LocalDate value) {
+        return ZonedDateTime.of(value, LocalTime.of(0, 0, 0, 0), ZoneOffset.UTC);
     }
 
     public static Boolean getBooleanOrNull(Object value) {
@@ -277,6 +287,11 @@ public class EvalHelper {
 
     public static class PropertyValueResult implements FEELPropertyAccessible.AbstractPropertyValueResult {
 
+        // This exception is used to signal an undefined property for notDefined(). This method may be many times when
+        // evaluating a decision, so a single instance is being cached to avoid the cost of creating the stack trace
+        // each time.
+        private static final Exception undefinedPropertyException = new UnsupportedOperationException("Property was not defined.");
+
         private final boolean defined;
         private final Either<Exception, Object> valueResult;
 
@@ -286,7 +301,7 @@ public class EvalHelper {
         }
 
         public static PropertyValueResult notDefined() {
-            return new PropertyValueResult(false, Either.ofLeft(new UnsupportedOperationException("Property was not defined.")));
+            return new PropertyValueResult(false, Either.ofLeft(undefinedPropertyException));
         }
 
         public static PropertyValueResult of(Either<Exception, Object> valueResult) {
@@ -531,12 +546,14 @@ public class EvalHelper {
     public static Boolean compare(Object left, Object right, EvaluationContext ctx, BiPredicate<Comparable, Comparable> op) {
         if ( left == null || right == null ) {
             return null;
-        } else if (left instanceof ChronoPeriod && right instanceof ChronoPeriod) {
+        }
+        if (left instanceof ChronoPeriod && right instanceof ChronoPeriod) {
             // periods have special compare semantics in FEEL as it ignores "days". Only months and years are compared
             Long l = ComparablePeriod.toTotalMonths((ChronoPeriod) left);
             Long r = ComparablePeriod.toTotalMonths((ChronoPeriod) right);
             return op.test( l, r );
-        } else if (left instanceof TemporalAccessor && right instanceof TemporalAccessor) {
+        }
+        if (left instanceof TemporalAccessor && right instanceof TemporalAccessor) {
             // Handle specific cases when both time / datetime
             TemporalAccessor l = (TemporalAccessor) left;
             TemporalAccessor r = (TemporalAccessor) right;
@@ -544,15 +561,20 @@ public class EvalHelper {
                 return op.test(valuet(l), valuet(r));
             } else if (BuiltInType.determineTypeFromInstance(left) == BuiltInType.DATE_TIME && BuiltInType.determineTypeFromInstance(right) == BuiltInType.DATE_TIME) {
                 return op.test(valuedt(l, r.query(TemporalQueries.zone())), valuedt(r, l.query(TemporalQueries.zone())));
-            } // fallback; continue:
+            }
+        }
+        if (left instanceof Number && right instanceof Number) {
+            // Handle specific cases when both are Number, converting both to BigDecimal
+            BigDecimal l = getBigDecimalOrNull(left);
+            BigDecimal r = getBigDecimalOrNull(right);
+            return op.test(l, r);
         }
         // last fallback:
         if ((left instanceof String && right instanceof String) ||
-            (left instanceof Number && right instanceof Number) ||
             (left instanceof Boolean && right instanceof Boolean) ||
             (left instanceof Comparable && left.getClass().isAssignableFrom(right.getClass()))) {
-            Comparable l = (Comparable) left;
-            Comparable r = (Comparable) right;
+            Comparable<?> l = (Comparable<?>) left;
+            Comparable<?> r = (Comparable<?>) right;
             return op.test(l, r);
         }
         return null;

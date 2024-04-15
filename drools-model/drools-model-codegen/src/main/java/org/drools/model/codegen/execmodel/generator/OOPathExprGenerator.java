@@ -137,7 +137,7 @@ public class OOPathExprGenerator {
             bindingId = context.getOOPathId(fieldType, originalBind + fieldName + pos);
         }
 
-        DeclarationSpec newDeclaration = context.addDeclaration(bindingId, fieldType, reactiveFrom);
+        TypedDeclarationSpec newDeclaration = context.addDeclaration(bindingId, fieldType, reactiveFrom);
         context.addOOPathDeclaration(newDeclaration);
 
         final List<DrlxExpression> conditions = chunk.getConditions();
@@ -199,7 +199,7 @@ public class OOPathExprGenerator {
                     expr.setScope( patternExpr );
                     patternExpr = expr;
                 }
-                if (singleDrlx.getExpr() != null && !(singleDrlx.getExpr() instanceof NameExpr)) {
+                if (singleDrlx.getExpr() != null && singleDrlx.isPredicate()) {
                     MethodCallExpr expr = expressionBuilder.buildExpressionWithIndexing( singleDrlx );
                     expr.setScope( patternExpr );
                     patternExpr = expr;

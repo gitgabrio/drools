@@ -38,6 +38,16 @@ public interface ItemDefinition extends NamedElement {
 
     void setAllowedValues(UnaryTests value);
 
+    default UnaryTests getTypeConstraint() {
+        // Since DMN 1.5
+        return null;
+    }
+
+    default void setTypeConstraint(UnaryTests value) {
+        // Since DMN 1.5
+        // no op
+    }
+
     List<ItemDefinition> getItemComponent();
 
     String getTypeLanguage();

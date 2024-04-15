@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Objects;
 
 import org.drools.base.definitions.rule.impl.RuleImpl;
+import org.drools.base.reteoo.NodeTypeEnums;
 import org.drools.base.rule.Declaration;
 import org.drools.base.rule.consequence.Consequence;
 import org.drools.core.common.ActivationGroupNode;
@@ -64,6 +65,9 @@ public class RuleTerminalNodeLeftTuple extends LeftTuple implements InternalMatc
     private RuleImpl rule;
     private Consequence consequence;
 
+    // left here for debugging purposes: switch RuleExecutor.DEBUG_DORMANT_TUPLE to true to enable this debugging
+    // private boolean dormant;
+
     public RuleTerminalNodeLeftTuple() {
         // constructor needed for serialisation
     }
@@ -80,12 +84,12 @@ public class RuleTerminalNodeLeftTuple extends LeftTuple implements InternalMatc
     }
 
     public RuleTerminalNodeLeftTuple(final InternalFactHandle factHandle,
-                                     final LeftTuple leftTuple,
+                                     final TupleImpl leftTuple,
                                      final Sink sink) {
         super(factHandle, leftTuple, sink);
     }
 
-    public RuleTerminalNodeLeftTuple(final LeftTuple leftTuple,
+    public RuleTerminalNodeLeftTuple(final TupleImpl leftTuple,
                                      final Sink sink,
                                      final PropagationContext pctx,
                                      final boolean leftTupleMemoryEnabled) {
@@ -95,18 +99,18 @@ public class RuleTerminalNodeLeftTuple extends LeftTuple implements InternalMatc
               leftTupleMemoryEnabled);
     }
 
-    public RuleTerminalNodeLeftTuple(final LeftTuple leftTuple,
-                                     RightTuple rightTuple,
+    public RuleTerminalNodeLeftTuple(final TupleImpl leftTuple,
+                                     TupleImpl rightTuple,
                                      Sink sink) {
         super(leftTuple,
               rightTuple,
               sink);
     }
 
-    public RuleTerminalNodeLeftTuple(final LeftTuple leftTuple,
-                                     final RightTuple rightTuple,
-                                     final LeftTuple currentLeftChild,
-                                     final LeftTuple currentRightChild,
+    public RuleTerminalNodeLeftTuple(final TupleImpl leftTuple,
+                                     final TupleImpl rightTuple,
+                                     final TupleImpl currentLeftChild,
+                                     final TupleImpl currentRightChild,
                                      final Sink sink,
                                      final boolean leftTupleMemoryEnabled) {
         super(leftTuple,
@@ -143,7 +147,7 @@ public class RuleTerminalNodeLeftTuple extends LeftTuple implements InternalMatc
         super.setSink(sink);
         TerminalNode terminalNode = (TerminalNode) sink;
         this.rule = terminalNode.getRule();
-        if (this.rule != null && terminalNode instanceof RuleTerminalNode) {
+        if (this.rule != null && terminalNode.getType() == NodeTypeEnums.RuleTerminalNode) {
             String consequenceName = ((RuleTerminalNode)terminalNode).getConsequenceName();
             this.consequence = consequenceName.equals(RuleImpl.DEFAULT_CONSEQUENCE_NAME) ? rule.getConsequence() : rule.getNamedConsequence(consequenceName);
         }
@@ -220,7 +224,7 @@ public class RuleTerminalNodeLeftTuple extends LeftTuple implements InternalMatc
     }
 
     public void dequeue() {
-        ruleAgendaItem.getRuleExecutor().removeLeftTuple(this);
+        ruleAgendaItem.getRuleExecutor().removeActiveTuple(this);
     }
 
     public void remove() {
@@ -249,7 +253,7 @@ public class RuleTerminalNodeLeftTuple extends LeftTuple implements InternalMatc
     }
 
     public TerminalNode getTerminalNode() {
-        return (AbstractTerminalNode) getTupleSink();
+        return (AbstractTerminalNode) this.getSink();
     }
 
     public List<FactHandle> getFactHandles() {
@@ -277,7 +281,7 @@ public class RuleTerminalNodeLeftTuple extends LeftTuple implements InternalMatc
     }
 
     public List<String> getDeclarationIds() {
-        Declaration[] declArray = ((org.drools.core.reteoo.RuleTerminalNode) getTupleSink()).getAllDeclarations();
+        Declaration[] declArray = ((org.drools.core.reteoo.RuleTerminalNode) this.getSink()).getAllDeclarations();
         List<String> declarations = new ArrayList<>();
         for (Declaration decl : declArray) {
             declarations.add(decl.getIdentifier());
@@ -342,5 +346,19 @@ public class RuleTerminalNodeLeftTuple extends LeftTuple implements InternalMatc
     @Override
     public int hashCode() {
         return Objects.hash(super.hashCode(), ruleAgendaItem.getRule().getName());
+    }
+
+    public boolean isFullMatch() {
+        return true;
+    }
+
+    public boolean isDormant() {
+        throw new IllegalStateException("This method can be called only for debugging purposes. Uncomment dormant boolean to enable debugging.");
+        // return dormant;
+    }
+
+    public void setDormant(boolean dormant) {
+        throw new IllegalStateException("This method can be called only for debugging purposes. Uncomment dormant boolean to enable debugging.");
+        // this.dormant = dormant;
     }
 }

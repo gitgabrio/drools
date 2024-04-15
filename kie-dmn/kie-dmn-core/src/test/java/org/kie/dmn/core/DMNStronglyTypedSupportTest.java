@@ -70,7 +70,7 @@ public class DMNStronglyTypedSupportTest extends BaseVariantTest {
         // DROOLS-1569
         final DMNRuntime runtime = createRuntime("DMNInputDataNodeTypeTest.dmn", this.getClass());
         final String MODEL_NAMESPACE = "http://www.trisotech.com/definitions/_17396034-163a-48aa-9a7f-c6eb17f9cc6c";
-        final String FEEL_NAMESPACE = org.kie.dmn.model.v1_2.KieDMNModelInstrumentedBase.URI_FEEL;
+        final String FEEL_NAMESPACE = org.kie.dmn.model.v1_5.KieDMNModelInstrumentedBase.URI_FEEL;
         final DMNModel dmnModel = runtime.getModel(MODEL_NAMESPACE, "DMNInputDataNodeTypeTest");
         assertThat(dmnModel).isNotNull();
         assertThat(dmnModel.hasErrors()).as(DMNRuntimeUtil.formatMessages(dmnModel.getMessages())).isFalse();
@@ -165,6 +165,7 @@ public class DMNStronglyTypedSupportTest extends BaseVariantTest {
             assertThat(ctx.get("Date-Time")).isEqualTo(ZonedDateTime.of(2016, 12, 24, 23, 59, 0, 0, ZoneOffset.ofHours(-5)));
             assertThat(ctx.get("Date")).isEqualTo(new HashMap<String, Object>() {{
                 put("fromString", LocalDate.of(2015, 12, 24));
+                put( "fromStringToDateTime", ZonedDateTime.of( 2015, 12, 24, 0, 0, 0, 0, ZoneOffset.UTC) );
                 put("fromDateTime", LocalDate.of(2016, 12, 24));
                 put("fromYearMonthDay", LocalDate.of(1999, 11, 22));
             }});

@@ -26,9 +26,9 @@ import org.drools.base.base.ValueResolver;
 import org.drools.base.reteoo.BaseTuple;
 import org.drools.base.rule.ContextEntry;
 import org.drools.base.rule.Declaration;
-import org.drools.base.rule.constraint.BetaNodeFieldConstraint;
-import org.drools.core.reteoo.LeftTuple;
+import org.drools.base.rule.constraint.BetaConstraint;
 import org.drools.core.reteoo.Tuple;
+import org.drools.core.reteoo.TupleImpl;
 import org.kie.api.runtime.rule.FactHandle;
 
 /**
@@ -52,7 +52,7 @@ import org.kie.api.runtime.rule.FactHandle;
  */
 public class TupleStartEqualsConstraint
     implements
-    BetaNodeFieldConstraint {
+    BetaConstraint<ContextEntry> {
 
     private static final long                       serialVersionUID = 510l;
 
@@ -88,7 +88,7 @@ public class TupleStartEqualsConstraint
         return false;
     }
 
-    public ContextEntry createContextEntry() {
+    public ContextEntry createContext() {
         return new TupleStartEqualsConstraintContextEntry();
     }
 
@@ -102,7 +102,7 @@ public class TupleStartEqualsConstraint
 
     public boolean isAllowedCachedRight(final BaseTuple tuple,
                                         final ContextEntry context) {
-        LeftTuple nonEmptyLeftTuple = (LeftTuple) tuple.skipEmptyHandles();
+        TupleImpl nonEmptyLeftTuple = (TupleImpl) tuple.skipEmptyHandles();
         return nonEmptyLeftTuple.equals( ((TupleStartEqualsConstraintContextEntry) context).rightTuple.getSubTuple(nonEmptyLeftTuple.size()));
     }
 
@@ -174,7 +174,7 @@ public class TupleStartEqualsConstraint
                                          final FactHandle handle) {
             // if it is not a rete tuple, then there is a bug in the engine...
             // it MUST be a rete tuple
-            this.rightTuple = ((LeftTuple) handle.getObject()).skipEmptyHandles();
+            this.rightTuple = ((TupleImpl) handle.getObject()).skipEmptyHandles();
         }
 
         public void resetTuple() {
@@ -190,7 +190,7 @@ public class TupleStartEqualsConstraint
         return ConstraintType.BETA;
     }
 
-    public BetaNodeFieldConstraint cloneIfInUse() {
+    public BetaConstraint cloneIfInUse() {
         return this;
     }
 }

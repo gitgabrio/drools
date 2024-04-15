@@ -45,11 +45,10 @@ import org.drools.core.reteoo.NotNode;
 import org.drools.core.reteoo.ObjectSinkPropagator;
 import org.drools.core.reteoo.ObjectTypeNode;
 import org.drools.core.reteoo.RightTuple;
-import org.drools.core.reteoo.RightTupleImpl;
 import org.drools.core.reteoo.TupleMemory;
 import org.drools.core.util.FastIterator;
-import org.drools.core.util.index.TupleIndexHashTable;
 import org.drools.kiesession.session.StatefulKnowledgeSessionImpl;
+import org.drools.testcoverage.common.model.Address;
 import org.drools.testcoverage.common.model.Cheese;
 import org.drools.testcoverage.common.model.Person;
 import org.drools.testcoverage.common.util.KieBaseTestConfiguration;
@@ -475,7 +474,7 @@ public class IndexingTest {
             }
 
             final List<RightTuple> list = new ArrayList<>(100);
-            FastIterator it = n.getRightIterator(bm.getRightTupleMemory());
+            FastIterator           it   = n.getRightIterator(bm.getRightTupleMemory());
             for (RightTuple rt = n.getFirstRightTuple(null, bm.getRightTupleMemory(), it); rt != null; rt = (RightTuple) it.next(rt)) {
                 list.add(rt);
             }
@@ -483,8 +482,8 @@ public class IndexingTest {
 
             // check we can resume from each entry in the list above.
             for (int i = 0; i < 100; i++) {
-                final RightTupleImpl rightTuple = (RightTupleImpl) list.get(i);
-                TupleMemory rightTupleMemory = bm.getRightTupleMemory();
+                final RightTuple rightTuple       = list.get(i);
+                TupleMemory      rightTupleMemory = bm.getRightTupleMemory();
                 it = (rightTupleMemory).fullFastIterator(rightTuple); // resumes from the current rightTuple
                 int j = i + 1;
                 for (RightTuple rt = (RightTuple) it.next(rightTuple); rt != null; rt = (RightTuple) it.next(rt)) {
@@ -917,6 +916,44 @@ public class IndexingTest {
             Person john = new Person("John");
             john.setSalary(new BigDecimal("10"));
             ksession.insert(john);
+            ksession.fireAllRules();
+
+            assertThat(list).containsExactly("R1");
+        } finally {
+            ksession.dispose();
+        }
+    }
+
+    @Test
+    public void testBeta() {
+
+        final String drl =
+                "package org.drools.compiler.test\n" +
+                "import " + Person.class.getCanonicalName() + "\n" +
+                "import " + Address.class.getCanonicalName() + "\n" +
+                "global java.util.List list\n" +
+                "rule R1\n" +
+                "    when\n" +
+                "        a : Address()\n" +
+                "        Person( name == a.street )\n" +
+                "    then\n" +
+                "        list.add(\"R1\");\n" +
+                "end\n";
+
+        final KieBase kbase = KieBaseUtil.getKieBaseFromKieModuleFromDrl("indexing-test", kieBaseTestConfiguration, drl);
+        KieSession ksession = kbase.newKieSession();
+
+        try {
+            // BigDecimal Index is disabled
+            //assertAlphaIndex(kbase, Person.class, 0);
+
+            List<String> list = new ArrayList<>();
+            ksession.setGlobal("list", list);
+            Person person = new Person("London");
+            Address address = new Address("London");
+
+            ksession.insert(person);
+            ksession.insert(address);
             ksession.fireAllRules();
 
             assertThat(list).containsExactly("R1");

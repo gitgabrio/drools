@@ -31,6 +31,7 @@ import org.drools.model.codegen.execmodel.util.PatternUtil;
 
 import static org.drools.model.codegen.execmodel.generator.QueryGenerator.QUERY_METHOD_PREFIX;
 import static org.drools.model.codegen.execmodel.generator.QueryGenerator.toQueryDef;
+import static org.drools.modelcompiler.util.StringUtil.toId;
 
 public class PatternVisitor {
 
@@ -62,17 +63,20 @@ public class PatternVisitor {
             patternType = context.getTypeResolver().resolveType(className);
             packageModel.addOtnsClass(patternType);
         } catch (ClassNotFoundException e) {
+            if (context.arePrototypesAllowed()) {
+                return new PrototypePatternDSL(context, packageModel, pattern, constraintDescrs, className);
+            }
             context.addCompilationError( new InvalidExpressionErrorResult( "Unable to find class: " + className ) );
             return () -> { };
         }
 
-        return new PatternDSLPattern(context, packageModel, pattern, constraintDescrs, patternType);
+        return new ClassPatternDSL(context, packageModel, pattern, constraintDescrs, patternType);
     }
 
     private DSLNode parsePatternWithClass(PatternDescr pattern, String className) {
         List<? extends BaseDescr> constraintDescrs = pattern.getConstraint().getDescrs();
 
-        String queryName = QUERY_METHOD_PREFIX + className;
+        String queryName = QUERY_METHOD_PREFIX + toId( className );
         String queryDef = toQueryDef( className );
 
         // Expression is a query, get bindings from query parameter type

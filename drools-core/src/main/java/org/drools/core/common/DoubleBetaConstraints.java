@@ -22,10 +22,12 @@ import java.util.List;
 import java.util.Optional;
 
 import org.drools.base.base.ObjectType;
+import org.drools.base.base.ValueResolver;
+import org.drools.base.reteoo.BaseTuple;
 import org.drools.base.rule.ContextEntry;
 import org.drools.base.rule.MutableTypeConstraint;
 import org.drools.base.rule.Pattern;
-import org.drools.base.rule.constraint.BetaNodeFieldConstraint;
+import org.drools.base.rule.constraint.BetaConstraint;
 import org.drools.core.RuleBaseConfiguration;
 import org.drools.core.reteoo.Tuple;
 import org.drools.core.reteoo.builder.BuildContext;
@@ -39,20 +41,20 @@ public class DoubleBetaConstraints extends MultipleBetaConstraint {
 
     public DoubleBetaConstraints() { }
 
-    public DoubleBetaConstraints(final BetaNodeFieldConstraint[] constraints,
+    public DoubleBetaConstraints(final BetaConstraint[] constraints,
                                  final RuleBaseConfiguration conf) {
         this( constraints,
               conf,
               false );
     }
 
-    public DoubleBetaConstraints(final BetaNodeFieldConstraint[] constraints,
+    public DoubleBetaConstraints(final BetaConstraint[] constraints,
                                  final RuleBaseConfiguration conf,
                                  final boolean disableIndexing) {
         super(constraints, conf, disableIndexing);
     }
 
-    protected DoubleBetaConstraints( BetaNodeFieldConstraint[] constraints,
+    protected DoubleBetaConstraints( BetaConstraint[] constraints,
                                    IndexPrecedenceOption indexPrecedenceOption,
                                    boolean disableIndexing) {
         super(constraints, indexPrecedenceOption, disableIndexing);
@@ -60,7 +62,7 @@ public class DoubleBetaConstraints extends MultipleBetaConstraint {
 
     public DoubleBetaConstraints cloneIfInUse() {
         if (constraints[0] instanceof MutableTypeConstraint && ((MutableTypeConstraint)constraints[0]).setInUse()) {
-            BetaNodeFieldConstraint[] clonedConstraints = new BetaNodeFieldConstraint[constraints.length];
+            BetaConstraint[] clonedConstraints = new BetaConstraint[constraints.length];
             for (int i = 0; i < constraints.length; i++) {
                 clonedConstraints[i] = constraints[i].cloneIfInUse();
             }
@@ -75,11 +77,11 @@ public class DoubleBetaConstraints extends MultipleBetaConstraint {
      * @see org.kie.common.BetaNodeConstraints#updateFromTuple(org.kie.reteoo.ReteTuple)
      */
     public void updateFromTuple(final ContextEntry[] context,
-                                final ReteEvaluator reteEvaluator,
+                                final ValueResolver valueResolver,
                                 final Tuple tuple) {
-        context[0].updateFromTuple( reteEvaluator,
+        context[0].updateFromTuple( valueResolver,
                                     tuple );
-        context[1].updateFromTuple( reteEvaluator,
+        context[1].updateFromTuple( valueResolver,
                                     tuple );
     }
 
@@ -87,11 +89,11 @@ public class DoubleBetaConstraints extends MultipleBetaConstraint {
      * @see org.kie.common.BetaNodeConstraints#updateFromFactHandle(org.kie.common.InternalFactHandle)
      */
     public void updateFromFactHandle(final ContextEntry[] context,
-                                     final ReteEvaluator reteEvaluator,
+                                     final ValueResolver valueResolver,
                                      final FactHandle handle) {
-        context[0].updateFromFactHandle( reteEvaluator,
+        context[0].updateFromFactHandle( valueResolver,
                                          handle );
-        context[1].updateFromFactHandle( reteEvaluator,
+        context[1].updateFromFactHandle( valueResolver,
                                          handle );
     }
 
@@ -117,8 +119,8 @@ public class DoubleBetaConstraints extends MultipleBetaConstraint {
     /* (non-Javadoc)
      * @see org.kie.common.BetaNodeConstraints#isAllowedCachedRight(org.kie.reteoo.ReteTuple)
      */
-    public boolean isAllowedCachedRight(final ContextEntry[] context,
-                                        final Tuple tuple) {
+    public boolean isAllowedCachedRight(final BaseTuple tuple,
+                                        final ContextEntry[] context) {
         return constraints[0].isAllowedCachedRight( tuple, context[0] ) &&
                constraints[1].isAllowedCachedRight( tuple, context[1] );
     }

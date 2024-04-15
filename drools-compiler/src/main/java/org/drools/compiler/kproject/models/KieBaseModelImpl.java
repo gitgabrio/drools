@@ -39,6 +39,7 @@ import org.kie.api.conf.DeclarativeAgendaOption;
 import org.kie.api.conf.EqualityBehaviorOption;
 import org.kie.api.conf.EventProcessingOption;
 import org.kie.api.conf.KieBaseMutabilityOption;
+import org.kie.api.conf.PrototypesOption;
 import org.kie.api.conf.SequentialOption;
 import org.kie.api.conf.SessionsPoolOption;
 import org.kie.api.io.ResourceType;
@@ -57,6 +58,8 @@ public class KieBaseModelImpl
 
     private EqualityBehaviorOption       equalsBehavior = EqualityBehaviorOption.IDENTITY;
 
+    private PrototypesOption             prototypes = PrototypesOption.DISABLED;
+
     private KieBaseMutabilityOption      mutability = KieBaseMutabilityOption.ALLOWED;
 
     private EventProcessingOption        eventProcessingMode = EventProcessingOption.CLOUD;
@@ -73,7 +76,7 @@ public class KieBaseModelImpl
 
     private KieModuleModel               kModule;
     
-    private String                       scope = "javax.enterprise.context.ApplicationScoped";
+    private String                       scope = "jakarta.enterprise.context.ApplicationScoped";
 
     private List<RuleTemplateModel>      ruleTemplates = new ArrayList<>();
 
@@ -234,18 +237,21 @@ public class KieBaseModelImpl
         return this;
     }
 
-    /* (non-Javadoc)
-     * @see org.kie.kproject.KieBaseModel#getEqualsBehavior()
-     */
     public EqualityBehaviorOption getEqualsBehavior() {
         return equalsBehavior;
     }
 
-    /* (non-Javadoc)
-     * @see org.kie.kproject.KieBaseModel#setEqualsBehavior(org.kie.api.conf.EqualityBehaviorOption)
-     */
     public KieBaseModel setEqualsBehavior(EqualityBehaviorOption equalsBehaviour) {
         this.equalsBehavior = equalsBehaviour;
+        return this;
+    }
+
+    public PrototypesOption getPrototypes() {
+        return prototypes;
+    }
+
+    public KieBaseModel setPrototypes(PrototypesOption prototypes) {
+        this.prototypes = prototypes;
         return this;
     }
 
@@ -353,7 +359,7 @@ public class KieBaseModelImpl
 
     @Override
     public String toString() {
-        return "KieBaseModelImpl [name=" + name + ", includes=" + includes + ", packages=" + getPackages() + ", equalsBehavior=" + equalsBehavior + ", mutability=" + mutability + ", eventProcessingMode=" + eventProcessingMode + ", kSessions=" + kSessions + "]";
+        return "KieBaseModelImpl [name=" + name + ", includes=" + includes + ", packages=" + getPackages() + ", equalsBehavior=" + equalsBehavior + ", prototypes=" + prototypes + ", mutability=" + mutability + ", eventProcessingMode=" + eventProcessingMode + ", kSessions=" + kSessions + "]";
     }
 
     @Override

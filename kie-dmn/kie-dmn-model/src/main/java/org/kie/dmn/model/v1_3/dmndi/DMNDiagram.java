@@ -21,7 +21,7 @@ package org.kie.dmn.model.v1_3.dmndi;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXBElement;
 
 public class DMNDiagram extends Diagram implements org.kie.dmn.model.api.dmndi.DMNDiagram {
 
@@ -81,6 +81,16 @@ public class DMNDiagram extends Diagram implements org.kie.dmn.model.api.dmndi.D
             dmnDiagramElement = new ArrayList<>();
         }
         return this.dmnDiagramElement;
+    }
+
+    @Override
+    public Boolean getUseAlternativeInputDataShape() {
+        throw new UnsupportedOperationException("Since DMNv1.5");
+    }
+
+    @Override
+    public void setUseAlternativeInputDataShape(Boolean value) {
+        throw new UnsupportedOperationException("Since DMNv1.5");
     }
 
 }

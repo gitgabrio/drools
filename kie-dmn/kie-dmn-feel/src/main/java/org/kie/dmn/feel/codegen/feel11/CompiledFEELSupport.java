@@ -18,16 +18,6 @@
  */
 package org.kie.dmn.feel.codegen.feel11;
 
-import java.math.BigDecimal;
-import java.math.MathContext;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-
 import ch.obermuhlner.math.big.BigDecimalMath;
 import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.NodeList;
@@ -46,14 +36,17 @@ import com.github.javaparser.ast.type.UnknownType;
 import org.kie.dmn.api.feel.runtime.events.FEELEvent;
 import org.kie.dmn.api.feel.runtime.events.FEELEvent.Severity;
 import org.kie.dmn.api.feel.runtime.events.FEELEventListener;
+import org.kie.dmn.feel.exceptions.EndpointOfRangeNotValidTypeException;
+import org.kie.dmn.feel.exceptions.EndpointOfRangeOfDifferentTypeException;
 import org.kie.dmn.feel.lang.EvaluationContext;
 import org.kie.dmn.feel.lang.ast.ForExpressionNode;
-import org.kie.dmn.feel.lang.ast.ForExpressionNode.ForIteration;
 import org.kie.dmn.feel.lang.ast.QuantifiedExpressionNode;
 import org.kie.dmn.feel.lang.ast.QuantifiedExpressionNode.QEIteration;
 import org.kie.dmn.feel.lang.ast.QuantifiedExpressionNode.Quantifier;
+import org.kie.dmn.feel.lang.ast.forexpressioniterators.ForIteration;
 import org.kie.dmn.feel.lang.impl.SilentWrappingEvaluationContextImpl;
 import org.kie.dmn.feel.lang.types.BuiltInType;
+import org.kie.dmn.feel.lang.types.impl.ComparablePeriod;
 import org.kie.dmn.feel.runtime.FEELFunction;
 import org.kie.dmn.feel.runtime.Range;
 import org.kie.dmn.feel.runtime.UnaryTest;
@@ -64,8 +57,20 @@ import org.kie.dmn.feel.util.EvalHelper;
 import org.kie.dmn.feel.util.Msg;
 import org.kie.dmn.feel.util.MsgUtil;
 
+import java.math.BigDecimal;
+import java.math.MathContext;
+
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+
 import static com.github.javaparser.StaticJavaParser.parseClassOrInterfaceType;
 import static org.kie.dmn.feel.codegen.feel11.Expressions.compiledFeelSemanticMappingsFQN;
+import static org.kie.dmn.feel.lang.ast.forexpressioniterators.ForIterationUtils.getForIteration;
 
 public class CompiledFEELSupport {
 
@@ -265,7 +270,7 @@ public class CompiledFEELSupport {
                     ctx.exitFrame(); // last i-th scope unrolled, see also ForExpressionNode.nextIteration(...)
                 }
                 return results;
-            } catch (EndpointOfRangeNotOfNumberException e) {
+            } catch (EndpointOfRangeNotValidTypeException | EndpointOfRangeOfDifferentTypeException e) {
                 // ast error already reported
                 return null;
             } finally {
@@ -296,26 +301,11 @@ public class CompiledFEELSupport {
                 Iterable values = result instanceof Iterable ? (Iterable) result : Collections.singletonList(result);
                 fi = new ForIteration(name, values);
             } else {
-                valueMustBeANumber(ctx, result);
-                BigDecimal start = (BigDecimal) result;
-                valueMustBeANumber(ctx, rangeEnd);
-                BigDecimal end = (BigDecimal) rangeEnd;
-                fi = new ForIteration(name, start, end);
+                fi = getForIteration(ctx, name, result, rangeEnd);
             }
             return fi;
         }
 
-        private void valueMustBeANumber(EvaluationContext ctx, Object value) {
-            if (!(value instanceof BigDecimal)) {
-                ctx.notifyEvt(() -> new ASTEventBase(Severity.ERROR, Msg.createMessage(Msg.VALUE_X_NOT_A_VALID_ENDPOINT_FOR_RANGE_BECAUSE_NOT_A_NUMBER, value), null));
-                throw new EndpointOfRangeNotOfNumberException();
-            }
-        }
-
-        private static class EndpointOfRangeNotOfNumberException extends RuntimeException {
-
-            private static final long serialVersionUID = 1L;
-        }
     }
 
     public static class IterationContextCompiled {
@@ -543,8 +533,14 @@ public class CompiledFEELSupport {
         return BigDecimalMath.pow( l, r, MathContext.DECIMAL128 );
     }
 
-    public static BigDecimal negate(EvaluationContext feelExprCtx, Object value) {
+    public static Object negate(EvaluationContext feelExprCtx, Object value) {
         if (isValidSignedType(feelExprCtx, value)) {
+            if (value instanceof ComparablePeriod comparablePeriod) {
+                return comparablePeriod.negated();
+            }
+            if (value instanceof Duration duration) {
+                return duration.negated();
+            }
             return ((BigDecimal) value).negate();
         } else {
             return null;

@@ -5,9 +5,6 @@ ecosystem:
     regexs:
     - drools.*
     - incubator-kie-drools.*
-  # - name: kie-jpmml-integration
-  #   regexs:
-  #   - kie-jpmml-integration.*
   - name: kie-benchmarks
     ignore_release: true
     regexs:
@@ -17,7 +14,6 @@ git:
   branches:
   - name: main
     main_branch: true
-  - name: quarkus-3.2LTS
 seed:
   config_file:
     git:
@@ -26,7 +22,7 @@ seed:
         name: apache
         credentials_id: ASF_Cloudbees_Jenkins_ci-builds
         push:
-          credentials_id: 84811880-2025-45b6-a44c-2f33bef30ad2 # CI Push Access for KIE
+          credentials_id: 84811880-2025-45b6-a44c-2f33bef30ad2
       branch: main
     path: .ci/jenkins/config/branch.yaml
   jenkinsfile: dsl/seed/jenkinsfiles/Jenkinsfile.seed.branch

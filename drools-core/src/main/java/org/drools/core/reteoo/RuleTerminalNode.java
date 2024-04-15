@@ -26,8 +26,6 @@ import org.drools.base.definitions.rule.impl.RuleImpl;
 import org.drools.base.reteoo.NodeTypeEnums;
 import org.drools.base.rule.Declaration;
 import org.drools.base.rule.GroupElement;
-import org.drools.core.common.InternalFactHandle;
-import org.drools.core.common.PropagationContext;
 import org.drools.core.common.ReteEvaluator;
 import org.drools.core.phreak.PhreakRuleTerminalNode;
 import org.drools.core.phreak.RuleExecutor;
@@ -48,7 +46,7 @@ public class RuleTerminalNode extends AbstractTerminalNode {
 
     protected boolean                       fireDirect;
 
-    protected transient ObjectTypeNode.Id   leftInputOtnId;
+    protected transient ObjectTypeNodeId leftInputOtnId = ObjectTypeNodeId.DEFAULT_ID;
 
     protected String                        consequenceName;
 
@@ -136,7 +134,7 @@ public class RuleTerminalNode extends AbstractTerminalNode {
 
     public void cancelMatch(InternalMatch match, ReteEvaluator reteEvaluator) {
         if ( match.isQueued() ) {
-            Tuple leftTuple = match.getTuple();
+            TupleImpl leftTuple = match.getTuple();
             if ( match.getRuleAgendaItem() != null ) {
                 // phreak must also remove the LT from the rule network evaluator
                 if ( leftTuple.getMemory() != null ) {
@@ -144,7 +142,7 @@ public class RuleTerminalNode extends AbstractTerminalNode {
                 }
             }
             RuleExecutor ruleExecutor = ((RuleTerminalNodeLeftTuple)leftTuple).getRuleAgendaItem().getRuleExecutor();
-            PhreakRuleTerminalNode.doLeftDelete(ruleExecutor.getPathMemory().getActualActivationsManager( reteEvaluator ), ruleExecutor, leftTuple);
+            PhreakRuleTerminalNode.doLeftDelete(ruleExecutor.getPathMemory().getActualActivationsManager( reteEvaluator ), ruleExecutor, (RuleTerminalNodeLeftTuple) leftTuple);
         }
     }
 
@@ -158,48 +156,15 @@ public class RuleTerminalNode extends AbstractTerminalNode {
                Objects.equals(consequenceName, ((RuleTerminalNode)object).consequenceName);
     }
 
-    public short getType() {
+    public int getType() {
         return NodeTypeEnums.RuleTerminalNode;
     }
 
-    public LeftTuple createLeftTuple(final InternalFactHandle factHandle,
-                                     final LeftTuple leftTuple,
-                                     final Sink sink) {
-        return AgendaComponentFactory.get().createTerminalTuple(factHandle,leftTuple, sink );
-    }
-
-    public LeftTuple createLeftTuple(InternalFactHandle factHandle,
-                                     boolean leftTupleMemoryEnabled) {
-        return AgendaComponentFactory.get().createTerminalTuple( factHandle, this, leftTupleMemoryEnabled );
-    }
-
-    public LeftTuple createLeftTuple(LeftTuple leftTuple,
-                                     Sink sink,
-                                     PropagationContext pctx,
-                                     boolean leftTupleMemoryEnabled) {
-        return AgendaComponentFactory.get().createTerminalTuple( leftTuple, sink, pctx, leftTupleMemoryEnabled );
-    }
-
-    public LeftTuple createLeftTuple(LeftTuple leftTuple,
-                                     RightTuple rightTuple,
-                                     Sink sink) {
-        return AgendaComponentFactory.get().createTerminalTuple( leftTuple, rightTuple, sink );
-    }
-
-    public LeftTuple createLeftTuple(LeftTuple leftTuple,
-                                     RightTuple rightTuple,
-                                     LeftTuple currentLeftChild,
-                                     LeftTuple currentRightChild,
-                                     Sink sink,
-                                     boolean leftTupleMemoryEnabled) {
-        return AgendaComponentFactory.get().createTerminalTuple(leftTuple, rightTuple, currentLeftChild, currentRightChild, sink, leftTupleMemoryEnabled );
-    }      
-    
-    public ObjectTypeNode.Id getLeftInputOtnId() {
+    public ObjectTypeNodeId getLeftInputOtnId() {
         return leftInputOtnId;
     }
 
-    public void setLeftInputOtnId(ObjectTypeNode.Id leftInputOtnId) {
+    public void setLeftInputOtnId(ObjectTypeNodeId leftInputOtnId) {
         this.leftInputOtnId = leftInputOtnId;
     }
 

@@ -28,8 +28,8 @@ import org.drools.base.base.ClassObjectType;
 import org.drools.base.rule.Declaration;
 import org.drools.base.rule.Pattern;
 import org.drools.base.rule.accessor.ReadAccessor;
-import org.drools.base.rule.constraint.BetaNodeFieldConstraint;
-import org.drools.core.util.Entry;
+import org.drools.base.rule.constraint.BetaConstraint;
+import org.drools.core.util.SingleLinkedEntry;
 import org.drools.core.util.index.IndexMemory;
 import org.drools.core.util.index.TupleIndexHashTable;
 import org.drools.drl.parser.impl.Operator;
@@ -81,7 +81,7 @@ public abstract class AbstractTupleIndexHashTableIteratorTest {
         return parameters;
     }
 
-    protected static BetaNodeFieldConstraint createFooThisEqualsDBetaConstraint(boolean useLambdaConstraint) {
+    protected static BetaConstraint createFooThisEqualsDBetaConstraint(boolean useLambdaConstraint) {
         if (useLambdaConstraint) {
             return createFooThisEqualsDBetaConstraintWithLambdaConstraint();
         } else {
@@ -89,7 +89,7 @@ public abstract class AbstractTupleIndexHashTableIteratorTest {
         }
     }
 
-    private static BetaNodeFieldConstraint createFooThisEqualsDBetaConstraintWithLambdaConstraint() {
+    private static BetaConstraint createFooThisEqualsDBetaConstraintWithLambdaConstraint() {
         Pattern pattern = new Pattern(0, new ClassObjectType(Foo.class));
         Pattern varPattern = new Pattern(1, new ClassObjectType(Foo.class));
         Predicate2<Foo, Foo> predicate = new Predicate2.Impl<Foo, Foo>((_this, d) -> EvaluationUtil.areNullSafeEquals(_this, d));
@@ -97,7 +97,7 @@ public abstract class AbstractTupleIndexHashTableIteratorTest {
         return LambdaConstraintTestUtil.createLambdaConstraint2(Foo.class, Foo.class, pattern, varPattern, "d", predicate, index);
     }
 
-    private static BetaNodeFieldConstraint createFooThisEqualsDBetaConstraintWithMvelConstraint() {
+    private static BetaConstraint createFooThisEqualsDBetaConstraintWithMvelConstraint() {
         ClassFieldAccessorStore store = new ClassFieldAccessorStore();
         store.setClassFieldAccessorCache(new ClassFieldAccessorCache(Thread.currentThread().getContextClassLoader()));
         store.setEagerWire(true);
@@ -108,13 +108,13 @@ public abstract class AbstractTupleIndexHashTableIteratorTest {
     }
 
     protected List createTableIndexListForAssertion(TupleIndexHashTable hashTable) {
-        Entry[] table = hashTable.getTable();
-        List list = new ArrayList();
+        SingleLinkedEntry[] table = hashTable.getTable();
+        List                list  = new ArrayList();
         for (int i = 0; i < table.length; i++) {
             if (table[i] != null) {
                 List entries = new ArrayList();
                 entries.add(i);
-                Entry entry = table[i];
+                SingleLinkedEntry entry = table[i];
                 while (entry != null) {
                     entries.add(entry);
                     entry = entry.getNext();
