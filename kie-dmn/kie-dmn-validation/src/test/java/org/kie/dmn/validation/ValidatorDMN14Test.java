@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.util.List;
 
+import org.drools.io.ClassPathResource;
 import org.junit.jupiter.api.Test;
 import org.kie.dmn.api.core.DMNMessage;
 import org.slf4j.Logger;
@@ -68,7 +69,8 @@ class ValidatorDMN14Test extends AbstractValidatorTest {
     @Test
     void boxedExtensionConditional14() {
         List<DMNMessage> validate = validator.validateUsing(VALIDATE_SCHEMA, VALIDATE_MODEL, VALIDATE_COMPILATION)
-                                             .theseModels(getReader("dmn14boxed/conditional.dmn"));
+                                             .theseModels(new ClassPathResource("valid_models/DMNv1_x/BoxedConditional.dmn",
+                                                     this.getClass()));
         LOG.debug("{}", validate);
         assertThat(validate).hasSize(0);
     }
