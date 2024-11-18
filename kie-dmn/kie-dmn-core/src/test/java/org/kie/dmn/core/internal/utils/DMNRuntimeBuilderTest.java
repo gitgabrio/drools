@@ -18,11 +18,21 @@
  */
 package org.kie.dmn.core.internal.utils;
 
+import java.io.File;
+import java.net.URL;
 import java.util.Collections;
 
+import org.drools.util.FileUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.kie.api.io.Resource;
+import org.kie.dmn.api.core.DMNContext;
+import org.kie.dmn.api.core.DMNModel;
+import org.kie.dmn.api.core.DMNResult;
+import org.kie.dmn.api.core.DMNRuntime;
+import org.kie.dmn.core.api.DMNFactory;
 import org.kie.dmn.core.impl.DMNRuntimeImpl;
+import org.kie.internal.io.ResourceFactory;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -42,5 +52,29 @@ class DMNRuntimeBuilderTest {
                 .buildConfiguration()
                 .fromResources(Collections.emptyList()).getOrElseThrow(RuntimeException::new);
         assertThat(retrieved).isNotNull();
+    }
+
+    @Test
+    void fromDefaultsDecisionWithoutInputDataReference() {
+        File modelFile = FileUtils.getFile("DMN-Invalid.dmn");
+        assertThat(modelFile).isNotNull().exists();
+        Resource modelResource = ResourceFactory.newFileResource(modelFile);
+        DMNRuntime dmnRuntime = DMNRuntimeBuilder.fromDefaults().buildConfiguration()
+                .fromResources(Collections.singletonList(modelResource)).getOrElseThrow(RuntimeException::new);
+        assertThat(dmnRuntime).isNotNull();
+        String nameSpace = "https://kie.org/dmn/_C41C5BB7-C6D3-44AC-AA11-8C6669A1067C";
+
+        final DMNModel dmnModel = dmnRuntime.getModel(
+                nameSpace,
+                "DMN_9A35369C-E843-446F-A720-2A41B827FB8D");
+        assertThat(dmnModel).isNotNull();
+        DMNContext context = DMNFactory.newContext();
+        context.set( "Person Age", 24 );
+        DMNResult dmnResult = dmnRuntime.evaluateAll(dmnModel, context );
+        assertThat(dmnResult).isNotNull();
+
+        context = DMNFactory.newContext();
+        dmnResult = dmnRuntime.evaluateAll(dmnModel, context );
+        assertThat(dmnResult).isNotNull();
     }
 }
