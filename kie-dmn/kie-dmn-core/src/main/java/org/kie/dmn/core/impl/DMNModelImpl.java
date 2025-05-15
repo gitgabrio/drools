@@ -24,6 +24,7 @@ import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -75,7 +76,8 @@ import static org.kie.dmn.core.impl.TupleIdentifier.createTupleIdentifier;
 import static org.kie.dmn.core.impl.TupleIdentifier.createTupleIdentifierByName;
 
 public class DMNModelImpl
-        implements DMNModel, DMNMessageManager, Externalizable {
+        implements DMNModel, DMNMessageManager,
+                   Serializable {
     
     private enum SerializationFormat {
         // To ensure backward compatibility, append only:
@@ -413,38 +415,58 @@ public class DMNModelImpl
         this.runtimeTypeCheck = runtimeTypeCheck;
     }
 
-    @Override
+//    @Override
     public void writeExternal(ObjectOutput out) throws IOException {
-        out.writeObject(serializedAs);
-        out.writeObject(resource);
-
-        if ( !(out instanceof DroolsObjectOutputStream) ) {
-            throw new UnsupportedOperationException();
-            // TODO assume some defaults
+        if (out instanceof DroolsObjectOutputStream os) {
+            writeAsXML(os);
         }
-        
-        DroolsObjectOutputStream os = (DroolsObjectOutputStream) out;
-        DMNCompilerImpl compiler = (DMNCompilerImpl) os.getCustomExtensions().get(DMNAssemblerService.DMN_COMPILER_CACHE_KEY);
-        List<DMNExtensionRegister> dmnRegisteredExtensions = compiler.getRegisteredExtensions();
-        
-        String output = DMNMarshallerFactory.newMarshallerWithExtensions(dmnRegisteredExtensions).marshal(this.definitions);
-
-        out.writeObject(output);
+//        out.writeObject(serializedAs);
+//        out.writeObject(resource);
+//
+//        if ( !(out instanceof DroolsObjectOutputStream) ) {
+//            throw new UnsupportedOperationException();
+//            // TODO assume some defaults
+//        }
+//
+//        DroolsObjectOutputStream os = (DroolsObjectOutputStream) out;
+//        DMNCompilerImpl compiler = (DMNCompilerImpl) os.getCustomExtensions().get(DMNAssemblerService.DMN_COMPILER_CACHE_KEY);
+//        List<DMNExtensionRegister> dmnRegisteredExtensions = compiler.getRegisteredExtensions();
+//
+//        String output = DMNMarshallerFactory.newMarshallerWithExtensions(dmnRegisteredExtensions).marshal(this.definitions);
+//
+//        out.writeObject(output);
     }
 
-    @Override
+    private void writeAsXML(DroolsObjectOutputStream os) throws IOException {
+        os.writeObject(serializedAs);
+        os.writeObject(resource);
+        DMNCompilerImpl compiler = (DMNCompilerImpl) os.getCustomExtensions().get(DMNAssemblerService.DMN_COMPILER_CACHE_KEY);
+        List<DMNExtensionRegister> dmnRegisteredExtensions = compiler.getRegisteredExtensions();
+        String output = DMNMarshallerFactory.newMarshallerWithExtensions(dmnRegisteredExtensions).marshal(this.definitions);
+        os.writeObject(output);
+    }
+
+//    private void writeAsBytes(ObjectOutput out) throws IOException {
+//        os.writeObject(serializedAs);
+//        os.writeObject(resource);
+//        DMNCompilerImpl compiler = (DMNCompilerImpl) os.getCustomExtensions().get(DMNAssemblerService.DMN_COMPILER_CACHE_KEY);
+//        List<DMNExtensionRegister> dmnRegisteredExtensions = compiler.getRegisteredExtensions();
+//        String output = DMNMarshallerFactory.newMarshallerWithExtensions(dmnRegisteredExtensions).marshal(this.definitions);
+//        os.writeObject(output);
+//    }
+
+//    @Override
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-        this.serializedAs = (SerializationFormat) in.readObject();
-        this.resource = (Resource) in.readObject();
-        this.messages = new DefaultDMNMessagesManager(this.resource);
-        String xml = (String) in.readObject();
-        
-        if ( !(in instanceof DroolsObjectInputStream) ) {
-            throw new UnsupportedOperationException();
-            // TODO assume some defaults
+        if (in instanceof DroolsObjectInputStream is ) {
+            readAsXML(is);
         }
-        
-        DroolsObjectInputStream is = (DroolsObjectInputStream) in;
+    }
+
+    public void readAsXML(DroolsObjectInputStream is) throws IOException, ClassNotFoundException {
+        this.serializedAs = (SerializationFormat) is.readObject();
+        this.resource = (Resource) is.readObject();
+        this.messages = new DefaultDMNMessagesManager(this.resource);
+        String xml = (String) is.readObject();
         DMNCompilerImpl compiler = (DMNCompilerImpl) is.getCustomExtensions().get(DMNAssemblerService.DMN_COMPILER_CACHE_KEY);
         List<DMNExtensionRegister> dmnRegisteredExtensions = compiler.getRegisteredExtensions();
         

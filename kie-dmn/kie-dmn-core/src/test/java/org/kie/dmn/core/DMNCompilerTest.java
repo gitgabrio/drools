@@ -18,10 +18,16 @@
  */
 package org.kie.dmn.core;
 
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.function.Consumer;
 
+import org.drools.base.common.DroolsObjectOutputStream;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.kie.dmn.api.core.DMNContext;
@@ -34,6 +40,8 @@ import org.kie.dmn.api.core.FEELPropertyAccessible;
 import org.kie.dmn.api.core.ast.DecisionNode;
 import org.kie.dmn.api.core.ast.ItemDefNode;
 import org.kie.dmn.core.api.DMNFactory;
+import org.kie.dmn.core.assembler.DMNAssemblerService;
+import org.kie.dmn.core.compiler.DMNCompilerImpl;
 import org.kie.dmn.core.compiler.DMNTypeRegistry;
 import org.kie.dmn.core.impl.BaseDMNTypeImpl;
 import org.kie.dmn.core.impl.CompositeTypeImpl;
@@ -61,6 +69,34 @@ import static org.kie.dmn.feel.util.EvaluationContextTestUtil.newEmptyEvaluation
 public class DMNCompilerTest extends BaseVariantTest {
 
     public static final Logger LOG = LoggerFactory.getLogger(DMNCompilerTest.class);
+
+    @ParameterizedTest
+    @MethodSource("params")
+    void puppa(VariantTestConf conf) throws IOException, ClassNotFoundException {
+        testConfig = conf;
+        final DMNRuntime runtime = createRuntime("javadocSimple.dmn", this.getClass());
+        final DMNModel dmnModel = runtime.getModel("https://kiegroup.org/dmn/_55F8F74F-3E9F-4FAA-BBF4-E6F9534B6B19", "new-file");
+        assertThat(dmnModel).isNotNull().isInstanceOf(DMNModelImpl.class);
+        DMNModelImpl model = (DMNModelImpl) dmnModel;
+        FileOutputStream fileOutputStream
+                = new FileOutputStream("yourfile.txt");
+        ObjectOutputStream objectOutputStream
+                = new ObjectOutputStream(fileOutputStream);
+//        DMNCompilerImpl compiler = new DMNCompilerImpl();
+//        objectOutputStream.addCustomExtensions(DMNAssemblerService.DMN_COMPILER_CACHE_KEY, compiler);
+        objectOutputStream.writeObject(model);
+        objectOutputStream.flush();
+        objectOutputStream.close();
+
+        FileInputStream fileInputStream
+                = new FileInputStream("yourfile.txt");
+        ObjectInputStream objectInputStream
+                = new ObjectInputStream(fileInputStream);
+        DMNModel p2 = (DMNModelImpl) objectInputStream.readObject();
+
+        System.out.println(p2);
+
+    }
 
     @ParameterizedTest
     @MethodSource("params")

@@ -18,10 +18,14 @@
  */
 package org.kie.dmn.core.impl;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.util.Objects;
 
-public class TupleIdentifier {
+public class TupleIdentifier implements Serializable {
 
+    @Serial
+    private static final long serialVersionUID = 5675122064160609960L;
     private final String id;
     private final String name;
 
